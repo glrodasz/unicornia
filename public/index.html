@@ -248,7 +248,7 @@ const LASH_C=[{id:'negro',name:'Negro',c:'#2a1f33'},{id:'cafe',name:'Café',c:'#
 const SHADOW=[{id:'ninguna',name:'Sin'},{id:'rosa',name:'Rosa',c:'#ff9cc4'},{id:'lila',name:'Lila',c:'#b89af6'},{id:'cielo',name:'Cielo',c:'#89cbf5'},{id:'menta',name:'Menta',c:'#86ddbd'},{id:'durazno',name:'Durazno',c:'#ffb089'},{id:'oro',name:'Oro',c:'#f2c35a',metal:1},{id:'plata',name:'Plata',c:'#cfd6e4',metal:1},{id:'arcoiris',name:'Arcoíris',tex:'rainbow'}];
 const BLUSH=[{id:'ninguno',name:'Sin'},{id:'rosa',name:'Rosa',c:'#ff7aa6'},{id:'coral',name:'Coral',c:'#ff8a6a'},{id:'fucsia',name:'Fucsia',c:'#e9479a'},{id:'lila',name:'Lila',c:'#b27ff0'},{id:'corazones',name:'Corazones',c:'#ff5f93'}];
 const FRECKLES=[{id:'ninguna',name:'Sin'},{id:'pocas',name:'Pocas'},{id:'muchas',name:'Muchas'},{id:'corazones',name:'Corazones'},{id:'estrellas',name:'Estrellas'}];
-const LIPS=[{id:'natural',name:'Natural'},{id:'rosa',name:'Rosa',c:'#ff6f9f'},{id:'rojo',name:'Rojo',c:'#e3304f'},{id:'coral',name:'Coral',c:'#ff7d5c'},{id:'morado',name:'Morado',c:'#9150d8'},{id:'brillo',name:'Brillo',c:'#ff8ccf',glitter:1}];
+const LIPS=[{id:'natural',name:'Natural'},{id:'rosa',name:'Rosa',c:'#ff6f9f'},{id:'rojo',name:'Rojo',c:'#e3304f'},{id:'coral',name:'Coral',c:'#ff7d5c'},{id:'morado',name:'Morado',c:'#9150d8'},{id:'brillo',name:'Brillo',c:'#ff8ccf',glitter:1},{id:'arcoiris',name:'Arcoíris',c:'#ff6b81',rainbow:1}];
 const EARRING=[{id:'ninguno',name:'Sin'},{id:'aro-oro',name:'Aro oro'},{id:'aro-plata',name:'Aro plata'},{id:'perla',name:'Perla'},{id:'estrella',name:'Estrella'},{id:'corazon',name:'Corazón'},{id:'tres',name:'Tres aros'}];
 const EAR_TOP=[{id:'ninguno',name:'Sin'},{id:'aros',name:'Dos aros'},{id:'brillos',name:'Brillitos'},{id:'perlas',name:'Perlas'},{id:'estrella',name:'Estrella'},{id:'corazon',name:'Corazón'},{id:'flor',name:'Florecita'}];
 const NOSE=[{id:'ninguno',name:'Sin'},{id:'aro-oro',name:'Aro oro'},{id:'aro-plata',name:'Aro plata'},{id:'brillo',name:'Brillante'},{id:'estrella',name:'Estrella'}];
@@ -465,8 +465,9 @@ function paintMuzzle(){
   if(L.id==='natural'){
     x.strokeStyle=darkM?'#20142e':mix(f.m,'#5a2440',.7);x.lineWidth=.024*pu;smile();x.stroke();
   }else{
-    x.strokeStyle=mix(L.c,'#3a0f2a',.25);x.lineWidth=.07*pu;smile();x.stroke();
-    x.strokeStyle=L.c;x.lineWidth=.056*pu;smile();x.stroke();
+    const lipInk=k=>{if(!L.rainbow)return mix(L.c,'#3a0f2a',k);const g=x.createLinearGradient(ax,0,bx,0);RAINBOW.forEach((c,i,a)=>g.addColorStop(i/(a.length-1),mix(c,'#3a0f2a',k)));return g;};
+    x.strokeStyle=lipInk(.25);x.lineWidth=.07*pu;smile();x.stroke();
+    x.strokeStyle=lipInk(0);x.lineWidth=.056*pu;smile();x.stroke();
     x.save();x.translate(0,-.012*pu);x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=.012*pu;x.beginPath();x.moveTo(lerp(ax,mx,.35),lerp(ay,my,.25));x.quadraticCurveTo(qx,qy,lerp(bx,mx,.35),lerp(by,my,.25));x.stroke();x.restore();
     if(L.glitter){const r=rng(5);for(let i=0;i<40;i++){const t=r(),X=(1-t)*(1-t)*ax+2*(1-t)*t*qx+t*t*bx+(r()-.5)*.05*pu,Y=(1-t)*(1-t)*ay+2*(1-t)*t*qy+t*t*by+(r()-.5)*.04*pu;x.fillStyle=r()<.5?'#ffffff':'#ffe27a';x.beginPath();x.arc(X,Y,(.004+r()*.005)*pu,0,TAU);x.fill();}}
   }
@@ -1115,8 +1116,9 @@ function headSVG(id){
   return NONE_SVG;
 }
 function lipsSVG(o){
-  const c=o.c||'#7a3e5c',w=o.c?6.5:3;
-  return sv(`<ellipse cx="32" cy="32" rx="25" ry="19" fill="#ffe3ea"/><path d="M17 30q15 14 30 0" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round"/>${o.glitter?'<circle cx="26" cy="35" r="1.4" fill="#fff"/><circle cx="36" cy="36" r="1.2" fill="#fff3a0"/><circle cx="31" cy="37" r="1" fill="#fff"/>':''}${o.c?'<path d="M24 33q8 5 16 0" stroke="#fff" stroke-width="1.6" fill="none" opacity=".6" stroke-linecap="round"/>':''}`);
+  const c=o.rainbow?'url(#lipsRb)':o.c||'#7a3e5c',w=o.c?6.5:3;
+  const defs=o.rainbow?`<defs><linearGradient id="lipsRb" x1="17" x2="47" gradientUnits="userSpaceOnUse">${RAINBOW.map((k,i,a)=>`<stop offset="${i/(a.length-1)}" stop-color="${k}"/>`).join('')}</linearGradient></defs>`:'';
+  return sv(`${defs}<ellipse cx="32" cy="32" rx="25" ry="19" fill="#ffe3ea"/><path d="M17 30q15 14 30 0" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round"/>${o.glitter?'<circle cx="26" cy="35" r="1.4" fill="#fff"/><circle cx="36" cy="36" r="1.2" fill="#fff3a0"/><circle cx="31" cy="37" r="1" fill="#fff"/>':''}${o.c?'<path d="M24 33q8 5 16 0" stroke="#fff" stroke-width="1.6" fill="none" opacity=".6" stroke-linecap="round"/>':''}`);
 }
 function stickerSVG(def,mode){
   const all=def.L.map(l=>l[0]).join(' ');
