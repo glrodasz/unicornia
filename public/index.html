@@ -825,7 +825,7 @@ function buildGlasses(){
     let frame,lensG;
     if(id==='corazon'){const o=heartShape(.31);o.holes.push(heartShape(.235,true));frame=extrude(o,.025,.014);lensG=new THREE.ShapeGeometry(heartShape(.24));lensG.center();}
     else if(id==='estrella'){const o=starShape(.34,.17);o.holes.push(starShape(.26,.12,true));frame=extrude(o,.025,.014);lensG=new THREE.ShapeGeometry(starShape(.27,.13));}
-    else if(id==='gato'||id==='flor'||id==='cuadradas'){const f=GLASS_SHAPE[id],o=polarShape(f,1,sg);o.holes.push(polarShape(f,.78,sg,true));frame=extrude(o,.025,.014);lensG=new THREE.ShapeGeometry(polarShape(f,.8,sg));}
+    else if(id==='gato'||id==='flor'||id==='cuadradas'){const f=GLASS_SHAPE[id],o=polarShape(f,1,sg);o.holes.push(polarShape(f,.78,sg,true));frame=extrude(o,.025,.014);const bb=new THREE.Box2().setFromPoints(o.getPoints()),c=bb.getCenter(new THREE.Vector2());lensG=new THREE.ShapeGeometry(polarShape(f,.8,sg));lensG.translate(-c.x,-c.y,0);}
     else if(id==='arcoiris'){frame=null;[['#ff6b81',.262],['#ffd84d',.232],['#5cb8f5',.202]].forEach(([c,r])=>L.add(new THREE.Mesh(new THREE.TorusGeometry(r,.017,12,60),gloss(c,{roughness:.25}))));lensG=new THREE.CircleGeometry(.195,48);}
     else{frame=new THREE.TorusGeometry(.255,id==='sol'?.036:.03,14,60);lensG=new THREE.CircleGeometry(.25,48);}
     if(frame)L.add(new THREE.Mesh(frame,fm));
