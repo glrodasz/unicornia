@@ -1,6 +1,7 @@
 # Deploys the static site in public/ to Cloudflare Pages (no build step).
 # main -> production (https://unicornia.pages.dev)
-# pull requests -> preview URL per branch, linked from the PR's deployments.
+# pull requests -> preview URL per branch, linked from the PR's deployments
+#                  and from a sticky PR comment updated on every push.
 name: Deploy
 
 on:
@@ -16,6 +17,7 @@ concurrency:
 permissions:
   contents: read
   deployments: write
+  pull-requests: write
 
 env:
   PAGES_PROJECT: unicornia
@@ -59,3 +61,37 @@ jobs:
           echo "### Unicornia deployed" >> "$GITHUB_STEP_SUMMARY"
           echo "- Deployment: ${{ steps.deploy.outputs.deployment-url }}" >> "$GITHUB_STEP_SUMMARY"
           echo "- Branch alias: ${{ steps.deploy.outputs.pages-deployment-alias-url }}" >> "$GITHUB_STEP_SUMMARY"
+
+      # One comment per PR, edited in place on every push.
+      - name: Comment preview URL on PR
+        if: steps.deploy.outcome == 'success' && github.event_name == 'pull_request'
+        uses: actions/github-script@v7
+        env:
+          ALIAS_URL: ${{ steps.deploy.outputs.pages-deployment-alias-url }}
+          DEPLOY_URL: ${{ steps.deploy.outputs.deployment-url }}
+          SHA: ${{ github.event.pull_request.head.sha }}
+        with:
+          script: |
+            const marker = '<!-- unicornia-preview -->';
+            const { ALIAS_URL, DEPLOY_URL, SHA } = process.env;
+            const body = [
+              marker,
+              '### 🦄 Preview de Unicornia',
+              '',
+              `**Probar aquí:** ${ALIAS_URL || DEPLOY_URL}`,
+              '',
+              '| | |',
+              '|---|---|',
+              `| Rama (siempre la última versión) | ${ALIAS_URL || '—'} |`,
+              `| Este commit (\`${SHA.slice(0, 7)}\`) | ${DEPLOY_URL} |`,
+              `| Actualizado | ${new Date().toISOString().replace('T', ' ').slice(0, 16)} UTC |`,
+            ].join('\n');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const comments = await github.paginate(github.rest.issues.listComments, { owner, repo, issue_number });
+            const existing = comments.find(c => c.user.type === 'Bot' && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
