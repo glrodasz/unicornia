@@ -1,0 +1,61 @@
+# Deploys the static site in public/ to Cloudflare Pages (no build step).
+# main -> production (https://unicornia.pages.dev)
+# pull requests -> preview URL per branch, linked from the PR's deployments.
+name: Deploy
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  deployments: write
+
+env:
+  PAGES_PROJECT: unicornia
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # Forks and repos without the Cloudflare secrets skip the deploy.
+      - name: Check Cloudflare secrets
+        id: secrets
+        env:
+          TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          ACCOUNT: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          BRANCH: ${{ github.head_ref || github.ref_name }}
+        run: |
+          echo "branch=$(printf '%s' "$BRANCH" | tr -c 'A-Za-z0-9._/-' '-')" >> "$GITHUB_OUTPUT"
+          if [ -n "$TOKEN" ] && [ -n "$ACCOUNT" ]; then
+            echo "ok=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "::notice::CLOUDFLARE_API_TOKEN / CLOUDFLARE_ACCOUNT_ID not set; skipping deploy."
+          fi
+
+      - name: Deploy to Cloudflare Pages
+        id: deploy
+        if: steps.secrets.outputs.ok == 'true'
+        uses: cloudflare/wrangler-action@v3
+        with:
+          apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          gitHubToken: ${{ secrets.GITHUB_TOKEN }}
+          # Creates the Pages project on the first run; a no-op afterwards.
+          preCommands: npx wrangler pages project create ${{ env.PAGES_PROJECT }} --production-branch=main || true
+          command: pages deploy public --project-name=${{ env.PAGES_PROJECT }} --branch=${{ steps.secrets.outputs.branch }}
+
+      - name: Summary
+        if: steps.deploy.outcome == 'success'
+        run: |
+          echo "### Unicornia deployed" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Deployment: ${{ steps.deploy.outputs.deployment-url }}" >> "$GITHUB_STEP_SUMMARY"
+          echo "- Branch alias: ${{ steps.deploy.outputs.pages-deployment-alias-url }}" >> "$GITHUB_STEP_SUMMARY"
