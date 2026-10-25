@@ -1369,10 +1369,10 @@ let viewing=null,delArmed=0;
 function renderGallery(){
   galGrid.innerHTML=photos.slice().reverse().map((p,i)=>`<button class="ph" data-ph="${p.id}" style="--r:${[-3,2,-1.5,3,-2.5,1.5][i%6]}deg" aria-label="Foto ${photos.length-i}"><img src="${p.img}" alt=""></button>`).join('');
 }
-function openGallery(){renderGallery();closeViewer();gal.hidden=false;sfx.tab();$('#galClose').focus();}
-function closeGallery(){gal.hidden=true;closeViewer();btnAlbum.focus();}
-function openViewer(p){viewing=p;galImg.src=p.img;galView.hidden=false;delArmed=0;paintDel();}
-function closeViewer(){viewing=null;galView.hidden=true;}
+function openGallery(){renderGallery();closeViewer();gal.hidden=false;$('#app').inert=true;sfx.tab();$('#galClose').focus();}
+function closeGallery(){gal.hidden=true;$('#app').inert=false;closeViewer();(btnAlbum.hidden?btnSnap:btnAlbum).focus();}
+function openViewer(p){viewing=p;galImg.src=p.img;galView.hidden=false;galGrid.inert=true;delArmed=0;paintDel();galView.querySelector('[data-g="back"]').focus();}
+function closeViewer(){viewing=null;galView.hidden=true;galGrid.inert=false;}
 function paintDel(){const b=galView.querySelector('[data-g="del"]');b.classList.toggle('warn',!!delArmed);b.innerHTML=delArmed?ICON.check:ICON.trash;b.setAttribute('aria-label',delArmed?'Toca otra vez para borrar':'Borrar foto');}
 function polaroid(p){
   return new Promise((res,rej)=>{
