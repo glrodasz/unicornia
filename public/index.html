@@ -200,7 +200,7 @@ const STICKERS=[
   {id:'flor',name:'Flor',L:[[PETALS,'#ff8fc8'],[circ(50,50,14),'#ffd447']]},
   {id:'mariposa',name:'Mariposa',L:[[ell(31,38,20,22)+ell(69,38,20,22),'#b18cff'],[ell(34,69,15,15)+ell(66,69,15,15),'#ff8fc8'],[circ(29,36,6)+circ(71,36,6),'#ffe7f5'],[ell(50,54,5.5,28)+circ(43,17,4)+circ(57,17,4),'#5b3f7a']]},
   {id:'brillo',name:'Brillo',L:[[SPARK,'#fff0a0'],['M82 4C83 13 86 16 96 18C86 20 83 23 82 32C81 23 78 20 68 18C78 16 81 13 82 4Z','#ffb3d9']]},
-  {id:'nube',name:'Nube',L:[[circ(30,60,18)+circ(52,46,24)+circ(73,58,18)+'M30 78H73V60H30Z','#d4ecff'],[circ(42,58,3.5)+circ(62,58,3.5),'#3d2748'],[ell(35,66,4.5,2.6)+ell(69,66,4.5,2.6),'#ff9cc0']]},
+  {id:'nube',name:'Nube',L:[[circ(30,60,18)+circ(52,46,24)+circ(73,60,18)+'M30 78H73V60H30Z','#d4ecff'],[circ(42,58,3.5)+circ(62,58,3.5),'#3d2748'],[ell(35,66,4.5,2.6)+ell(69,66,4.5,2.6),'#ff9cc0']]},
   {id:'fresa',name:'Fresa',L:[['M50 94C26 84 12 62 16 44C19 31 33 27 50 32C67 27 81 31 84 44C88 62 74 84 50 94Z','#ff4d6d'],['M50 34L33 20L45 23L50 7L55 23L67 20Z','#3cb371'],[[[36,50],[50,47],[64,50],[42,64],[58,64],[50,79],[29,62],[71,62]].map(([x,y])=>ell(x,y,2.6,3.8)).join(''),'#ffe08a']]},
   {id:'rayo',name:'Rayo',L:[['M60 4L22 56H46L36 96L80 40H55L68 4Z','#ffd43b']]},
   {id:'diamante',name:'Diamante',L:[['M28 16H72L94 40L50 94L6 40Z','#6fd9ff'],['M28 16L38 40H62L72 16Z','#c4f3ff'],['M6 40H38L50 94Z','#45bde9']]},
@@ -390,12 +390,18 @@ function mottle(x,W,H,a){
 function drawShape(x,path,cx,cy,sx,sy,rot,fill){x.save();x.translate(cx,cy);x.scale(sx/100,sy/100);x.rotate(rot||0);x.translate(-50,-50);x.fillStyle=fill;x.fill(path);x.restore();}
 const P_HEART=new Path2D(HEART), P_STAR=new Path2D(STAR), P_PETALS=new Path2D(PETALS), P_SPARK=new Path2D(SPARK);
 
+// Tattoos are painted opaque on their own canvas (each layer's outline under its fill) and then
+// blended once, so outlines hidden by overlapping shapes don't show through.
+const tattooCache={};
+function tattooImg(def){
+  if(tattooCache[def.id])return tattooCache[def.id];
+  const S=512,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');
+  x.scale(S/112,S/112);x.translate(6,6);x.lineWidth=6.8;x.lineJoin='round';x.strokeStyle='#3a2a52';
+  for(const[p,f]of def.paths){x.stroke(p);x.fillStyle=f;x.fill(p);}
+  return tattooCache[def.id]=c;
+}
 function drawSticker(x,def,mode){
-  if(mode==='tatuaje'){
-    x.save();x.globalAlpha=.8;for(const[p,f]of def.paths){x.fillStyle=f;x.fill(p);}
-    x.globalAlpha=.9;x.lineWidth=3.4;x.lineJoin='round';x.strokeStyle='#3a2a52';for(const[p]of def.paths)x.stroke(p);x.restore();
-    return;
-  }
+  if(mode==='tatuaje'){x.save();x.globalAlpha=.82;x.drawImage(tattooImg(def),-6,-6,112,112);x.restore();return;}
   x.save();x.shadowColor='rgba(70,30,80,.32)';x.shadowBlur=7;x.shadowOffsetY=2;x.lineJoin='round';x.lineWidth=15;x.strokeStyle='#ffffff';x.fillStyle='#ffffff';x.stroke(def.all);x.fill(def.all);x.restore();
   for(const[p,f]of def.paths){x.fillStyle=f;x.fill(p);}
   x.save();x.clip(def.all);const g=x.createLinearGradient(10,0,70,80);g.addColorStop(0,'rgba(255,255,255,.6)');g.addColorStop(.42,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(-10,-10,120,120);x.restore();
@@ -1069,7 +1075,7 @@ function lipsSVG(o){
 }
 function stickerSVG(def,mode){
   const all=def.L.map(l=>l[0]).join(' ');
-  if(mode==='tatuaje')return `<svg viewBox="-6 -6 112 112" aria-hidden="true">${def.L.map(([d,f])=>`<path d="${d}" fill="${f}" fill-opacity=".8" stroke="#3a2a52" stroke-width="3.4" stroke-linejoin="round"/>`).join('')}</svg>`;
+  if(mode==='tatuaje')return `<svg viewBox="-6 -6 112 112" aria-hidden="true"><g opacity=".82">${def.L.map(([d,f])=>`<path d="${d}" fill="${f}" stroke="#3a2a52" stroke-width="6.8" stroke-linejoin="round" paint-order="stroke"/>`).join('')}</g></svg>`;
   return `<svg viewBox="-10 -10 120 120" aria-hidden="true"><path d="${all}" fill="#fff" stroke="#fff" stroke-width="15" stroke-linejoin="round"/>${def.L.map(([d,f])=>`<path d="${d}" fill="${f}"/>`).join('')}</svg>`;
 }
 
