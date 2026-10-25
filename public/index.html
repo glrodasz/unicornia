@@ -80,15 +80,16 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .cat[aria-selected="true"]{background:var(--c);color:#fff;transform:translateY(2px);box-shadow:0 2px 0 var(--c-edge)}
 .cat:active{transform:translateY(3px)}
 
-.subs{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:none;padding:2px 2px 6px;margin:0 -2px}
-.subs::-webkit-scrollbar{display:none}
-.pill{appearance:none;border:0;cursor:pointer;flex:none;min-height:48px;padding:10px 22px 9px;border-radius:999px;background:var(--chip);color:var(--ink);font:700 18px/1.1 var(--font-display);box-shadow:0 3px 0 var(--chip-edge);transition:transform .12s}
+.subs{display:flex;flex-wrap:wrap;gap:8px;flex:none;padding:2px 2px 6px;margin:0 -2px}
+.pill{appearance:none;border:0;cursor:pointer;flex:none;display:flex;align-items:center;gap:6px;min-height:48px;padding:6px 18px 5px 8px;border-radius:999px;background:var(--chip);color:var(--ink);font:700 18px/1.1 var(--font-display);box-shadow:0 3px 0 var(--chip-edge);transition:transform .12s}
 .pill[aria-selected="true"]{background:var(--ink);color:#fff;box-shadow:0 3px 0 #22142b}
 .pill:active{transform:translateY(2px)}
+.pill svg{width:34px;height:34px;flex:none;padding:3px;border-radius:50%;background:#fff}
 
 .opts{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;display:flex;flex-direction:column;gap:14px;padding:4px 2px 16px;margin:0 -2px}
 .group{display:flex;flex-direction:column;gap:8px}
-.gtitle{font:800 13px/1 var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);padding-left:2px}
+.gtitle{display:flex;align-items:center;gap:6px;font:800 13px/1 var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);padding-left:2px}
+.gtitle svg{width:26px;height:26px;flex:none}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(calc(var(--sw) + 12px),1fr));gap:12px 6px}
 .tile{appearance:none;border:0;background:none;padding:6px 0 0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:11px;color:var(--ink);font:800 12px/1.1 var(--font-body);min-width:0}
 .tile .nm{max-width:100%;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -117,7 +118,8 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
   .cat{padding:4px 4px 3px}
   .cat svg{width:28px;height:28px}
   .cat span{font-size:13px}
-  .pill{font-size:16px;min-height:44px;padding:8px 16px 7px}
+  .pill{font-size:16px;min-height:44px;padding:5px 14px 4px 6px}
+  .pill svg{width:30px;height:30px}
   .size{width:60px;height:52px}
   .act{min-height:44px;font-size:16px}
   .fab.wand{height:52px;font-size:16px}
@@ -1124,6 +1126,28 @@ function stickerSVG(def,mode){
   return `<svg viewBox="-10 -10 120 120" aria-hidden="true"><path d="${all}" fill="#fff" stroke="#fff" stroke-width="15" stroke-linejoin="round"/>${def.L.map(([d,f])=>`<path d="${d}" fill="${f}"/>`).join('')}</svg>`;
 }
 
+const SUB_ICON={
+  pestanas:sv(`<path d="M10 30q22 16 44 0" stroke="${INK}" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M16 35 11 43M24 38l-2 9M32 39v9M40 38l2 9M48 35l5 8" stroke="${INK}" stroke-width="4" stroke-linecap="round"/>`),
+  ojos:sv(`<path d="M5 32Q32 8 59 32 32 56 5 32z" fill="#fff" stroke="${INK}" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="32" r="11" fill="#5cb8f5"/><circle cx="32" cy="32" r="5" fill="${INK}"/><circle cx="35" cy="28" r="2.4" fill="#fff"/>`),
+  sombras:sv(`<rect x="5" y="14" width="54" height="36" rx="9" fill="#ffe1ec" stroke="${INK}" stroke-width="3.5"/><circle cx="19" cy="32" r="8" fill="#c9a7ff"/><circle cx="32" cy="32" r="8" fill="#ff8fc8"/><circle cx="45" cy="32" r="8" fill="#8fd9ff"/>`),
+  rubor:sv(`<circle cx="32" cy="32" r="25" fill="#ffe3c4" stroke="${INK}" stroke-width="3.5"/><ellipse cx="18" cy="38" rx="8" ry="5.5" fill="#ff8fa9"/><ellipse cx="46" cy="38" rx="8" ry="5.5" fill="#ff8fa9"/><circle cx="22" cy="25" r="3" fill="${INK}"/><circle cx="42" cy="25" r="3" fill="${INK}"/><path d="M26 42q6 5 12 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`),
+  pecas:sv(`<circle cx="32" cy="32" r="25" fill="#ffe3c4" stroke="${INK}" stroke-width="3.5"/><g fill="#b5733f"><circle cx="15" cy="34" r="2.4"/><circle cx="21" cy="39" r="2.4"/><circle cx="20" cy="31" r="2"/><circle cx="49" cy="34" r="2.4"/><circle cx="43" cy="39" r="2.4"/><circle cx="44" cy="31" r="2"/></g><circle cx="22" cy="24" r="3" fill="${INK}"/><circle cx="42" cy="24" r="3" fill="${INK}"/><path d="M27 44q5 4 10 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/>`),
+  labios:sv(`<path d="M5 32C12 20 22 17 32 24 42 17 52 20 59 32 50 47 40 50 32 50S14 47 5 32z" fill="#ff4f7b" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><path d="M8 32q24 8 48 0" stroke="${INK}" stroke-width="3" fill="none" stroke-linecap="round"/><path d="M20 40q8 4 14 3" stroke="#fff" stroke-width="2.6" fill="none" opacity=".6" stroke-linecap="round"/>`),
+  aretes:sv(`<circle cx="32" cy="10" r="4.5" fill="#ffd447" stroke="${INK}" stroke-width="2.5"/><path d="M32 14v6" stroke="${INK}" stroke-width="3"/><circle cx="32" cy="38" r="17" fill="none" stroke="#f2a516" stroke-width="6"/><circle cx="32" cy="38" r="17" fill="none" stroke="${INK}" stroke-width="1.6" opacity=".4"/>`+tr(HEART,32,54,.12,'#ff5d9e')),
+  nariz:sv(`<path d="M30 6c-2 14-14 26-14 34 0 7 6 10 11 8 3 4 8 4 11 0 5 2 11-1 11-8" fill="#ffe3c4" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round" stroke-linecap="round"/><circle cx="42" cy="44" r="7" fill="none" stroke="#f2a516" stroke-width="4"/>`),
+  gafas:sv(`<circle cx="18" cy="34" r="12" fill="#cdeeff" stroke="${INK}" stroke-width="4"/><circle cx="46" cy="34" r="12" fill="#cdeeff" stroke="${INK}" stroke-width="4"/><path d="M30 32q2-4 4 0M6 31 2 24M58 31l4-7" stroke="${INK}" stroke-width="4" fill="none" stroke-linecap="round"/><path d="M12 30q3-4 7-4M40 30q3-4 7-4" stroke="#fff" stroke-width="2.6" fill="none" stroke-linecap="round"/>`),
+  cabeza:sv(`<path d="M7 48 11 20l11 12 10-20 10 20 11-12 4 28z" fill="#ffd447" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><circle cx="32" cy="38" r="4.5" fill="#ff5d9e"/><circle cx="18" cy="40" r="3" fill="#8fd9ff"/><circle cx="46" cy="40" r="3" fill="#8fd9ff"/>`),
+  pelaje:sv(`<path d="M14 50c-8 0-10-10-4-13-4-7 3-15 10-11 1-8 12-11 16-4 6-5 15 0 13 7 8 1 9 12 2 14 3 6-3 11-9 8-3 4-11 4-14 0-4 2-12 2-14-1z" fill="#ffd0e4" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><circle cx="26" cy="34" r="3" fill="#fff" opacity=".8"/>`),
+  pelo:sv(`<path d="M12 8c0 18 14 20 10 48" stroke="#ff6b81" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M24 8c0 18 14 20 10 48" stroke="#ffd84d" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M36 8c0 18 14 20 10 48" stroke="#5cb8f5" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M48 8c0 14 10 18 8 34" stroke="#c9a7ff" stroke-width="7" fill="none" stroke-linecap="round"/>`),
+  cuerno:sv(`<path d="M32 4 20 56h24z" fill="#ffd447" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><path d="M23 44 41 38M25 33l14-5M28 22l8-3" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`),
+  sticker:sv(tr(STAR,32,32,.5,'#ffd447',`stroke="#fff" stroke-width="16" stroke-linejoin="round" paint-order="stroke"`)+tr(STAR,32,32,.5,'none',`stroke="${INK}" stroke-width="5" stroke-linejoin="round"`)),
+  tatuaje:sv(tr(HEART,32,33,.5,'#c9a7ff',`stroke="${INK}" stroke-width="7" stroke-linejoin="round"`)+`<path d="M24 26q4-5 8 0" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".7"/>`),
+};
+const ARROW=(up)=>sv(`<circle cx="32" cy="32" r="26" fill="#ece6ff"/><path d="${up?'M32 46V18M20 30l12-12 12 12':'M32 18v28M20 34l12 12 12-12'}" stroke="${INK}" stroke-width="5" fill="none" stroke-linecap="round" stroke-linejoin="round"/>`);
+const PALETTE_ICON=sv(`<path d="M32 6C17 6 6 16 6 30s10 26 23 26c5 0 6-3 5-6-2-4 0-7 4-7h7c7 0 13-6 13-13C58 17 47 6 32 6z" fill="#fff1c7" stroke="${INK}" stroke-width="3.5"/><circle cx="18" cy="30" r="5" fill="#ff6b81"/><circle cx="24" cy="17" r="5" fill="#ffd84d"/><circle cx="38" cy="15" r="5" fill="#5cb8f5"/><circle cx="47" cy="25" r="5" fill="#9a7bff"/>`);
+const GROUP_ICON={lashColor:PALETTE_ICON,eye:PALETTE_ICON,mane:PALETTE_ICON,lens:SUB_ICON.ojos,earring:ARROW(0),earTop:ARROW(1),hair:SUB_ICON.pelo,
+  size:sv(`<circle cx="12" cy="40" r="6" fill="${INK}"/><circle cx="27" cy="36" r="10" fill="${INK}"/><circle cx="47" cy="31" r="15" fill="${INK}"/>`),
+  tap:sv(`<path d="M26 56c-6-6-14-13-14-18 0-3 4-4 7-1l5 5V14c0-3 2-5 4.5-5S33 11 33 14v14l13 3c4 1 6 4 5 8l-3 17z" fill="#fff" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><path d="M18 14a10 10 0 0 1 21 0" stroke="#1fb39b" stroke-width="3.5" fill="none" stroke-linecap="round"/>`)};
 const CATS=[
   {id:'maquillaje',name:'Maquillaje',col:['#ff6f9f','#ffe1ec','#f2b3c9','#c83c6c'],subs:[
     {id:'pestanas',name:'Pestañas',groups:[{key:'lashes',kind:'lash',deps:['lashColor','eye']},{key:'lashColor',kind:'paint',title:'Color de pestañas'}]},
@@ -1171,7 +1195,7 @@ function tileHTML(group,o){
   const style=paint?` style="--p:${patternCSS(o)}"`:'';
   return `<button class="tile" data-key="${group.key}" data-id="${o.id}" aria-pressed="${sel}" aria-label="${o.name}"><span class="sw${paint?' paint':''}"${style}>${inner}</span><span class="nm">${o.name}</span></button>`;
 }
-function groupHTML(g){return `<div class="group" data-gkey="${g.key}">${g.title?`<div class="gtitle">${g.title}</div>`:''}<div class="grid">${CATALOG[g.key].map(o=>tileHTML(g,o)).join('')}</div></div>`;}
+function groupHTML(g){return `<div class="group" data-gkey="${g.key}">${g.title?`<div class="gtitle">${GROUP_ICON[g.key]||''}${g.title}</div>`:''}<div class="grid">${CATALOG[g.key].map(o=>tileHTML(g,o)).join('')}</div></div>`;}
 let visibleGroups=[];
 function renderCats(){
   catsEl.innerHTML=CATS.map(c=>`<button class="cat" role="tab" data-cat="${c.id}" aria-selected="${ui.cat===c.id}" style="--c:${c.col[0]};--c-soft:${c.col[1]};--c-edge:${c.col[2]};--c-deep:${c.col[3]}">${c.icon}<span>${c.name}</span></button>`).join('');
@@ -1179,7 +1203,7 @@ function renderCats(){
 }
 function renderSubs(){
   const c=catOf(ui.cat);if(!c.subs.some(s=>s.id===ui.sub[c.id]))ui.sub[c.id]=c.subs[0].id;
-  subsEl.innerHTML=c.subs.map(s=>`<button class="pill" role="tab" data-sub="${s.id}" aria-selected="${ui.sub[c.id]===s.id}">${s.name}</button>`).join('');
+  subsEl.innerHTML=c.subs.map(s=>`<button class="pill" role="tab" data-sub="${s.id}" aria-selected="${ui.sub[c.id]===s.id}">${SUB_ICON[s.id]||''}${s.name}</button>`).join('');
 }
 function renderOpts(){
   const c=catOf(ui.cat);visibleGroups=[];
@@ -1190,8 +1214,8 @@ function renderOpts(){
 function renderStickers(){
   const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';
   const sizes=['s','m','l'].map((k,i)=>`<button class="size" data-size="${k}" aria-pressed="${ui.size===k}" aria-label="${['Pequeño','Mediano','Grande'][i]}"><i style="width:${12+i*8}px;height:${12+i*8}px"></i></button>`).join('');
-  optsEl.innerHTML=`<div class="row"><div class="group"><div class="gtitle">Tamaño</div><div class="sizes">${sizes}</div></div><div class="actions" id="stkActs"></div></div>
-  <div class="group"><div class="gtitle">${mode==='tatuaje'?'Elige un tatuaje y toca al unicornio':'Elige un sticker y toca al unicornio'}</div><div class="grid">${STICKERS.map(d=>`<button class="tile sticker" data-stk="${d.id}" aria-pressed="${ui.sticker===d.id}" aria-label="${d.name}"><span class="sw">${stickerSVG(d,mode)}</span><span class="nm">${d.name}</span></button>`).join('')}</div></div>`;
+  optsEl.innerHTML=`<div class="row"><div class="group"><div class="gtitle">${GROUP_ICON.size}Tamaño</div><div class="sizes">${sizes}</div></div><div class="actions" id="stkActs"></div></div>
+  <div class="group"><div class="gtitle">${GROUP_ICON.tap}${mode==='tatuaje'?'Elige un tatuaje y toca al unicornio':'Elige un sticker y toca al unicornio'}</div><div class="grid">${STICKERS.map(d=>`<button class="tile sticker" data-stk="${d.id}" aria-pressed="${ui.sticker===d.id}" aria-label="${d.name}"><span class="sw">${stickerSVG(d,mode)}</span><span class="nm">${d.name}</span></button>`).join('')}</div></div>`;
   refreshStickerActions();
 }
 let clearArmed=0;
@@ -1209,7 +1233,7 @@ function updateHint(){
   if(on){const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';$('#hintIco').innerHTML=stickerSVG(STK[ui.sticker],mode);$('#hintTxt').textContent=mode==='tatuaje'?'Toca el unicornio para el tatuaje':'Toca el unicornio para pegar';}
 }
 catsEl.addEventListener('click',e=>{const b=e.target.closest('.cat');if(!b)return;if(ui.cat!==b.dataset.cat){ui.cat=b.dataset.cat;renderCats();renderSubs();renderOpts();saveUI();hintSeen=false;}updateHint();sfx.tab();});
-subsEl.addEventListener('click',e=>{const b=e.target.closest('.pill');if(!b)return;ui.sub[ui.cat]=b.dataset.sub;renderSubs();renderOpts();saveUI();if(ui.cat==='stickers')hintSeen=false;updateHint();sfx.tab();b.scrollIntoView({inline:'nearest',block:'nearest'});});
+subsEl.addEventListener('click',e=>{const b=e.target.closest('.pill');if(!b)return;ui.sub[ui.cat]=b.dataset.sub;renderSubs();renderOpts();saveUI();if(ui.cat==='stickers')hintSeen=false;updateHint();sfx.tab();});
 optsEl.addEventListener('click',e=>{
   const t=e.target.closest('.tile[data-key]');
   if(t){const k=t.dataset.key,id=t.dataset.id;if(state[k]!==id){state[k]=id;apply(k);save();}
