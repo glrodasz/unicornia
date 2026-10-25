@@ -49,6 +49,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .fab.wand svg{width:34px;height:34px}
 .fab.confirm{width:auto;border-radius:28px;padding:0 18px;background:var(--ink);color:#fff;font:800 15px/1 var(--font-display);gap:6px;display:flex;align-items:center}
 .fab.confirm svg{width:20px;height:20px}
+.hud-r:has(.confirm) .fab:not(.confirm){display:none}
 .hint{position:absolute;left:50%;bottom:calc(var(--ov) + 14px);transform:translateX(-50%);display:flex;align-items:center;gap:8px;padding:8px 16px 8px 8px;border-radius:999px;background:var(--ink);color:#fff;font:700 16px/1.1 var(--font-display);white-space:nowrap;box-shadow:0 8px 20px rgba(61,39,72,.25);z-index:3;animation:hintbob 1.6s ease-in-out infinite;pointer-events:none}
 .hint-ico{width:34px;height:34px;display:grid;place-items:center;background:#fff;border-radius:50%}
 .hint-ico svg{width:28px;height:28px}
