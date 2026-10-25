@@ -243,15 +243,16 @@ const BLUSH=[{id:'ninguno',name:'Sin'},{id:'rosa',name:'Rosa',c:'#ff7aa6'},{id:'
 const FRECKLES=[{id:'ninguna',name:'Sin'},{id:'pocas',name:'Pocas'},{id:'muchas',name:'Muchas'},{id:'corazones',name:'Corazones'},{id:'estrellas',name:'Estrellas'}];
 const LIPS=[{id:'natural',name:'Natural'},{id:'rosa',name:'Rosa',c:'#ff6f9f'},{id:'rojo',name:'Rojo',c:'#e3304f'},{id:'coral',name:'Coral',c:'#ff7d5c'},{id:'morado',name:'Morado',c:'#9150d8'},{id:'brillo',name:'Brillo',c:'#ff8ccf',glitter:1}];
 const EARRING=[{id:'ninguno',name:'Sin'},{id:'aro-oro',name:'Aro oro'},{id:'aro-plata',name:'Aro plata'},{id:'perla',name:'Perla'},{id:'estrella',name:'Estrella'},{id:'corazon',name:'Corazón'},{id:'tres',name:'Tres aros'}];
+const EAR_TOP=[{id:'ninguno',name:'Sin'},{id:'aros',name:'Dos aros'},{id:'brillos',name:'Brillitos'},{id:'perlas',name:'Perlas'},{id:'estrella',name:'Estrella'},{id:'corazon',name:'Corazón'},{id:'flor',name:'Florecita'}];
 const NOSE=[{id:'ninguno',name:'Sin'},{id:'aro-oro',name:'Aro oro'},{id:'aro-plata',name:'Aro plata'},{id:'brillo',name:'Brillante'},{id:'estrella',name:'Estrella'}];
-const GLASSES=[{id:'ninguna',name:'Sin'},{id:'redondas',name:'Redondas'},{id:'corazon',name:'Corazón'},{id:'estrella',name:'Estrella'},{id:'sol',name:'De sol'}];
+const GLASSES=[{id:'ninguna',name:'Sin'},{id:'redondas',name:'Redondas'},{id:'corazon',name:'Corazón'},{id:'estrella',name:'Estrella'},{id:'sol',name:'De sol'},{id:'gato',name:'Ojo de gato'},{id:'arcoiris',name:'Arcoíris'},{id:'flor',name:'Flor'},{id:'cuadradas',name:'Cuadradas'}];
 const HEADACC=[{id:'ninguno',name:'Sin'},{id:'lazo',name:'Lazo'},{id:'flores',name:'Flores'},{id:'tiara',name:'Tiara'},{id:'flor',name:'Flor'}];
 const byId=(arr,id)=>arr.find(o=>o.id===id)||arr[0];
 const NONE=new Set(['ninguna','ninguno']);
 const SIZES={s:.24,m:.38,l:.56};
 
-const CATALOG={fur:FUR,mane:MANE,hair:HAIR,horn:HORN,eye:EYE,lens:LENS,lashes:LASHES,lashColor:LASH_C,shadow:SHADOW,blush:BLUSH,freckles:FRECKLES,lips:LIPS,earring:EARRING,nose:NOSE,glasses:GLASSES,headAcc:HEADACC};
-const DEFAULT={fur:'nube',mane:'arcoiris',hair:'suelto',horn:'oro',eye:'violeta',lens:'normal',lashes:'largas',lashColor:'negro',shadow:'lila',blush:'rosa',freckles:'ninguna',lips:'natural',earring:'ninguno',nose:'ninguno',glasses:'ninguna',headAcc:'ninguno',stickers:[]};
+const CATALOG={fur:FUR,mane:MANE,hair:HAIR,horn:HORN,eye:EYE,lens:LENS,lashes:LASHES,lashColor:LASH_C,shadow:SHADOW,blush:BLUSH,freckles:FRECKLES,lips:LIPS,earring:EARRING,earTop:EAR_TOP,nose:NOSE,glasses:GLASSES,headAcc:HEADACC};
+const DEFAULT={fur:'nube',mane:'arcoiris',hair:'suelto',horn:'oro',eye:'violeta',lens:'normal',lashes:'largas',lashColor:'negro',shadow:'lila',blush:'rosa',freckles:'ninguna',lips:'natural',earring:'ninguno',earTop:'ninguno',nose:'ninguno',glasses:'ninguna',headAcc:'ninguno',stickers:[]};
 
 /* ================= state ================= */
 const KEY='salon-unicornio-v1';
@@ -781,8 +782,24 @@ function buildEarrings(){
     }else if(id==='tres'){
       [[-40,MAT.gold],[-14,MAT.silver],[12,MAT.gold]].forEach(([deg,mat])=>{const a=deg*D2R;const h=hoop(mat,.034,.009);h.position.set((Math.cos(a)*.205+.012)*sg,.3+Math.sin(a)*.43,.03);h.rotation.y=.9*sg;J.add(h);});
     }
+    buildEarTop(J,sg);
     shadowAll(J);
   }
+}
+/* upper-ear jewels sit above the hairline so long styles don't hide them */
+const EAR_C=V3(0,.3,0),EAR_R=V3(.21,.43,.13);
+function earPt(deg,k,sg,lift){const a=deg*D2R,x=Math.cos(a)*k,y=Math.sin(a)*k,z=Math.sqrt(Math.max(0,1-x*x-y*y));
+  const n=V3(x*sg/EAR_R.x,y/EAR_R.y,z/EAR_R.z).normalize();
+  return{p:V3(x*sg*EAR_R.x,EAR_C.y+y*EAR_R.y,z*EAR_R.z).add(n.clone().multiplyScalar(lift||0)),n};}
+function earStud(J,mesh,deg,k,sg,lift){const{p,n}=earPt(deg,k,sg,lift);mesh.position.copy(p);mesh.quaternion.setFromUnitVectors(V3(0,0,1),n);J.add(mesh);return mesh;}
+function buildEarTop(J,sg){
+  const id=state.earTop;if(NONE.has(id))return;
+  if(id==='aros'){[[44,MAT.gold],[64,MAT.silver]].forEach(([deg,mat])=>{const a=deg*D2R;const h=hoop(mat,.046,.011);h.position.set((Math.cos(a)*.205+.018)*sg,.3+Math.sin(a)*.43,.02);h.rotation.y=.9*sg;h.rotation.z=(deg-90)*D2R*.5*sg;J.add(h);});}
+  else if(id==='brillos'){['#ff7ac0','#7fe6ff','#c9a7ff'].forEach((c,i)=>{const m=new THREE.Mesh(new THREE.OctahedronGeometry(.038,0),gloss(c,{roughness:.05,metalness:.2,emissive:new THREE.Color(c),emissiveIntensity:.18}));m.scale.set(1,1.2,.7);earStud(J,m,36+i*17,.86,sg,.012);});}
+  else if(id==='perlas'){[30,46,62,78].forEach(deg=>{const{p}=earPt(deg,.9,sg,.018);J.add(blob(MAT.pearl,p,V3(.036,.036,.036)));});}
+  else if(id==='estrella'){earStud(J,new THREE.Mesh(extrude(starShape(.088,.04),.02,.01),MAT.gold),64,.74,sg,.02);}
+  else if(id==='corazon'){earStud(J,new THREE.Mesh(extrude(heartShape(.085),.02,.01),jellyMat('#ff4f8b')),64,.74,sg,.02);}
+  else if(id==='flor'){const{p,n}=earPt(62,.74,sg,.02);flower(J,p,n,.085,'#ff8fc8','#ffd447');}
 }
 function muzzlePt(lon,lat,lift){const lo=lon*D2R,la=lat*D2R,k=1+(lift||0);return V3(MZ.c.x+MZ.r.x*Math.cos(la)*Math.sin(lo)*k,MZ.c.y+MZ.r.y*Math.sin(la)*k,MZ.c.z+MZ.r.z*Math.cos(la)*Math.cos(lo)*k);}
 function buildNose(){
@@ -792,17 +809,26 @@ function buildNose(){
   else if(id==='estrella'){const m=new THREE.Mesh(extrude(starShape(.048,.022),.016,.009),MAT.gold);m.position.copy(muzzlePt(26,20,.035));m.lookAt(m.position.clone().add(V3(.45,.2,1)));G.add(m);}
   shadowAll(G);
 }
+/* lens outlines as radius(angle); sg mirrors the cat-eye flick to the outer corner */
+const GLASS_SHAPE={
+  gato:a=>{const e=.3*.22/Math.hypot(.22*Math.cos(a),.3*Math.sin(a));return e+.1*Math.exp(-((a-.62)**2)/.09);},
+  flor:a=>.29*(1+.13*Math.cos(6*a)),
+  cuadradas:a=>.25/Math.pow(Math.pow(Math.abs(Math.cos(a)),4)+Math.pow(Math.abs(Math.sin(a)),4),.25),
+};
+function polarShape(f,k,sg,path){const sh=path?new THREE.Path():new THREE.Shape();for(let i=0;i<96;i++){const a=i/96*TAU,r=f(a)*k,x=Math.cos(a)*r*sg,y=Math.sin(a)*r;i?sh.lineTo(x,y):sh.moveTo(x,y);}sh.closePath();return sh;}
 function buildGlasses(){
   const G=accG.glasses;disposeGroup(G);const id=state.glasses;if(NONE.has(id))return;
-  const conf={redondas:{c:'#ff5d8f',tint:'#bfe6ff',op:.16},corazon:{c:'#ff3f6c',tint:'#ffb3c9',op:.3},estrella:{c:'#ffbf1f',tint:'#fff0a0',op:.25},sol:{c:'#221a2b',tint:'#120d18',op:.93}}[id];
+  const conf={redondas:{c:'#ff5d8f',tint:'#bfe6ff',op:.16},corazon:{c:'#ff3f6c',tint:'#ffb3c9',op:.3},estrella:{c:'#ffbf1f',tint:'#fff0a0',op:.25},sol:{c:'#221a2b',tint:'#120d18',op:.93},gato:{c:'#8a4fe6',tint:'#e2ccff',op:.22},arcoiris:{c:'#ff5d8f',tint:'#ffffff',op:.12},flor:{c:'#ff7ab8',tint:'#ffe0ef',op:.22},cuadradas:{c:'#1fb39b',tint:'#cff7ee',op:.2}}[id];
   const fm=gloss(conf.c,{roughness:.25,envMapIntensity:id==='sol'?.45:1});const lm=new THREE.MeshPhysicalMaterial({color:new THREE.Color(conf.tint),transparent:true,opacity:conf.op,roughness:.05,clearcoat:1,depthWrite:false,envMapIntensity:1.4});
   for(const sg of[-1,1]){
     const L=new THREE.Group();L.position.set(.41*sg,.19,1.03);L.rotation.y=.16*sg;G.add(L);
     let frame,lensG;
     if(id==='corazon'){const o=heartShape(.31);o.holes.push(heartShape(.235,true));frame=extrude(o,.025,.014);lensG=new THREE.ShapeGeometry(heartShape(.24));lensG.center();}
     else if(id==='estrella'){const o=starShape(.34,.17);o.holes.push(starShape(.26,.12,true));frame=extrude(o,.025,.014);lensG=new THREE.ShapeGeometry(starShape(.27,.13));}
+    else if(id==='gato'||id==='flor'||id==='cuadradas'){const f=GLASS_SHAPE[id],o=polarShape(f,1,sg);o.holes.push(polarShape(f,.78,sg,true));frame=extrude(o,.025,.014);lensG=new THREE.ShapeGeometry(polarShape(f,.8,sg));}
+    else if(id==='arcoiris'){frame=null;[['#ff6b81',.262],['#ffd84d',.232],['#5cb8f5',.202]].forEach(([c,r])=>L.add(new THREE.Mesh(new THREE.TorusGeometry(r,.017,12,60),gloss(c,{roughness:.25}))));lensG=new THREE.CircleGeometry(.195,48);}
     else{frame=new THREE.TorusGeometry(.255,id==='sol'?.036:.03,14,60);lensG=new THREE.CircleGeometry(.25,48);}
-    const fmM=new THREE.Mesh(frame,fm);L.add(fmM);
+    if(frame)L.add(new THREE.Mesh(frame,fm));
     const lens=new THREE.Mesh(lensG,lm);lens.userData.noPick=true;lens.position.z=.005;lens.castShadow=false;L.add(lens);
     const arm=new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(V3(.66*sg,.2,.96),V3(.98*sg,.22,.68),V3(1.03*sg,.26,.08)),16,.02,8,false),fm);G.add(arm);
   }
@@ -862,7 +888,7 @@ function apply(k){
     case 'shadow':applyLids();break;
     case 'blush':case 'freckles':paintHead();break;
     case 'lips':paintMuzzle();break;
-    case 'earring':buildEarrings();break;
+    case 'earring':case 'earTop':buildEarrings();break;
     case 'nose':buildNose();break;
     case 'glasses':buildGlasses();break;
     case 'headAcc':buildHeadAcc();break;
@@ -1039,6 +1065,16 @@ function earringSVG(id){
   else if(id==='tres')j=`<circle cx="39" cy="50" r="3.6" fill="none" stroke="${g}" stroke-width="2.4"/><circle cx="43" cy="39" r="3.6" fill="none" stroke="${s}" stroke-width="2.4"/><circle cx="44" cy="28" r="3.6" fill="none" stroke="${g}" stroke-width="2.4"/>`;
   return sv(EAR+j);
 }
+function earTopSVG(id){
+  const g='#e2a92c',s='#a9b2c3';let j='';
+  if(id==='aros')j=`<circle cx="40" cy="27" r="3.6" fill="none" stroke="${g}" stroke-width="2.4"/><circle cx="37" cy="17" r="3.6" fill="none" stroke="${s}" stroke-width="2.4"/>`;
+  else if(id==='brillos')j=[[38,31,'#ff7ac0'],[37,23,'#7fe6ff'],[34,16,'#c9a7ff']].map(([x,y,c])=>`<path d="M${x} ${y-4}l3 4-3 4-3-4z" fill="${c}" stroke="${INK}" stroke-width="1.2" stroke-linejoin="round"/>`).join('');
+  else if(id==='perlas')j=[[39,34],[38,27],[36,20],[33,14]].map(([x,y])=>`<circle cx="${x}" cy="${y}" r="2.6" fill="#fffaf4" stroke="#d9c8c0" stroke-width="1"/>`).join('');
+  else if(id==='estrella')j=tr(STAR,33,20,.14,'#ffd447',`stroke="${INK}" stroke-width="8"`);
+  else if(id==='corazon')j=tr(HEART,33,20,.13,'#ff4f8b',`stroke="${INK}" stroke-width="8"`);
+  else if(id==='flor')j=tr(PETALS,33,20,.15,'#ff8fc8',`stroke="${INK}" stroke-width="7"`)+`<circle cx="33" cy="20" r="2.2" fill="#ffd447"/>`;
+  return sv(EAR+j);
+}
 const MUZ=`<ellipse cx="32" cy="36" rx="24" ry="17" fill="#ffe3ea" stroke="${INK}" stroke-width="2"/><ellipse cx="23" cy="32" rx="4" ry="2.8" fill="#c8869d" transform="rotate(20 23 32)"/><ellipse cx="41" cy="32" rx="4" ry="2.8" fill="#c8869d" transform="rotate(-20 41 32)"/><path d="M24 43q8 5 16 0" stroke="${INK}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
 function noseSVG(id){
   let j='';if(id==='aro-oro'||id==='aro-plata')j=`<circle cx="46" cy="34" r="5" fill="none" stroke="${id==='aro-oro'?'#e2a92c':'#a9b2c3'}" stroke-width="3"/>`;
@@ -1050,6 +1086,10 @@ function glassesSVG(id){
   if(id==='redondas')return sv(`<circle cx="19" cy="34" r="11" fill="#e4f4ff" stroke="#ff5d8f" stroke-width="4"/><circle cx="45" cy="34" r="11" fill="#e4f4ff" stroke="#ff5d8f" stroke-width="4"/><path d="M30 32q2-4 4 0" stroke="#ff5d8f" stroke-width="3.5" fill="none" stroke-linecap="round"/>`);
   if(id==='corazon')return sv(tr(HEART,18,34,.26,'#ffd6e2',`stroke="#ff3f6c" stroke-width="15"`)+tr(HEART,46,34,.26,'#ffd6e2',`stroke="#ff3f6c" stroke-width="15"`)+`<path d="M29 30q3-3 6 0" stroke="#ff3f6c" stroke-width="3.5" fill="none" stroke-linecap="round"/>`);
   if(id==='estrella')return sv(tr(STAR,18,34,.28,'#fff6c8',`stroke="#ffbf1f" stroke-width="13" stroke-linejoin="round"`)+tr(STAR,46,34,.28,'#fff6c8',`stroke="#ffbf1f" stroke-width="13" stroke-linejoin="round"`)+`<path d="M29 31q3-3 6 0" stroke="#ffbf1f" stroke-width="3.5" fill="none" stroke-linecap="round"/>`);
+  if(id==='gato')return sv(`<path d="M28 31c0-4-4-5-10-5L7 22c-1 8 3 19 12 19 6 0 9-5 9-10zM36 31c0-4 4-5 10-5l11-4c1 8-3 19-12 19-6 0-9-5-9-10z" fill="#efe3ff" stroke="#8a4fe6" stroke-width="3.6" stroke-linejoin="round"/><path d="M29 31q3-3 6 0" stroke="#8a4fe6" stroke-width="3.5" fill="none" stroke-linecap="round"/>`);
+  if(id==='arcoiris')return sv([['#ff6b81',11],['#ffd84d',8.2],['#5cb8f5',5.6]].map(([c,r])=>`<circle cx="19" cy="34" r="${r}" fill="none" stroke="${c}" stroke-width="2.8"/><circle cx="45" cy="34" r="${r}" fill="none" stroke="${c}" stroke-width="2.8"/>`).join('')+`<path d="M30 32q2-4 4 0" stroke="#ff6b81" stroke-width="3.5" fill="none" stroke-linecap="round"/>`);
+  if(id==='flor')return sv(tr(PETALS,18,34,.27,'#ffe0ef',`stroke="#ff7ab8" stroke-width="12"`)+tr(PETALS,46,34,.27,'#ffe0ef',`stroke="#ff7ab8" stroke-width="12"`)+`<path d="M29 32q3-3 6 0" stroke="#ff7ab8" stroke-width="3.5" fill="none" stroke-linecap="round"/>`);
+  if(id==='cuadradas')return sv(`<rect x="8" y="24" width="21" height="19" rx="5" fill="#dcfaf3" stroke="#1fb39b" stroke-width="4"/><rect x="35" y="24" width="21" height="19" rx="5" fill="#dcfaf3" stroke="#1fb39b" stroke-width="4"/><path d="M29 31q3-3 6 0" stroke="#1fb39b" stroke-width="3.5" fill="none" stroke-linecap="round"/>`);
   if(id==='sol')return sv(`<path d="M7 27h20c0 9-3 15-10 15S7 36 7 27zM37 27h20c0 9-3 15-10 15s-10-6-10-15z" fill="#2b2433" stroke="#2b2433" stroke-width="3" stroke-linejoin="round"/><path d="M27 28q5-3 10 0" stroke="#2b2433" stroke-width="3.5" fill="none"/><path d="M11 31l4-3M41 31l4-3" stroke="#fff" stroke-width="2.4" stroke-linecap="round" opacity=".7"/>`);
   return NONE_SVG;
 }
@@ -1081,7 +1121,7 @@ const CATS=[
     {id:'labios',name:'Labios',groups:[{key:'lips',kind:'lips'}]},
   ]},
   {id:'accesorios',name:'Accesorios',col:['#9a7bff','#ece6ff','#cbbcf5','#5b3fc2'],subs:[
-    {id:'aretes',name:'Aretes',groups:[{key:'earring',kind:'earring'}]},
+    {id:'aretes',name:'Aretes',groups:[{key:'earring',kind:'earring',title:'Abajo'},{key:'earTop',kind:'earTop',title:'Arriba'}]},
     {id:'nariz',name:'Nariz',groups:[{key:'nose',kind:'nose'}]},
     {id:'gafas',name:'Gafas',groups:[{key:'glasses',kind:'glasses'}]},
     {id:'cabeza',name:'Cabeza',groups:[{key:'headAcc',kind:'head'}]},
@@ -1103,6 +1143,7 @@ function swInner(group,o){
   if(group.kind==='freckle')return NONE.has(o.id)?NONE_SVG:freckleSVG(o.id);
   if(group.kind==='hair')return hairSVG(o.id);
   if(group.kind==='earring')return NONE.has(o.id)?NONE_SVG:earringSVG(o.id);
+  if(group.kind==='earTop')return NONE.has(o.id)?NONE_SVG:earTopSVG(o.id);
   if(group.kind==='nose')return NONE.has(o.id)?NONE_SVG:noseSVG(o.id);
   if(group.kind==='glasses')return glassesSVG(o.id);
   if(group.kind==='head')return headSVG(o.id);
@@ -1160,7 +1201,7 @@ optsEl.addEventListener('click',e=>{
   const t=e.target.closest('.tile[data-key]');
   if(t){const k=t.dataset.key,id=t.dataset.id;if(state[k]!==id){state[k]=id;apply(k);save();}
     t.parentElement.querySelectorAll('.tile').forEach(x=>x.setAttribute('aria-pressed',x===t));refreshDeps(k);sfx.pop();squash(.8);
-    const target=k==='lashes'||k==='lashColor'||k==='eye'||k==='lens'||k==='shadow'?eyes[1].g:k==='horn'?hornG:k==='earring'?ears[1].g:k==='nose'||k==='lips'?muzzleMesh:k==='headAcc'||k==='hair'||k==='mane'?hornG:headMesh;
+    const target=k==='lashes'||k==='lashColor'||k==='eye'||k==='lens'||k==='shadow'?eyes[1].g:k==='horn'?hornG:k==='earring'||k==='earTop'?ears[1].g:k==='nose'||k==='lips'?muzzleMesh:k==='headAcc'||k==='hair'||k==='mane'?hornG:headMesh;
     const wp=new THREE.Vector3();target.getWorldPosition(wp);burst(wp.add(V3(0,0,.4)),7,.9);return;}
   const st=e.target.closest('[data-stk]');if(st){ui.sticker=st.dataset.stk;optsEl.querySelectorAll('[data-stk]').forEach(x=>x.setAttribute('aria-pressed',x===st));hintSeen=false;updateHint();sfx.pop();return;}
   const sz=e.target.closest('[data-size]');if(sz){ui.size=sz.dataset.size;optsEl.querySelectorAll('[data-size]').forEach(x=>x.setAttribute('aria-pressed',x===sz));sfx.tab();return;}
@@ -1183,7 +1224,7 @@ btnReset.addEventListener('click',()=>{
 });
 $('#btnWand').addEventListener('click',()=>{
   const r=(arr,noneP)=>{const o=arr.filter(x=>!NONE.has(x.id));return Math.random()<(noneP||0)?arr[0].id:pick(o).id;};
-  Object.assign(state,{fur:r(FUR),mane:r(MANE),hair:r(HAIR),horn:r(HORN),eye:r(EYE),lens:Math.random()<.4?'normal':r(LENS),lashes:r(LASHES),lashColor:Math.random()<.5?'negro':r(LASH_C),shadow:r(SHADOW,.15),blush:r(BLUSH,.15),freckles:r(FRECKLES,.5),lips:r(LIPS),earring:r(EARRING,.35),nose:r(NOSE,.6),glasses:r(GLASSES,.65),headAcc:r(HEADACC,.4)});
+  Object.assign(state,{fur:r(FUR),mane:r(MANE),hair:r(HAIR),horn:r(HORN),eye:r(EYE),lens:Math.random()<.4?'normal':r(LENS),lashes:r(LASHES),lashColor:Math.random()<.5?'negro':r(LASH_C),shadow:r(SHADOW,.15),blush:r(BLUSH,.15),freckles:r(FRECKLES,.5),lips:r(LIPS),earring:r(EARRING,.35),earTop:r(EAR_TOP,.6),nose:r(NOSE,.6),glasses:r(GLASSES,.65),headAcc:r(HEADACC,.4)});
   applyAll();save();renderOpts();sfx.magic();squash(1.3);burst(V3(0,.5,.9),26,1.7);
 });
 const fsEl=document.documentElement;
