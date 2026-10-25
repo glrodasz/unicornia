@@ -566,7 +566,7 @@ function hornGeo(){
   const H=1.04,R=.19,RS=64,HS=80,pos=[],uv=[],idx=[];
   for(let i=0;i<=HS;i++){const t=i/HS;let r=R*Math.pow(1-t,.82);if(t>.93)r*=Math.sqrt((1-t)/.07);r=Math.max(r,0);
     for(let j=0;j<=RS;j++){const u=j/RS,a=u*TAU+Math.PI;const ridge=.84+.26*Math.pow(.5+.5*Math.cos(3*(u*TAU-TW*t*TAU)),1.4);const rr=r*ridge;pos.push(Math.sin(a)*rr,t*H,Math.cos(a)*rr);uv.push(u,t);}}
-  for(let i=0;i<HS;i++)for(let j=0;j<RS;j++){const a=i*(RS+1)+j,b=a+RS+1;idx.push(a,b,a+1,b,b+1,a+1);}
+  for(let i=0;i<HS;i++)for(let j=0;j<RS;j++){const a=i*(RS+1)+j,b=a+RS+1;idx.push(a,a+1,b,b,a+1,b+1);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();fixSeam(g,HS+1,RS);return g;
 }
 function lashGeo(len,th,curl){
@@ -643,7 +643,25 @@ headG.add(accG.nose,accG.glasses,accG.head);
 /* ---------- hair ---------- */
 const hairMats=[0,1,2,3,4,5].map(()=>clay('#ff8fb8',{roughness:.5,sheen:.85,sheenRoughness:.4}));
 function hm(i){return hairMats[i%hairMats.length];}
-function addLock(pts,prof,ci,o){const m=new THREE.Mesh(tube(pts,prof,o),hm(ci));hairG.add(m);return m;}
+function addLock(pts,prof,ci,o){const m=new THREE.Mesh(tube(earSafe(pts,prof),prof,o),hm(ci));hairG.add(m);return m;}
+/* bend a lock in front of / behind each ear instead of through it */
+function earLocal(e,p){e.g.updateMatrix();return p.clone().applyMatrix4(e.g.matrix.clone().invert());}
+function earReach(q,pad){const k=1-(q.x/(EAR_R.x+pad))**2-((q.y-EAR_C.y)/(EAR_R.y+pad))**2;return k>0?(EAR_R.z+pad)*Math.sqrt(k):0;}
+function inEar(p,pad){return ears.some(e=>{const q=earLocal(e,p),z=earReach(q,pad);return z>0&&Math.abs(q.z)<z;});}
+function earSafe(pts,prof){
+  const curve=new THREE.CatmullRomCurve3(pts,false,'centripetal'),n=72,out=[];
+  for(let i=0;i<=n;i++)out.push(curve.getPointAt(i/n));
+  for(const e of ears){
+    const loc=out.map(p=>earLocal(e,p)),need=[];let side=0;
+    loc.forEach((q,i)=>{const t=i/n,r=(typeof prof==='function'?prof(t):lerp(prof[0],prof[1],t))+.03,z=earReach(q,r);
+      const d=z>0&&Math.abs(q.z)<z?z-Math.abs(q.z):0;need.push(d);if(d)side+=q.z;});
+    if(!need.some(d=>d))continue;
+    const sg=side<0?-1:1,dir=V3(0,0,sg).applyQuaternion(e.g.quaternion),W=10;
+    for(let i=0;i<=n;i++){let d=0;for(let j=Math.max(0,i-W);j<=Math.min(n,i+W);j++)d=Math.max(d,need[j]*(.5+.5*Math.cos(Math.PI*(i-j)/W)));
+      if(d)out[i].add(dir.clone().multiplyScalar(d));}
+  }
+  return out;
+}
 function hairCap(ci,span,tilt){
   span=span||1.5;tilt=tilt==null?-1.12:tilt;const sc=V3(RX*1.05,RY*1.06,RZ*1.05);
   const g=new THREE.SphereGeometry(1,96,56,0,TAU,0,span);
