@@ -27,7 +27,7 @@
   --cat-c:#ff6f9f;
   color-scheme:light;
 }
-html{height:100%;box-sizing:border-box;background:var(--tray)}
+html{height:100%;box-sizing:border-box;background:var(--tray);overflow:hidden;overscroll-behavior:none}
 *,*::before,*::after{box-sizing:inherit}
 body{height:100%;margin:0;background:var(--tray);color:var(--ink);font-family:var(--font-body);overflow:hidden;overscroll-behavior:none;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none;touch-action:manipulation}
 button{font:inherit;color:inherit;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
@@ -54,6 +54,36 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .hint-ico{width:34px;height:34px;display:grid;place-items:center;background:#fff;border-radius:50%}
 .hint-ico svg{width:28px;height:28px}
 @keyframes hintbob{50%{transform:translate(-50%,-5px)}}
+/* Perfume bottle that follows the finger while spraying; the nozzle tip sits at --tx/--ty inside the box. */
+.sprayer{position:absolute;left:0;top:0;width:76px;height:95px;z-index:3;pointer-events:none;transform-origin:7px 17px;filter:drop-shadow(0 6px 8px rgba(61,39,72,.25))}
+.sprayer svg{width:100%;height:100%;display:block}
+.sprayer .pump{transition:transform .06s}
+.sprayer.psst .pump{transform:translateY(3px)}
+/* Idle coach for perfume: a finger pressing and holding on the unicorn, with the bottle spraying. Origin = fingertip. */
+.coach{position:absolute;left:0;top:0;width:0;height:0;z-index:3;pointer-events:none}
+.coach>*{position:absolute}
+.coach .ring{left:-32px;top:-32px;width:64px;height:64px;border-radius:50%;border:5px solid var(--ring,#e55bb0);opacity:0;animation:coachRing 2.4s ease-out infinite}
+.coach .ring+.ring{animation-delay:.45s}
+.coach .bottle{left:23px;top:9px;width:76px;height:95px;transform-origin:7px 17px;transform:rotate(-14deg);filter:drop-shadow(0 6px 8px rgba(61,39,72,.25));animation:coachFade 2.4s infinite}
+.coach .bottle svg{width:100%;height:100%;display:block}
+.coach .bottle .pump{animation:coachPump 2.4s infinite}
+.coach .puff{left:22px;top:18px;width:22px;height:22px;border-radius:50%;background:var(--mist,#ffc2d1);opacity:0;animation:coachPuff 2.4s ease-out infinite}
+.coach .puff:nth-of-type(2){animation-delay:.35s}.coach .puff:nth-of-type(3){animation-delay:.7s}
+.coach .finger{left:-22px;top:-5px;width:84px;height:113px;transform-origin:22px 5px;animation:coachPress 2.4s ease-in-out infinite;filter:drop-shadow(0 6px 8px rgba(61,39,72,.28))}
+.coach.tap{--ring:#1fb39b}
+.coach.tap .finger{animation-name:coachTap}
+.coach.tap .ring{animation-name:coachTapRing}
+.coach.tap .ring+.ring{animation-delay:.53s}
+.coach .stk{left:-40px;top:-40px;width:80px;height:80px;opacity:0;animation:coachStk 2.4s infinite}
+.coach .stk svg{width:100%;height:100%;display:block}
+@keyframes coachTap{0%{transform:translate(26px,40px);opacity:0}14%{transform:translate(8px,14px);opacity:1}22%{transform:translate(0,0) scale(.92)}30%{transform:translate(5px,8px)}44%{transform:translate(0,0) scale(.92)}54%{transform:translate(8px,14px);opacity:1}68%,100%{transform:translate(26px,40px);opacity:0}}
+@keyframes coachTapRing{0%,20%{opacity:0;transform:scale(.4)}24%{opacity:.9}42%,100%{opacity:0;transform:scale(1.7)}}
+@keyframes coachStk{0%,22%{opacity:0;transform:scale(.2) rotate(-12deg)}30%{opacity:1;transform:scale(1.15) rotate(6deg)}36%,82%{opacity:1;transform:scale(1) rotate(0)}94%,100%{opacity:0;transform:scale(1)}}
+@keyframes coachPress{0%{transform:translate(26px,40px);opacity:0}14%{transform:translate(8px,14px);opacity:1}28%,78%{transform:translate(0,0) scale(.92)}90%{transform:translate(8px,14px);opacity:1}100%{transform:translate(26px,40px);opacity:0}}
+@keyframes coachRing{0%,28%{opacity:0;transform:scale(.4)}34%{opacity:.9}62%,100%{opacity:0;transform:scale(1.7)}}
+@keyframes coachPump{0%,28%,80%,100%{transform:none}30%,78%{transform:translateY(3px)}}
+@keyframes coachFade{0%,6%{opacity:0}16%,86%{opacity:1}96%,100%{opacity:0}}
+@keyframes coachPuff{0%,30%{opacity:0;transform:translate(0,0) scale(.3)}36%{opacity:.85}54%,100%{opacity:0;transform:translate(-30px,-24px) scale(2.2)}}
 .veil{position:absolute;inset:0;display:grid;place-items:center;z-index:4;background:var(--stage);color:var(--ink);font:800 22px/1.2 var(--font-display);text-align:center;padding:0 24px;transition:opacity .5s}
 .veil.gone{opacity:0;pointer-events:none}
 .dots{display:flex;gap:8px;justify-content:center;margin-top:12px}
@@ -71,7 +101,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
   .hud-r{right:calc(var(--ov) + 12px)}
 }
 
-.cats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px;flex:none}
+.cats{display:grid;grid-auto-flow:column;grid-auto-columns:minmax(0,1fr);gap:8px;flex:none}
 .cat{appearance:none;border:0;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:0;padding:7px 4px 5px;border-radius:18px;background:var(--c-soft);color:var(--c-deep);box-shadow:0 4px 0 var(--c-edge);transition:transform .12s,background .15s}
 .cat svg{width:40px;height:40px}
 .cat span{font:800 15px/1.15 var(--font-display);letter-spacing:.01em;white-space:nowrap}
@@ -82,6 +112,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 
 .subs{display:flex;flex-wrap:wrap;gap:8px;flex:none;padding:2px 2px 6px;margin:0 -2px}
 .pill{appearance:none;border:0;cursor:pointer;flex:none;display:flex;align-items:center;gap:6px;min-height:48px;padding:6px 18px 5px 8px;border-radius:999px;background:var(--chip);color:var(--ink);font:700 18px/1.1 var(--font-display);box-shadow:0 3px 0 var(--chip-edge);transition:transform .12s}
+.subs:empty{display:none}
 .pill[aria-selected="true"]{background:var(--ink);color:#fff;box-shadow:0 3px 0 #22142b}
 .pill:active{transform:translateY(2px)}
 .pill svg{width:34px;height:34px;flex:none;padding:3px;border-radius:50%;background:#fff}
@@ -126,7 +157,8 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
   .fab.wand svg{width:28px;height:28px}
 }
 @media (max-width:420px) and (orientation:portrait){
-  .cat span{font-size:12px;letter-spacing:0}
+  .cat span{font-size:11px;letter-spacing:0}
+  .cat svg{width:34px;height:34px}
   .cat{padding-inline:2px}
   .fab.wand span{display:none}
   .fab.wand{padding:0 11px}
@@ -154,6 +186,8 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
       <button class="fab" id="btnReset" aria-label="Empezar de nuevo"></button>
     </div>
     <div class="hint" id="hint" hidden><span class="hint-ico" id="hintIco"></span><span id="hintTxt">Toca el unicornio para pegar</span></div>
+    <div class="sprayer" id="sprayer" hidden></div>
+    <div class="coach" id="coach" hidden></div>
     <div class="veil" id="veil"><div><div id="veilTxt">Amasando la plastilina…</div><div class="dots"><i></i><i></i><i></i></div></div></div>
   </section>
   <section class="tray" id="tray" aria-label="Opciones">
@@ -213,6 +247,16 @@ const STICKERS=[
   {id:'diamante',name:'Diamante',L:[['M28 16H72L94 40L50 94L6 40Z','#6fd9ff'],['M28 16L38 40H62L72 16Z','#c4f3ff'],['M6 40H38L50 94Z','#45bde9']]},
   {id:'helado',name:'Helado',L:[['M30 52L50 96L70 52Z','#f2b366'],[circ(50,40,23),'#ff9cc8'],[circ(50,13,7),'#ff3b5c'],[ell(40,34,3,1.6)+ell(58,30,3,1.6)+ell(52,46,3,1.6),'#ffffff']]},
 ];
+const SCENTS=[
+  {id:'fresa',name:'Fresa',c:'#ff4d6d',mist:['#ff8fa8','#ffc2d1','#ff6b8a','#ffe0e8'],L:STICKERS.find(x=>x.id==='fresa').L},
+  {id:'chicle',name:'Chicle',c:'#ff7ac8',mist:['#ff9ed8','#ffd0ee','#ff7ac8','#fff0fa'],L:[[circ(50,52,42),'#ff8fd0'],[ell(35,36,12,8.5),'#ffd9f0'],[circ(64,68,4.5)+circ(72,58,3),'#ffd9f0']]},
+  {id:'algodon',name:'Algodón',c:'#c9a3ff',mist:['#ffc2e8','#d9c4ff','#ffe3f4','#c4e6ff'],L:[['M46 56H54V97H46Z','#f2c98b'],[circ(34,42,20)+circ(58,30,22)+circ(52,56,20)+circ(28,62,14)+circ(72,54,17),'#ffb3e0'],[circ(46,28,10)+circ(70,46,9)+circ(36,56,7),'#c9b3ff']]},
+  {id:'limon',name:'Limón',c:'#ffd43b',mist:['#fff07a','#fff8c4','#c8f08a','#ffe14d'],L:[['M50 26C56 8 76 4 86 10C78 22 64 28 50 26Z','#5fcf7f'],[ell(50,58,40,31)+'M8 58L2 52V64ZM92 58L98 52V64Z','#ffd93b'],[ell(36,48,9,5.5),'#fff6b0']]},
+  {id:'helado',name:'Vainilla',c:'#ffb36b',mist:['#fff1d6','#ffe0b8','#ffd1e6','#ffffff'],L:STICKERS.find(x=>x.id==='helado').L},
+  {id:'chocolate',name:'Chocolate',c:'#8a5636',mist:['#c08a64','#e8c3a6','#a8714d','#f4dccb'],L:[['M24 8H76Q86 8 86 18V82Q86 92 76 92H24Q14 92 14 82V18Q14 8 24 8Z','#7a4a2e'],['M22 16H46V34H22ZM54 16H78V34H54ZM22 40H46V56H22ZM54 40H78V56H54Z','#a8714d'],['M14 62H86V82Q86 92 76 92H24Q14 92 14 82Z','#ff6f9f'],['M14 62H86V68H14Z','#ffd447']]},
+  {id:'flores',name:'Flores',c:'#ff8fc8',mist:['#ffb3dc','#ffe0f0','#d4b8ff','#fff3a0'],L:STICKERS.find(x=>x.id==='flor').L},
+];
+const SCENT={};SCENTS.forEach(s=>{SCENT[s.id]=s;s.paths=s.L.map(([d,f])=>[new Path2D(d),f]);s.all=new Path2D(s.L.map(l=>l[0]).join(' '));});
 const STK={};STICKERS.forEach(s=>{STK[s.id]=s;s.paths=s.L.map(([d,f])=>[new Path2D(d),f]);s.all=new Path2D(s.L.map(l=>l[0]).join(' '));});
 
 /* ================= catalogs ================= */
@@ -278,7 +322,7 @@ function loadState(){
 let state=loadState();
 let saveTimer=0;
 function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}},250);}
-const ui={cat:'maquillaje',sub:{maquillaje:'pestanas',accesorios:'aretes',colores:'pelo',stickers:'sticker'},sticker:'estrella',size:'m'};
+const ui={cat:'maquillaje',sub:{maquillaje:'pestanas',accesorios:'aretes',colores:'pelo',stickers:'sticker',perfume:'perfume'},sticker:'estrella',size:'m',scent:'fresa'};
 try{const u=JSON.parse(localStorage.getItem(KEY+'-ui')||'null');if(u&&u.cat){ui.cat=u.cat;Object.assign(ui.sub,u.sub||{});}}catch(e){}
 function saveUI(){try{localStorage.setItem(KEY+'-ui',JSON.stringify({cat:ui.cat,sub:ui.sub}));}catch(e){}}
 
@@ -304,7 +348,18 @@ const sfx={
   giggle(){[0,1,2,3].forEach(i=>tone(760+i*70,520+i*70,.08,'sine',.12,i*.075));},
   magic(){[523,659,784,1047,1319].forEach((f,i)=>tone(f,f*1.01,.28,'sine',.09,i*.07));},
   undo(){tone(620,300,.16,'sine',.12);},
+  spray(){hiss(.13,.07);},
+  love(){[523,659,784].forEach((f,i)=>tone(f*1.01,f,.32,'sine',.1,i*.11));tone(1047,1568,.4,'triangle',.06,.36);},
 };
+let noiseBuf=null;
+function hiss(dur,vol){
+  if(muted)return; const a=audio(); if(!a)return;
+  if(!noiseBuf){noiseBuf=a.createBuffer(1,a.sampleRate*.4|0,a.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;}
+  const t=a.currentTime,src=a.createBufferSource(),f=a.createBiquadFilter(),g=a.createGain();
+  src.buffer=noiseBuf;f.type='bandpass';f.frequency.value=5200+Math.random()*1400;f.Q.value=.7;
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+.015);g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+  src.connect(f);f.connect(g);g.connect(a.destination);src.start(t);src.stop(t+dur+.02);
+}
 
 /* ================= renderer / scene ================= */
 const canvas=$('#c'), stage=$('#stage');
@@ -954,6 +1009,29 @@ function burst(pos,n,spread,colors){
     p.m.material.color.set(pick(colors));p.spin=(Math.random()-.5)*12;p.m.scale.setScalar(.7+Math.random()*.8);}
 }
 
+/* ================= perfume: mist + floating scent icons ================= */
+function spriteTex(draw){const c=document.createElement('canvas');c.width=c.height=128;draw(c.getContext('2d'));return canvasTex(c);}
+const mistTex=spriteTex(x=>{const g=x.createRadialGradient(64,64,0,64,64,64);g.addColorStop(0,'rgba(255,255,255,1)');g.addColorStop(.45,'rgba(255,255,255,.55)');g.addColorStop(1,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(0,0,128,128);});
+const iconTex=(paths,all)=>spriteTex(x=>{x.translate(25,25);x.scale(.78,.78);x.lineJoin='round';x.lineWidth=16;x.strokeStyle='#fff';x.fillStyle='#fff';x.stroke(all);x.fill(all);for(const[p,f]of paths){x.fillStyle=f;x.fill(p);}});
+const heartP=new Path2D(HEART);
+const heartTex=iconTex([[heartP,'#ff5d8f']],heartP);
+SCENTS.forEach(sc=>{sc.tex=iconTex(sc.paths,sc.all);});
+const mist=[];for(let i=0;i<120;i++){const m=new THREE.Sprite(new THREE.SpriteMaterial({map:mistTex,transparent:true,depthWrite:false,toneMapped:false}));m.visible=false;m.renderOrder=2;scene.add(m);mist.push({m,life:0,max:1,v:new THREE.Vector3(),s0:.1,s1:.4});}
+let mistIdx=0;
+const floaters=[];for(let i=0;i<28;i++){const m=new THREE.Sprite(new THREE.SpriteMaterial({map:heartTex,transparent:true,depthWrite:false,toneMapped:false}));m.visible=false;m.renderOrder=3;scene.add(m);floaters.push({m,life:0,max:1,v:new THREE.Vector3(),ph:0,size:.3});}
+let floatIdx=0;
+function puff(from,to,sc){
+  const dir=to.clone().sub(from);
+  for(let i=0;i<9;i++){const p=mist[mistIdx++%mist.length];p.m.visible=true;p.max=p.life=.9+Math.random()*.7;
+    p.m.position.copy(from).addScaledVector(dir,Math.random()*.25);
+    p.v.copy(dir).multiplyScalar(2.2+Math.random()*1.4).add(V3((Math.random()-.5)*.9,(Math.random()-.5)*.9,(Math.random()-.5)*.5));
+    p.s0=.05+Math.random()*.06;p.s1=.32+Math.random()*.34;p.m.material.color.set(pick(sc.mist));p.m.material.rotation=Math.random()*TAU;}
+}
+function floatUp(pos,tex,size){
+  const f=floaters[floatIdx++%floaters.length];f.m.visible=true;f.m.material.map=tex;f.max=f.life=1.5+Math.random()*.6;f.size=size;f.ph=Math.random()*TAU;
+  f.m.position.copy(pos);f.v.set((Math.random()-.5)*.35,.55+Math.random()*.35,.15);f.m.scale.setScalar(.01);
+}
+
 /* ================= camera fit ================= */
 let ovx=0,ovy=0;
 function layout(){
@@ -975,13 +1053,63 @@ const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
 let yaw=0,pitch=0,tYaw=0,tPitch=0,lastTouch=performance.now();
 const BASE_YAW=-.16,BASE_PITCH=.06;
 let drag=null;
-canvas.addEventListener('pointerdown',e=>{if(drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),moved:false};canvas.setPointerCapture(e.pointerId);audio();});
-canvas.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;
+canvas.addEventListener('pointerdown',e=>{if(spray)return;
+  if(ui.cat==='perfume'&&!drag&&hitTest(e.clientX,e.clientY)){startSpray(e);return;}
+  if(drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),moved:false};canvas.setPointerCapture(e.pointerId);audio();});
+canvas.addEventListener('pointermove',e=>{if(spray&&e.pointerId===spray.id){spray.x=e.clientX;spray.y=e.clientY;placeSprayer();return;}
+  if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;
   if(!drag.moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>9)drag.moved=true;
   if(drag.moved){tYaw=clamp(tYaw+dx*.009,-1.05,1.05);tPitch=clamp(tPitch+dy*.005,-.32,.38);lastTouch=performance.now();}});
-function endDrag(e){if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;lastTouch=performance.now();if(!d.moved&&performance.now()-d.t<600)tap(e.clientX,e.clientY);}
-canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',e=>{if(drag&&e.pointerId===drag.id)drag=null;});
+function endDrag(e){if(spray&&e.pointerId===spray.id){stopSpray();return;}if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;lastTouch=performance.now();if(!d.moved&&performance.now()-d.t<600)tap(e.clientX,e.clientY);}
+canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',e=>{if(drag&&e.pointerId===drag.id)drag=null;if(spray&&e.pointerId===spray.id)stopSpray();});
+
+/* Perfume: press and hold (or tap repeatedly) on the unicorn to spray. It never touches the saved look. */
+const sprayer=$('#sprayer');
+const NOZZLE={x:7,y:17};
+let spray=null,sprayAcc=0,loveMeter=0,loveCool=0,happyK=0,loveT=9,sniffT=0;
+function startSpray(e){
+  spray={id:e.pointerId,x:e.clientX,y:e.clientY,t:0};canvas.setPointerCapture(e.pointerId);audio();
+  sprayer.innerHTML=bottleSVG(SCENT[ui.scent],true);sprayer.hidden=false;placeSprayer();
+  sprayAcc=1;hintSeen=true;updateHint();coachIdle=performance.now();showCoach(null);
+}
+const coach=$('#coach');let coachIdle=performance.now();
+const fingerSVG=()=>`<svg viewBox="0 0 64 86" aria-hidden="true"><path d="M9.5 44V11a7.5 7.5 0 0 1 15 0v24l4-1.5c3.5-1.2 7 .2 8 3l1.5-.5c3.5-1 7 .5 8 3.5l1-.3c3.6-1 7.3 1.3 7.8 5l1.4 13c1 9.5-6 18.8-16 19.8H33C21 81 12 73 10 61l-6-11c-2-3.7.7-8 4.6-8z" fill="#ffd9c2" stroke="${INK}" stroke-width="2.8" stroke-linejoin="round"/><path d="M12.5 10a4.5 4.5 0 0 1 9 0v3.5h-9z" fill="#fff1e8"/><path d="M28.5 34v10M38.5 37v8M48 40v7" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/></svg>`;
+function showCoach(mode){
+  const key=mode?mode+(mode==='hold'?ui.scent:ui.sticker+ui.sub.stickers):'';
+  if(key===coach.dataset.k)return;coach.dataset.k=key;coach.hidden=!mode;coach.className='coach '+(mode||'');
+  if(mode==='hold'){const sc=SCENT[ui.scent];coach.style.setProperty('--mist',sc.mist[0]);coach.innerHTML=`<i class="ring"></i><i class="ring"></i><i class="puff"></i><i class="puff"></i><i class="puff"></i><div class="bottle">${bottleSVG(sc,true)}</div><div class="finger">${fingerSVG()}</div>`;}
+  else if(mode==='tap')coach.innerHTML=`<i class="ring"></i><i class="ring"></i><div class="stk">${stickerSVG(STK[ui.sticker],ui.sub.stickers==='tatuaje'?'tatuaje':'sticker')}</div><div class="finger">${fingerSVG()}</div>`;
+}
+function placeCoach(){
+  const wp=new THREE.Vector3();headMesh.getWorldPosition(wp);wp.add(V3(.4,-.26,.95)).project(camera);
+  coach.style.transform=`translate(${(wp.x+1)/2*stage.clientWidth}px,${(1-wp.y)/2*stage.clientHeight}px)`;
+}
+function stopSpray(){spray=null;sprayer.hidden=true;sprayer.classList.remove('psst');lastTouch=performance.now();}
+function placeSprayer(){const r=stage.getBoundingClientRect();sprayer.style.transform=`translate(${spray.x-r.left+30-NOZZLE.x}px,${spray.y-r.top+26-NOZZLE.y}px) rotate(-14deg)`;}
+function sprayTick(){
+  const sc=SCENT[ui.scent],h=hitTest(spray.x,spray.y),r=canvas.getBoundingClientRect();
+  ndc.set((spray.x+30-r.left)/r.width*2-1,-((spray.y+26-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
+  const to=h?h.point.clone():ray.ray.at(camera.position.z-.2,new THREE.Vector3());
+  const from=ray.ray.at(Math.max(.5,(h?h.distance:camera.position.z)-.9),new THREE.Vector3());
+  puff(from,to,sc);sfx.spray();sprayer.classList.add('psst');setTimeout(()=>sprayer.classList.remove('psst'),70);
+  if(!h)return;
+  loveMeter+=1;happyK=Math.min(1,happyK+.25);
+  if(loveCool<=0&&loveMeter>=12)love(sc);
+  else if(sniffT<=0){sniffT=.5;const sd=Math.random()<.5?-1:1;floatUp(nosePos().add(V3(sd*(.8+Math.random()*.3),.2+Math.random()*.4,0)),Math.random()<.5?sc.tex:heartTex,.26);}
+}
+function nosePos(){const wp=new THREE.Vector3();muzzleMesh.getWorldPosition(wp);return wp.add(V3(0,.15,.5));}
+function love(sc){
+  loveMeter=0;loveCool=2.4;loveT=0;sfx.love();setTimeout(()=>sfx.giggle(),380);squash(1.2);
+  const hp=new THREE.Vector3();headMesh.getWorldPosition(hp);
+  for(let i=0;i<10;i++){const a=-.3+i/9*(Math.PI+.6);floatUp(hp.clone().add(V3(Math.cos(a)*1.15,Math.sin(a)*.9+.25,.6)),i%2?heartTex:sc.tex,.3+Math.random()*.14);}
+  burst(hp.clone().add(V3(0,.5,.9)),18,1.4,[sc.c,'#ffffff','#ff9ccc','#fff3a0']);
+}
 document.addEventListener('gesturestart',e=>e.preventDefault());
+/* Holding a finger on the unicorn (perfume) must not scroll/bounce the page, zoom, or open the long-press menu.
+   Pointer events still fire; only the browser's default touch gestures are cancelled. The options list keeps its own scroll. */
+canvas.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
+document.addEventListener('touchmove',e=>{if(!e.target.closest('.opts'))e.preventDefault();},{passive:false});
+canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
 function hitTest(cx,cy){
   const r=canvas.getBoundingClientRect();ndc.set((cx-r.left)/r.width*2-1,-((cy-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
@@ -995,7 +1123,7 @@ function tap(cx,cy){
     if(!sk||!h.uv){sfx.undo();return;}
     state.stickers.push({m:sk,u:+h.uv.x.toFixed(4),v:+(1-h.uv.y).toFixed(4),t:ui.sticker,s:ui.size,r:+((Math.random()-.5)*.6).toFixed(3),mode:ui.sub.stickers==='tatuaje'?'tatuaje':'sticker'});
     if(state.stickers.length>90)state.stickers.shift();
-    paintBy[sk]();save();burst(h.point,10,1.1);sfx.sticker();squash(.6);
+    paintBy[sk]();save();burst(h.point,10,1.1);sfx.sticker();squash(.6);coachIdle=performance.now();
     hintSeen=true;updateHint();refreshStickerActions();
   }else{
     sfx.giggle();squash(1);blinkT=0;burst(h.point,6,.9,['#ff9ccc','#ffd0e6','#ffffff']);
@@ -1014,7 +1142,18 @@ function frame(){
   headG.position.y=reduced?0:Math.sin(t*1.7)*.012;
   if(squashT<1.2&&!reduced){squashT+=dt;const k=Math.sin(squashT*Math.PI*3.4)*Math.exp(-squashT*4.6)*.075*squashK;headG.scale.set(1+k*.6,1-k,1+k*.6);}else headG.scale.set(1,1,1);
   nextBlink-=dt;if(nextBlink<=0&&blinkT<0){blinkT=0;nextBlink=2.5+Math.random()*3.5;}
-  if(blinkT>=0){blinkT+=dt;const p=blinkT/.22;const s=p<.5?p*2:p<1?2-p*2:0;const a=lerp(LID_OPEN,LID_SHUT,s*s*(3-2*s));for(const e of eyes)e.lid.rotation.x=a;if(p>=1){blinkT=-1;for(const e of eyes)e.lid.rotation.x=LID_OPEN;}}
+  const coachMode=ui.cat==='perfume'?'hold':ui.cat==='stickers'?'tap':null;
+  if(coachMode&&!spray&&!drag){if(performance.now()-coachIdle>3000){showCoach(coachMode);placeCoach();}}else{coachIdle=performance.now();showCoach(null);}
+  if(spray){sprayAcc+=dt/.075;if(sprayAcc>=1){sprayAcc=Math.min(sprayAcc-1,1);sprayTick();}}else loveMeter=Math.max(0,loveMeter-dt*4);
+  loveCool-=dt;sniffT-=dt;loveT+=dt;happyK=Math.max(0,happyK-dt*(spray?.5:1.1));
+  const bliss=loveT<1.7?Math.min(1,loveT*6,(1.7-loveT)*4):0,lidBase=lerp(LID_OPEN,LID_SHUT,Math.max(happyK*.42,bliss*.97));
+  if(blinkT>=0){blinkT+=dt;const p=blinkT/.22;const s=p<.5?p*2:p<1?2-p*2:0;const a=lerp(lidBase,LID_SHUT,s*s*(3-2*s));for(const e of eyes)e.lid.rotation.x=a;if(p>=1)blinkT=-1;}
+  else for(const e of eyes)e.lid.rotation.x=lidBase;
+  if(loveT<1.7&&!reduced){headG.rotation.x=-.14*bliss;headG.rotation.z=Math.sin(loveT*13)*.05*bliss;}else headG.rotation.set(0,0,0);
+  for(const p of mist){if(!p.m.visible)continue;p.life-=dt;if(p.life<=0){p.m.visible=false;continue;}const k=1-p.life/p.max;
+    p.m.position.addScaledVector(p.v,dt);p.v.multiplyScalar(Math.max(0,1-dt*3.4));p.v.y+=dt*.1;p.m.scale.setScalar(lerp(p.s0,p.s1,1-(1-k)*(1-k)));p.m.material.opacity=.78*Math.min(1,k*8)*Math.pow(1-k,1.3);p.m.material.rotation+=dt*.5;}
+  for(const f of floaters){if(!f.m.visible)continue;f.life-=dt;if(f.life<=0){f.m.visible=false;continue;}const k=1-f.life/f.max;
+    f.m.position.addScaledVector(f.v,dt);f.m.position.x+=Math.sin(k*7+f.ph)*.006;f.m.scale.setScalar(f.size*(k<.12?k/.12*1.2:k<.2?1.2-(k-.12)/.08*.2:1));f.m.material.opacity=k>.72?(1-k)/.28:1;}
   backdropMat.color.lerp(backdropTarget,Math.min(1,dt*3));
   if(!reduced)propItems.forEach((p,i)=>{p.o.position.y+=Math.sin(t*1.1+p.ph)*.0018;p.o.rotation.z=Math.sin(t*.8+p.ph)*.12;p.o.rotation.y=Math.sin(t*.5+p.ph)*.3;});
   for(const p of parts){if(!p.m.visible)continue;p.life-=dt*1.5;if(p.life<=0){p.m.visible=false;continue;}p.m.position.addScaledVector(p.v,dt);p.v.multiplyScalar(1-dt*2.2);p.v.y-=dt*.6;p.m.rotation.z+=p.spin*dt;p.m.material.opacity=Math.min(1,p.life*2);const s=p.m.scale.x;p.m.scale.setScalar(Math.max(.01,s*(1-dt*.6)));}
@@ -1031,6 +1170,7 @@ const ICON={
   accesorios:`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M22 22 9 12.5c-2-1.4-4.7 0-4.8 2.4l-.4 17.4c0 2.4 2.6 3.9 4.7 2.6L22 27z" fill="currentColor" opacity=".75"/><path d="M26 22l13-9.5c2-1.4 4.7 0 4.8 2.4l.4 17.4c0 2.4-2.6 3.9-4.7 2.6L26 27z" fill="currentColor" opacity=".75"/><rect x="19" y="18.5" width="10" height="12" rx="4" fill="currentColor"/></svg>`,
   colores:`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 5C12.4 5 4 13.2 4 23.5S12 43 22 43c3.6 0 4.6-2.4 3.6-4.8-1.2-2.8.3-5.2 3.4-5.2h5C39.4 33 44 28.4 44 23 44 13 35.2 5 24 5z" fill="currentColor"/><circle class="dot" cx="14" cy="23" r="3.6"/><circle class="dot" cx="19" cy="14" r="3.6"/><circle class="dot" cx="29" cy="12.5" r="3.6"/><circle class="dot" cx="36.5" cy="19.5" r="3.6"/></svg>`,
   stickers:`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M24 4.5l5.6 12 13 1.4-9.7 8.8 2.7 12.8L24 33l-11.6 6.5 2.7-12.8-9.7-8.8 13-1.4z" fill="currentColor" stroke="currentColor" stroke-width="3" stroke-linejoin="round"/><path class="dot" d="M30 33.5l5.6 5.8-2.9-12.9z"/></svg>`,
+  perfume:`<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="19" y="5" width="12" height="9" rx="2.5" fill="currentColor"/><path d="M8 9.5h11" stroke="currentColor" stroke-width="3.4" stroke-linecap="round"/><rect x="21" y="13" width="8" height="6" fill="currentColor" opacity=".8"/><rect x="10" y="19" width="30" height="25" rx="9" fill="currentColor" opacity=".7"/><path class="dot" d="M25 25.5c-2-3.4-7-2-6.2 1.8.6 2.7 6.2 6.2 6.2 6.2s5.6-3.5 6.2-6.2c.8-3.8-4.2-5.2-6.2-1.8z"/><circle cx="4" cy="6" r="1.8" fill="currentColor"/><circle cx="3" cy="13" r="1.6" fill="currentColor"/></svg>`,
   soundOn:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M16 9a4.5 4.5 0 0 1 0 6M18.6 6.5a8 8 0 0 1 0 11"/></svg>`,
   soundOff:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z" fill="currentColor"/><path d="M16.5 9.5l5 5M21.5 9.5l-5 5"/></svg>`,
   reset:`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4.5 12a7.5 7.5 0 1 0 2.4-5.5"/><path d="M4 4v4.5h4.5"/></svg>`,
@@ -1189,6 +1329,7 @@ const CATS=[
     {id:'cuerno',name:'Cuerno',groups:[{key:'horn',kind:'paint'}]},
   ]},
   {id:'stickers',name:'Stickers',col:['#1fb39b','#d8f5ee','#9edccf','#0d7564'],subs:[{id:'sticker',name:'Stickers'},{id:'tatuaje',name:'Tatuajes'}]},
+  {id:'perfume',name:'Perfume',col:['#e55bb0','#ffe0f3','#f4b0d8','#a8247a'],subs:[{id:'perfume',name:'Perfumes'}]},
 ];
 CATS.forEach(c=>{c.icon=ICON[c.id];});
 const catOf=id=>CATS.find(c=>c.id===id)||CATS[0];
@@ -1223,11 +1364,12 @@ function renderCats(){
 }
 function renderSubs(){
   const c=catOf(ui.cat);if(!c.subs.some(s=>s.id===ui.sub[c.id]))ui.sub[c.id]=c.subs[0].id;
-  subsEl.innerHTML=c.subs.map(s=>`<button class="pill" role="tab" data-sub="${s.id}" aria-selected="${ui.sub[c.id]===s.id}">${SUB_ICON[s.id]||''}${s.name}</button>`).join('');
+  subsEl.innerHTML=c.subs.length<2?'':c.subs.map(s=>`<button class="pill" role="tab" data-sub="${s.id}" aria-selected="${ui.sub[c.id]===s.id}">${SUB_ICON[s.id]||''}${s.name}</button>`).join('');
 }
 function renderOpts(){
   const c=catOf(ui.cat);visibleGroups=[];
   if(c.id==='stickers'){renderStickers();return;}
+  if(c.id==='perfume'){renderPerfume();return;}
   const s=c.subs.find(x=>x.id===ui.sub[c.id]);visibleGroups=s.groups;
   optsEl.innerHTML=s.groups.map(groupHTML).join('');optsEl.scrollTop=0;
 }
@@ -1237,6 +1379,15 @@ function renderStickers(){
   optsEl.innerHTML=`<div class="row"><div class="group"><div class="gtitle">${GROUP_ICON.size}Tamaño</div><div class="sizes">${sizes}</div></div><div class="actions" id="stkActs"></div></div>
   <div class="group"><div class="gtitle">${GROUP_ICON.tap}${mode==='tatuaje'?'Elige un tatuaje y toca al unicornio':'Elige un sticker y toca al unicornio'}</div><div class="grid">${STICKERS.map(d=>`<button class="tile sticker" data-stk="${d.id}" aria-pressed="${ui.sticker===d.id}" aria-label="${d.name}"><span class="sw">${stickerSVG(d,mode)}</span><span class="nm">${d.name}</span></button>`).join('')}</div></div>`;
   refreshStickerActions();
+}
+function bottleSVG(sc,big){
+  const icon=`<svg x="13" y="${big?37:35}" width="38" height="38" viewBox="-8 -8 116 116"><path d="${sc.L.map(l=>l[0]).join(' ')}" fill="#fff" stroke="#fff" stroke-width="14" stroke-linejoin="round"/>${sc.L.map(([d,f])=>`<path d="${d}" fill="${f}"/>`).join('')}</svg>`;
+  const pump=`<g class="pump"><rect x="22" y="7" width="20" height="13" rx="4" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><path d="M22 12.5H8.5a2.5 2.5 0 0 0 0 5H22" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/></g>`;
+  return `<svg viewBox="0 0 64 ${big?80:76}" aria-hidden="true">${big?pump:`<rect x="23" y="5" width="18" height="13" rx="4" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><path d="M23 10.5H12" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`}<rect x="26" y="${big?19:17}" width="12" height="9" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><rect x="9" y="${big?27:25}" width="46" height="${big?50:48}" rx="15" fill="${mix(sc.c,'#ffffff',.62)}" stroke="${INK}" stroke-width="2.6"/><path d="M11.5 ${big?54:52}h41v${big?6:6}c0 8-6.5 14-14 14h-13c-7.5 0-14-6-14-14z" fill="${sc.c}" opacity=".55"/><path d="M16 ${big?36:34}q0-4 4-5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>${icon}</svg>`;
+}
+function renderPerfume(){
+  optsEl.innerHTML=`<div class="group"><div class="gtitle">${GROUP_ICON.tap}Elige un perfume y rocía al unicornio</div><div class="grid">${SCENTS.map(sc=>`<button class="tile scent" data-scent="${sc.id}" aria-pressed="${ui.scent===sc.id}" aria-label="Perfume de ${sc.name}"><span class="sw" style="background:${mix(sc.c,'#ffffff',.85)}">${bottleSVG(sc)}</span><span class="nm">${sc.name}</span></button>`).join('')}</div></div>`;
+  optsEl.scrollTop=0;
 }
 let clearArmed=0;
 function refreshStickerActions(){
@@ -1249,10 +1400,11 @@ function refreshDeps(changed){
 }
 let hintSeen=false;
 function updateHint(){
-  const h=$('#hint');const on=ui.cat==='stickers'&&!hintSeen;h.hidden=!on;
+  const h=$('#hint');const on=(ui.cat==='stickers'||ui.cat==='perfume')&&!hintSeen;h.hidden=!on;
+  if(on&&ui.cat==='perfume'){$('#hintIco').innerHTML=bottleSVG(SCENT[ui.scent]);$('#hintTxt').textContent='Mantén el dedo en el unicornio';return;}
   if(on){const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';$('#hintIco').innerHTML=stickerSVG(STK[ui.sticker],mode);$('#hintTxt').textContent=mode==='tatuaje'?'Toca el unicornio para el tatuaje':'Toca el unicornio para pegar';}
 }
-catsEl.addEventListener('click',e=>{const b=e.target.closest('.cat');if(!b)return;if(ui.cat!==b.dataset.cat){ui.cat=b.dataset.cat;renderCats();renderSubs();renderOpts();saveUI();hintSeen=false;}updateHint();sfx.tab();});
+catsEl.addEventListener('click',e=>{const b=e.target.closest('.cat');if(!b)return;if(ui.cat!==b.dataset.cat){if(spray)stopSpray();ui.cat=b.dataset.cat;renderCats();renderSubs();renderOpts();saveUI();hintSeen=false;}updateHint();sfx.tab();});
 subsEl.addEventListener('click',e=>{const b=e.target.closest('.pill');if(!b)return;ui.sub[ui.cat]=b.dataset.sub;renderSubs();renderOpts();saveUI();if(ui.cat==='stickers')hintSeen=false;updateHint();sfx.tab();});
 optsEl.addEventListener('click',e=>{
   const t=e.target.closest('.tile[data-key]');
@@ -1260,7 +1412,8 @@ optsEl.addEventListener('click',e=>{
     t.parentElement.querySelectorAll('.tile').forEach(x=>x.setAttribute('aria-pressed',x===t));refreshDeps(k);sfx.pop();squash(.8);
     const target=k==='lashes'||k==='lashColor'||k==='eye'||k==='lens'||k==='shadow'?eyes[1].g:k==='horn'?hornG:k==='earring'||k==='earTop'?ears[1].g:k==='nose'||k==='lips'?muzzleMesh:k==='headAcc'||k==='hair'||k==='mane'?hornG:headMesh;
     const wp=new THREE.Vector3();target.getWorldPosition(wp);burst(wp.add(V3(0,0,.4)),7,.9);return;}
-  const st=e.target.closest('[data-stk]');if(st){ui.sticker=st.dataset.stk;optsEl.querySelectorAll('[data-stk]').forEach(x=>x.setAttribute('aria-pressed',x===st));hintSeen=false;updateHint();sfx.pop();return;}
+  const sp=e.target.closest('[data-scent]');if(sp){ui.scent=sp.dataset.scent;coachIdle=performance.now();showCoach(null);optsEl.querySelectorAll('[data-scent]').forEach(x=>x.setAttribute('aria-pressed',x===sp));hintSeen=false;updateHint();sfx.spray();const wp=nosePos();floatUp(wp,SCENT[ui.scent].tex,.3);return;}
+  const st=e.target.closest('[data-stk]');if(st){ui.sticker=st.dataset.stk;coachIdle=performance.now();showCoach(null);optsEl.querySelectorAll('[data-stk]').forEach(x=>x.setAttribute('aria-pressed',x===st));hintSeen=false;updateHint();sfx.pop();return;}
   const sz=e.target.closest('[data-size]');if(sz){ui.size=sz.dataset.size;optsEl.querySelectorAll('[data-size]').forEach(x=>x.setAttribute('aria-pressed',x===sz));sfx.tab();return;}
   const a=e.target.closest('[data-act]');if(a){
     if(a.dataset.act==='undo'){const s=state.stickers.pop();if(s){paintBy[s.m]();save();sfx.undo();}clearArmed=0;}
