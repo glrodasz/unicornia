@@ -310,13 +310,78 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
   </div>
 </div>
 
+<script>
+/* Language: first browser language we support wins (navigator.languages order), Spanish otherwise. No toggle, no per-language URLs.
+   Spanish is the source text; EN maps it whole-sentence, and i18n() falls back to the Spanish string. */
+const LANGS=['es','en'],DEFAULT_LANG='es';
+function negotiateLang(list){for(const l of list){const b=String(l||'').toLowerCase().split('-')[0];if(LANGS.includes(b))return b;}return DEFAULT_LANG;}
+const LANG=negotiateLang(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language]);
+const EN={
+  'Unicornia: viste y maquilla a tu unicornio':'Unicornia: dress up your unicorn',
+  'Unicornia es un juego para niños: viste, peina y maquilla a un unicornio de plastilina en 3D, ponle accesorios y tómale fotos. Gratis, sin anuncios.':'Unicornia is a game for kids: dress up, style and do the makeup of a 3D clay unicorn, add accessories and take photos. Free, no ads.',
+  'Unicornio':'Unicorn',
+  'Unicornio de plastilina en 3D. Arrastra para girarlo.':'3D clay unicorn. Drag to turn it.',
+  'Sorpresa':'Surprise',
+  'Sorpresa: cambia todo al azar':'Surprise: change everything at random',
+  'Sonido':'Sound','Activar sonido':'Turn sound on','Silenciar':'Mute',
+  'Pantalla completa':'Full screen',
+  'Empezar de nuevo':'Start over','¿Empezar de nuevo?':'Start over?','Toca otra vez para empezar de nuevo':'Tap again to start over',
+  'Ver mis fotos':'See my photos','Tomar foto':'Take a photo',
+  'Toca el unicornio para pegar':'Tap the unicorn to stick it','Toca el unicornio para el tatuaje':'Tap the unicorn for the tattoo','Mantén el dedo en el unicornio':'Hold your finger on the unicorn',
+  'Amasando la plastilina…':'Kneading the clay…',
+  'No se pudo cargar el 3D. Revisa la conexión y vuelve a abrir la página.':'The 3D could not load. Check the connection and open the page again.',
+  'Este navegador no puede mostrar 3D.':'This browser cannot show 3D.',
+  'Opciones':'Options','Categorías':'Categories',
+  'Hecho con 🌈 por':'Made with 🌈 by','Copiar guillermorodas.com':'Copy guillermorodas.com','Copiado al portapapeles':'Copied to clipboard',
+  'Mis fotos':'My photos','Cerrar':'Close','Foto del unicornio':'Unicorn photo','Foto {n}':'Photo {n}','Mi unicornio':'My unicorn',
+  'Volver a mis fotos':'Back to my photos','Guardar foto en la tablet':'Save photo to the tablet','Vestir al unicornio igual':'Dress the unicorn the same',
+  'Borrar foto':'Delete photo','Toca otra vez para borrar':'Tap again to delete',
+  'Tamaño':'Size','Pequeño':'Small','Mediano':'Medium','Grande':'Large',
+  'Elige un sticker y toca al unicornio':'Pick a sticker and tap the unicorn','Elige un tatuaje y toca al unicornio':'Pick a tattoo and tap the unicorn',
+  'Elige un perfume y rocía al unicornio':'Pick a perfume and spray the unicorn','Perfume de {name}':'{name} perfume',
+  'Deshacer':'Undo','Quitar todos':'Remove all','¿Quitar todos?':'Remove all?',
+  /* categories, tabs and group titles */
+  'Maquillaje':'Makeup','Accesorios':'Accessories','Colores':'Colors','Stickers':'Stickers','Perfume':'Perfume','Perfumes':'Perfumes','Tatuajes':'Tattoos',
+  'Pestañas':'Lashes','Ojos':'Eyes','Sombras':'Eyeshadow','Rubor':'Blush','Pecas':'Freckles','Labios':'Lips',
+  'Aretes':'Earrings','Nariz':'Nose','Gafas':'Glasses','Cabeza':'Head','Pelaje':'Fur','Pelo':'Hair','Cuerno':'Horn',
+  'Color de pestañas':'Lash color','Color de ojos':'Eye color','Lentes de contacto':'Contact lenses','Abajo':'Bottom','Arriba':'Top','Peinado':'Hairstyle','Color del pelo':'Hair color',
+  /* item names */
+  'Sin':'None','Algodón':'Cotton candy','Arcoíris':'Rainbow','Aro oro':'Gold hoop','Aro plata':'Silver hoop','Azul':'Blue','Blanco':'White',
+  'Brillante':'Sparkly','Brillitos':'Sparkles','Brillo':'Sparkle','Café':'Brown','Caramelo':'Candy','Chicle':'Bubblegum','Chocolate':'Chocolate',
+  'Cielo':'Sky','Cola alta':'Ponytail','Coletas':'Pigtails','Coral':'Coral','Corazones':'Hearts','Corazón':'Heart','Cortas':'Short','Cuadradas':'Square',
+  'De sol':'Sunglasses','Diamante':'Diamond','Dos aros':'Two hoops','Dos moños':'Space buns','Dos trenzas':'Two braids','Drama':'Drama','Durazno':'Peach',
+  'Estrella':'Star','Estrellas':'Stars','Flor':'Flower','Florecita':'Little flower','Flores':'Flowers','Fresa':'Strawberry','Fucsia':'Fuchsia',
+  'Galaxia':'Galaxy','Helado':'Ice cream','Largas':'Long','Lazo':'Bow','Lila':'Lilac','Limón':'Lemon','Luna':'Moon','Mariposa':'Butterfly',
+  'Melena corta':'Bob','Menta':'Mint','Morado':'Purple','Moño':'Bun','Muchas':'Lots','Natural':'Natural','Negro':'Black','Noche':'Night',
+  'Normal':'Normal','Nube':'Cloud','Nácar':'Pearly','Ojo de gato':'Cat eye','Ondas':'Waves','Oro':'Gold','Pastel':'Pastel','Perla':'Pearl',
+  'Perlas':'Pearls','Plata':'Silver','Pocas':'A few','Primarios':'Primary','Punk':'Punk','Puntas':'Spiky','Purpurina':'Glitter','Rayo':'Lightning',
+  'Redondas':'Round','Rizos':'Curls','Rojo':'Red','Rosa':'Pink','Rubí':'Ruby','Suelto':'Loose','Tiara':'Tiara','Trenza':'Braid','Tres aros':'Three hoops',
+  'Turquesa':'Turquoise','Vainilla':'Vanilla','Verde':'Green','Violeta':'Violet','Ámbar':'Amber',
+  'Sol':'Sun','Gatito':'Kitty','Pastelito':'Cupcake','Dona':'Donut','Sandía':'Watermelon','Cerezas':'Cherries','Mariquita':'Ladybug',
+  'Globo':'Balloon','Corona':'Crown','Pececito':'Fishy','Planeta':'Planet','Huellita':'Paw','Alitas':'Wings','Cometa':'Comet',
+};
+function i18n(s,vars){
+  let out=LANG==='en'&&Object.prototype.hasOwnProperty.call(EN,s)?EN[s]:s;
+  if(vars)out=out.replace(/\{(\w+)\}/g,(m,k)=>k in vars?vars[k]:m);
+  return out;
+}
+/* Static markup above is written in Spanish; translate it before first paint. */
+document.documentElement.lang=LANG;
+if(LANG!==DEFAULT_LANG){
+  document.title=i18n(document.title);
+  const desc=document.querySelector('meta[name="description"]');if(desc)desc.content=i18n(desc.content);
+  document.querySelectorAll('[aria-label],img[alt]').forEach(el=>{for(const a of ['aria-label','alt'])if(el.hasAttribute(a))el.setAttribute(a,i18n(el.getAttribute(a)));});
+  const walk=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);
+  for(let n;(n=walk.nextNode());){const s=n.nodeValue.trim();if(s&&i18n(s)!==s)n.nodeValue=n.nodeValue.replace(s,i18n(s));}
+}
+</script>
 <script src="vendor/three.min.js"></script>
 <script>
 (function(){
 'use strict';
 const $ = (s)=>document.querySelector(s);
 const veil=$('#veil'), veilTxt=$('#veilTxt');
-if(typeof THREE==='undefined'){ veilTxt.textContent='No se pudo cargar el 3D. Revisa la conexión y vuelve a abrir la página.'; veil.querySelector('.dots').remove(); return; }
+if(typeof THREE==='undefined'){ veilTxt.textContent=i18n('No se pudo cargar el 3D. Revisa la conexión y vuelve a abrir la página.'); veil.querySelector('.dots').remove(); return; }
 if(THREE.ColorManagement && 'legacyMode' in THREE.ColorManagement) THREE.ColorManagement.legacyMode=false;
 
 /* ================= utils ================= */
@@ -499,7 +564,7 @@ const canvas=$('#c'), stage=$('#stage');
 let renderer;
 try{
   renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
-}catch(e){ veilTxt.textContent='Este navegador no puede mostrar 3D.'; veil.querySelector('.dots').remove(); return; }
+}catch(e){ veilTxt.textContent=i18n('Este navegador no puede mostrar 3D.'); veil.querySelector('.dots').remove(); return; }
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
@@ -1576,17 +1641,17 @@ function tileHTML(group,o){
   const inner=swInner(group,o),sel=state[group.key]===o.id;
   const paint=!inner;
   const style=paint?` style="--p:${patternCSS(o)}"`:'';
-  return `<button class="tile" data-key="${group.key}" data-id="${o.id}" aria-pressed="${sel}" aria-label="${o.name}"><span class="sw${paint?' paint':''}"${style}>${inner}</span><span class="nm">${o.name}</span></button>`;
+  return `<button class="tile" data-key="${group.key}" data-id="${o.id}" aria-pressed="${sel}" aria-label="${i18n(o.name)}"><span class="sw${paint?' paint':''}"${style}>${inner}</span><span class="nm">${i18n(o.name)}</span></button>`;
 }
-function groupHTML(g){return `<div class="group" data-gkey="${g.key}">${g.title?`<div class="gtitle">${GROUP_ICON[g.key]||''}${g.title}</div>`:''}<div class="grid">${CATALOG[g.key].map(o=>tileHTML(g,o)).join('')}</div></div>`;}
+function groupHTML(g){return `<div class="group" data-gkey="${g.key}">${g.title?`<div class="gtitle">${GROUP_ICON[g.key]||''}${i18n(g.title)}</div>`:''}<div class="grid">${CATALOG[g.key].map(o=>tileHTML(g,o)).join('')}</div></div>`;}
 let visibleGroups=[];
 function renderCats(){
-  catsEl.innerHTML=CATS.map(c=>`<button class="cat" role="tab" data-cat="${c.id}" aria-selected="${ui.cat===c.id}" style="--c:${c.col[0]};--c-soft:${c.col[1]};--c-edge:${c.col[2]};--c-deep:${c.col[3]}">${c.icon}<span>${c.name}</span></button>`).join('');
+  catsEl.innerHTML=CATS.map(c=>`<button class="cat" role="tab" data-cat="${c.id}" aria-selected="${ui.cat===c.id}" style="--c:${c.col[0]};--c-soft:${c.col[1]};--c-edge:${c.col[2]};--c-deep:${c.col[3]}">${c.icon}<span>${i18n(c.name)}</span></button>`).join('');
   trayEl.style.setProperty('--cat-c',catOf(ui.cat).col[0]);
 }
 function renderSubs(){
   const c=catOf(ui.cat);if(!c.subs.some(s=>s.id===ui.sub[c.id]))ui.sub[c.id]=c.subs[0].id;
-  subsEl.innerHTML=c.subs.length<2?'':c.subs.map(s=>`<button class="pill" role="tab" data-sub="${s.id}" aria-selected="${ui.sub[c.id]===s.id}">${SUB_ICON[s.id]||''}${s.name}</button>`).join('');
+  subsEl.innerHTML=c.subs.length<2?'':c.subs.map(s=>`<button class="pill" role="tab" data-sub="${s.id}" aria-selected="${ui.sub[c.id]===s.id}">${SUB_ICON[s.id]||''}${i18n(s.name)}</button>`).join('');
 }
 function renderOpts(){
   const c=catOf(ui.cat);visibleGroups=[];
@@ -1611,9 +1676,9 @@ $('#creditCopy').addEventListener('click',async()=>{
 });
 function renderStickers(){
   const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';
-  const sizes=['s','m','l'].map((k,i)=>`<button class="size" data-size="${k}" aria-pressed="${ui.size===k}" aria-label="${['Pequeño','Mediano','Grande'][i]}"><i style="width:${12+i*8}px;height:${12+i*8}px"></i></button>`).join('');
-  optsEl.innerHTML=`<div class="row"><div class="group"><div class="gtitle">${GROUP_ICON.size}Tamaño</div><div class="sizes">${sizes}</div></div><div class="actions" id="stkActs"></div></div>
-  <div class="group"><div class="gtitle">${GROUP_ICON.tap}${mode==='tatuaje'?'Elige un tatuaje y toca al unicornio':'Elige un sticker y toca al unicornio'}</div><div class="grid">${STICKERS.map(d=>`<button class="tile sticker" data-stk="${d.id}" aria-pressed="${ui.sticker===d.id}" aria-label="${d.name}"><span class="sw">${stickerSVG(d,mode)}</span><span class="nm">${d.name}</span></button>`).join('')}</div></div>`;
+  const sizes=['s','m','l'].map((k,i)=>`<button class="size" data-size="${k}" aria-pressed="${ui.size===k}" aria-label="${i18n(['Pequeño','Mediano','Grande'][i])}"><i style="width:${12+i*8}px;height:${12+i*8}px"></i></button>`).join('');
+  optsEl.innerHTML=`<div class="row"><div class="group"><div class="gtitle">${GROUP_ICON.size}${i18n('Tamaño')}</div><div class="sizes">${sizes}</div></div><div class="actions" id="stkActs"></div></div>
+  <div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n(mode==='tatuaje'?'Elige un tatuaje y toca al unicornio':'Elige un sticker y toca al unicornio')}</div><div class="grid">${STICKERS.map(d=>`<button class="tile sticker" data-stk="${d.id}" aria-pressed="${ui.sticker===d.id}" aria-label="${i18n(d.name)}"><span class="sw">${stickerSVG(d,mode)}</span><span class="nm">${i18n(d.name)}</span></button>`).join('')}</div></div>`;
   refreshStickerActions();
 }
 function bottleSVG(sc,big){
@@ -1622,13 +1687,13 @@ function bottleSVG(sc,big){
   return `<svg viewBox="0 0 64 ${big?80:76}" aria-hidden="true">${big?pump:`<rect x="23" y="5" width="18" height="13" rx="4" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><path d="M23 10.5H12" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`}<rect x="26" y="${big?19:17}" width="12" height="9" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><rect x="9" y="${big?27:25}" width="46" height="${big?50:48}" rx="15" fill="${mix(sc.c,'#ffffff',.62)}" stroke="${INK}" stroke-width="2.6"/><path d="M11.5 ${big?54:52}h41v${big?6:6}c0 8-6.5 14-14 14h-13c-7.5 0-14-6-14-14z" fill="${sc.c}" opacity=".55"/><path d="M16 ${big?36:34}q0-4 4-5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>${icon}</svg>`;
 }
 function renderPerfume(){
-  optsEl.innerHTML=`<div class="group"><div class="gtitle">${GROUP_ICON.tap}Elige un perfume y rocía al unicornio</div><div class="grid">${SCENTS.map(sc=>`<button class="tile scent" data-scent="${sc.id}" aria-pressed="${ui.scent===sc.id}" aria-label="Perfume de ${sc.name}"><span class="sw" style="background:${mix(sc.c,'#ffffff',.85)}">${bottleSVG(sc)}</span><span class="nm">${sc.name}</span></button>`).join('')}</div></div>`;
+  optsEl.innerHTML=`<div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n('Elige un perfume y rocía al unicornio')}</div><div class="grid">${SCENTS.map(sc=>`<button class="tile scent" data-scent="${sc.id}" aria-pressed="${ui.scent===sc.id}" aria-label="${i18n('Perfume de {name}',{name:i18n(sc.name)})}"><span class="sw" style="background:${mix(sc.c,'#ffffff',.85)}">${bottleSVG(sc)}</span><span class="nm">${i18n(sc.name)}</span></button>`).join('')}</div></div>`;
   optsEl.scrollTop=0;
 }
 let clearArmed=0;
 function refreshStickerActions(){
   const el=$('#stkActs');if(!el)return;const n=state.stickers.length;
-  el.innerHTML=`<button class="act" data-act="undo" ${n?'':'disabled'}>${ICON.undo}Deshacer</button><button class="act ${clearArmed?'warn':''}" data-act="clear" ${n?'':'disabled'}>${ICON.trash}${clearArmed?'¿Quitar todos?':'Quitar todos'}</button>`;
+  el.innerHTML=`<button class="act" data-act="undo" ${n?'':'disabled'}>${ICON.undo}${i18n('Deshacer')}</button><button class="act ${clearArmed?'warn':''}" data-act="clear" ${n?'':'disabled'}>${ICON.trash}${i18n(clearArmed?'¿Quitar todos?':'Quitar todos')}</button>`;
 }
 function refreshDeps(changed){
   for(const g of visibleGroups){if(!(g.deps||[]).includes(changed))continue;const el=optsEl.querySelector(`[data-gkey="${g.key}"]`);if(!el)continue;
@@ -1637,8 +1702,8 @@ function refreshDeps(changed){
 let hintSeen=false;
 function updateHint(){
   const h=$('#hint');const on=(ui.cat==='stickers'||ui.cat==='perfume')&&!hintSeen;h.hidden=!on;
-  if(on&&ui.cat==='perfume'){$('#hintIco').innerHTML=bottleSVG(SCENT[ui.scent]);$('#hintTxt').textContent='Mantén el dedo en el unicornio';return;}
-  if(on){const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';$('#hintIco').innerHTML=stickerSVG(STK[ui.sticker],mode);$('#hintTxt').textContent=mode==='tatuaje'?'Toca el unicornio para el tatuaje':'Toca el unicornio para pegar';}
+  if(on&&ui.cat==='perfume'){$('#hintIco').innerHTML=bottleSVG(SCENT[ui.scent]);$('#hintTxt').textContent=i18n('Mantén el dedo en el unicornio');return;}
+  if(on){const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';$('#hintIco').innerHTML=stickerSVG(STK[ui.sticker],mode);$('#hintTxt').textContent=i18n(mode==='tatuaje'?'Toca el unicornio para el tatuaje':'Toca el unicornio para pegar');}
 }
 catsEl.addEventListener('click',e=>{const b=e.target.closest('.cat');if(!b)return;if(ui.cat!==b.dataset.cat){if(spray)stopSpray();ui.cat=b.dataset.cat;renderCats();renderSubs();renderOpts();saveUI();hintSeen=false;}updateHint();sfx.tab();});
 subsEl.addEventListener('click',e=>{const b=e.target.closest('.pill');if(!b)return;ui.sub[ui.cat]=b.dataset.sub;renderSubs();renderOpts();saveUI();if(ui.cat==='stickers')hintSeen=false;updateHint();sfx.tab();});
@@ -1660,10 +1725,10 @@ optsEl.addEventListener('click',e=>{
 
 /* HUD */
 const btnSound=$('#btnSound'),btnReset=$('#btnReset'),btnFull=$('#btnFull');
-function paintSound(){btnSound.innerHTML=muted?ICON.soundOff:ICON.soundOn;btnSound.setAttribute('aria-pressed',String(!muted));btnSound.setAttribute('aria-label',muted?'Activar sonido':'Silenciar');}
+function paintSound(){btnSound.innerHTML=muted?ICON.soundOff:ICON.soundOn;btnSound.setAttribute('aria-pressed',String(!muted));btnSound.setAttribute('aria-label',i18n(muted?'Activar sonido':'Silenciar'));}
 btnSound.addEventListener('click',()=>{muted=!muted;try{localStorage.setItem(KEY+'-mute',muted?'1':'0');}catch(e){}paintSound();sfx.tab();});
 let resetArmed=0;
-function paintReset(){btnReset.classList.toggle('confirm',!!resetArmed);btnReset.innerHTML=ICON.reset+(resetArmed?'<span>¿Empezar de nuevo?</span>':'');btnReset.setAttribute('aria-label',resetArmed?'Toca otra vez para empezar de nuevo':'Empezar de nuevo');}
+function paintReset(){btnReset.classList.toggle('confirm',!!resetArmed);btnReset.innerHTML=ICON.reset+(resetArmed?`<span>${i18n('¿Empezar de nuevo?')}</span>`:'');btnReset.setAttribute('aria-label',i18n(resetArmed?'Toca otra vez para empezar de nuevo':'Empezar de nuevo'));}
 btnReset.addEventListener('click',()=>{
   if(!resetArmed){resetArmed=1;paintReset();setTimeout(()=>{resetArmed=0;paintReset();},3000);sfx.tab();return;}
   resetArmed=0;state=JSON.parse(JSON.stringify(DEFAULT));applyAll();save();renderOpts();paintReset();sfx.magic();squash(1.3);tYaw=0;tPitch=0;burst(V3(0,.4,.9),24,1.6);
@@ -1727,13 +1792,13 @@ btnSnap.addEventListener('click',()=>{
 
 let viewing=null,delArmed=0,gridDelArmed=null,gridDelTimer=0;
 function renderGallery(){
-  galGrid.innerHTML=photos.slice().reverse().map((p,i)=>`<div class="phc" style="--r:${[-3,2,-1.5,3,-2.5,1.5][i%6]}deg"><button class="ph" data-ph="${p.id}" aria-label="Foto ${photos.length-i}"><img src="${p.img}" alt=""></button><div class="ph-acts"><button class="pa go" data-pa="share" data-id="${p.id}" aria-label="Guardar foto en la tablet">${ICON.savePic}</button><button class="pa${gridDelArmed===p.id?' warn':''}" data-pa="del" data-id="${p.id}" aria-label="${gridDelArmed===p.id?'Toca otra vez para borrar':'Borrar foto'}">${gridDelArmed===p.id?ICON.check:ICON.trash}</button></div></div>`).join('');
+  galGrid.innerHTML=photos.slice().reverse().map((p,i)=>`<div class="phc" style="--r:${[-3,2,-1.5,3,-2.5,1.5][i%6]}deg"><button class="ph" data-ph="${p.id}" aria-label="${i18n('Foto {n}',{n:photos.length-i})}"><img src="${p.img}" alt=""></button><div class="ph-acts"><button class="pa go" data-pa="share" data-id="${p.id}" aria-label="${i18n('Guardar foto en la tablet')}">${ICON.savePic}</button><button class="pa${gridDelArmed===p.id?' warn':''}" data-pa="del" data-id="${p.id}" aria-label="${i18n(gridDelArmed===p.id?'Toca otra vez para borrar':'Borrar foto')}">${gridDelArmed===p.id?ICON.check:ICON.trash}</button></div></div>`).join('');
 }
 function openGallery(){renderGallery();closeViewer();gal.hidden=false;$('#app').inert=true;sfx.tab();$('#galClose').focus();}
 function closeGallery(){gal.hidden=true;$('#app').inert=false;closeViewer();(btnAlbum.hidden?btnSnap:btnAlbum).focus();}
 function openViewer(p){viewing=p;galImg.src=p.img;galView.hidden=false;galGrid.inert=true;delArmed=0;paintDel();galView.querySelector('[data-g="back"]').focus();}
 function closeViewer(){viewing=null;galView.hidden=true;galGrid.inert=false;}
-function paintDel(){const b=galView.querySelector('[data-g="del"]');b.classList.toggle('warn',!!delArmed);b.innerHTML=delArmed?ICON.check:ICON.trash;b.setAttribute('aria-label',delArmed?'Toca otra vez para borrar':'Borrar foto');}
+function paintDel(){const b=galView.querySelector('[data-g="del"]');b.classList.toggle('warn',!!delArmed);b.innerHTML=delArmed?ICON.check:ICON.trash;b.setAttribute('aria-label',i18n(delArmed?'Toca otra vez para borrar':'Borrar foto'));}
 function polaroid(p){
   return new Promise((res,rej)=>{
     const im=new Image();im.onload=()=>{
@@ -1755,7 +1820,7 @@ async function sharePhoto(p){
   const name=`unicornio-${new Date(p.t).toISOString().slice(0,10)}-${p.id}.png`;
   const file=typeof File==='function'?new File([blob],name,{type:'image/png'}):null;
   if(file&&navigator.canShare&&navigator.canShare({files:[file]})){
-    try{await navigator.share({files:[file],title:'Mi unicornio'});return;}catch(e){if(e&&e.name==='AbortError')return;}
+    try{await navigator.share({files:[file],title:i18n('Mi unicornio')});return;}catch(e){if(e&&e.name==='AbortError')return;}
   }
   const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),4000);
 }
