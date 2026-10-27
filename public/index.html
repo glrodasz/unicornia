@@ -146,9 +146,8 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .credit{flex:none;margin:-6px 0 0;padding-bottom:env(safe-area-inset-bottom,0px);text-align:center;font:700 12px/1.3 var(--font-body);color:var(--ink-soft)}
 .opts>.credit{margin:auto 0 0;padding-top:4px}
 .credit-copy{appearance:none;border:0;background:none;padding:6px 2px;margin:-6px 0;cursor:pointer;font:inherit;color:inherit;text-decoration:underline;text-decoration-color:var(--chip-edge);text-underline-offset:2px}
-.copied{position:fixed;left:50%;bottom:calc(56px + env(safe-area-inset-bottom,0px));z-index:30;padding:10px 20px;border-radius:999px;background:linear-gradient(90deg,#ff6f9f,#ffc94d,#6fd6a8,#6fb7ff,#a98bff);color:#fff;font:800 18px/1.1 var(--font-display);text-shadow:0 1px 2px rgba(61,39,72,.35);white-space:nowrap;box-shadow:0 10px 26px rgba(61,39,72,.3);pointer-events:none;opacity:0;transform:translate(-50%,16px) scale(.6)}
-.copied.show{animation:copiedPop 1.8s cubic-bezier(.3,1.6,.5,1) forwards}
-@keyframes copiedPop{0%{opacity:0;transform:translate(-50%,16px) scale(.6)}14%{opacity:1;transform:translate(-50%,0) scale(1.12) rotate(-2deg)}24%,80%{opacity:1;transform:translate(-50%,0) scale(1) rotate(0)}100%{opacity:0;transform:translate(-50%,-10px) scale(.95)}}
+.copied{position:fixed;left:50%;bottom:calc(40px + env(safe-area-inset-bottom,0px));z-index:30;padding:5px 12px;border-radius:999px;background:rgba(61,39,72,.82);color:#fff;font:700 12px/1.2 var(--font-body);white-space:nowrap;pointer-events:none;opacity:0;transform:translateX(-50%);transition:opacity .25s}
+.copied.show{opacity:1}
 .group{display:flex;flex-direction:column;gap:8px}
 .gtitle{display:flex;align-items:center;gap:6px;font:800 13px/1 var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-soft);padding-left:2px}
 .gtitle svg{width:26px;height:26px;flex:none}
@@ -283,10 +282,10 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
     <nav class="cats" id="cats" role="tablist" aria-label="Categorías"></nav>
     <div class="subs" id="subs" role="tablist"></div>
     <div class="opts" id="opts"></div>
-    <footer class="credit" id="credit">Made with 🌈 by <button class="credit-copy" id="creditCopy" type="button" aria-label="Copy guillermorodas.com">Guillermo Rodas</button></footer>
+    <footer class="credit" id="credit">Made with 🌈 by <button class="credit-copy" id="creditCopy" type="button" aria-label="Copiar guillermorodas.com">Guillermo Rodas</button></footer>
   </section>
 </div>
-<div class="copied" id="copied" role="status" aria-live="polite">Copied to clipboard! ✨</div>
+<div class="copied" id="copied" role="status" aria-live="polite">Copiado al portapapeles</div>
 <div class="gal" id="gal" role="dialog" aria-modal="true" aria-label="Mis fotos" hidden>
   <div class="gal-sheet">
     <div class="gal-top"><span class="gal-ttl" id="galTtl"></span><button class="gbtn x" id="galClose" aria-label="Cerrar"></button></div>
@@ -1550,6 +1549,7 @@ function renderOpts(){
   placeCredit();
 }
 /* Credit: pinned under the tray on tablets; on phones it rides at the end of the scrolling options. Copies the URL instead of linking so a stray tap can't open a new tab. */
+let copiedT=0;
 const creditEl=$('#credit'),copiedEl=$('#copied'),creditMQ=matchMedia('(max-width:600px),(max-height:520px)');
 function placeCredit(){(creditMQ.matches?optsEl:trayEl).append(creditEl);}
 creditMQ.addEventListener('change',placeCredit);
@@ -1559,7 +1559,7 @@ async function copyText(t){
 }
 $('#creditCopy').addEventListener('click',async()=>{
   await copyText('https://guillermorodas.com');
-  sfx.magic();copiedEl.classList.remove('show');void copiedEl.offsetWidth;copiedEl.classList.add('show');
+  copiedEl.classList.add('show');clearTimeout(copiedT);copiedT=setTimeout(()=>copiedEl.classList.remove('show'),1600);
 });
 function renderStickers(){
   const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';
