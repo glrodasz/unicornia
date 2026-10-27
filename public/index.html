@@ -403,6 +403,11 @@ const ell=(cx,cy,rx,ry)=>`M${cx-rx} ${cy}a${rx} ${ry} 0 1 0 ${2*rx} 0a${rx} ${ry
 // Drawn the opposite way round, so under the nonzero rule it cuts a hole in the shape it follows.
 const holeC=(cx,cy,r)=>`M${cx-r} ${cy}a${r} ${r} 0 1 1 ${2*r} 0a${r} ${r} 0 1 1 ${-2*r} 0Z`;
 const ellR=(cx,cy,rx,ry,deg,hole=0)=>{const a=deg*D2R,dx=+(Math.cos(a)*rx).toFixed(2),dy=+(Math.sin(a)*rx).toFixed(2),f=hole?1:0;return `M${cx-dx} ${cy-dy}A${rx} ${ry} ${deg} 1 ${f} ${cx+dx} ${cy+dy}A${rx} ${ry} ${deg} 1 ${f} ${cx-dx} ${cy-dy}Z`;};
+// Front (lower) half of a tilted ring band, to lay over a planet drawn on top of the full ring.
+// `line` traces only the two arcs, so the cut ends get no tattoo outline.
+const ringFront=(cx,cy,ro,ryo,ri,ryi,deg)=>{const c=Math.cos(deg*D2R),n=Math.sin(deg*D2R),pt=(r,k)=>`${+(cx+k*c*r).toFixed(2)} ${+(cy+k*n*r).toFixed(2)}`;
+  const outer=`M${pt(ro,-1)}A${ro} ${ryo} ${deg} 0 0 ${pt(ro,1)}`,inner=`${pt(ri,1)}A${ri} ${ryi} ${deg} 0 1 ${pt(ri,-1)}`;
+  return {d:`${outer}L${inner}Z`,line:`${outer}M${inner}`};};
 const starP=(cx,cy,R,r,n=5,rot=-Math.PI/2)=>{let d='';for(let i=0;i<n*2;i++){const a=rot+i*Math.PI/n,rr=i%2?r:R;d+=(i?'L':'M')+(cx+Math.cos(a)*rr).toFixed(2)+' '+(cy+Math.sin(a)*rr).toFixed(2);}return d+'Z';};
 const band=(cx,cy,ro,ri)=>`M${cx-ro} ${cy}A${ro} ${ro} 0 0 1 ${cx+ro} ${cy}L${cx+ri} ${cy}A${ri} ${ri} 0 0 0 ${cx-ri} ${cy}Z`;
 const HEART='M50 88C22 68 6 50 6 33C6 18 17 8 30 8C39 8 46 13 50 21C54 13 61 8 70 8C83 8 94 18 94 33C94 50 78 68 50 88Z';
@@ -432,13 +437,13 @@ const STICKERS=[
   {id:'pastelito',name:'Pastelito',L:[['M18 54H82L72 94H28Z','#8fd0ff'],['M34 54H42L44 94H38ZM58 54H66L62 94H56Z','#5cb8f5'],[circ(30,46,16)+circ(50,38,20)+circ(70,46,16),'#ff9cc8'],[ell(36,40,3,1.6)+ell(58,32,3,1.6)+ell(66,46,3,1.6)+ell(46,50,3,1.6),'#ffffff'],[circ(50,15,8),'#ff3b5c']]},
   {id:'dona',name:'Dona',L:[[circ(50,50,44)+holeC(50,50,14),'#e8a663'],['M14 50C14 40 20 34 22 30C30 18 40 14 50 14C64 14 76 20 82 30C86 36 86 42 84 46C88 52 86 60 82 62C80 70 72 80 62 82C56 86 44 86 38 82C28 80 20 72 18 64C14 60 14 54 14 50Z'+circ(50,50,14),'#ff7ac8'],[[[30,34],[66,30],[74,58],[38,72],[24,54],[56,74]].map(([x,y])=>ell(x,y,4,2)).join(''),'#ffffff'],[ell(48,26,4,2)+ell(70,44,4,2)+ell(28,42,4,2)+ell(64,70,4,2),'#ffd447']]},
   {id:'caramelo',name:'Caramelo',L:[['M34 50L6 28L12 50L6 72ZM66 50L94 28L88 50L94 72Z','#ffd447'],[circ(50,50,25),'#ff5d8f'],['M36 34Q48 50 36 66L42 70Q56 50 42 30ZM58 30Q46 50 58 70L64 66Q52 50 64 34Z','#ffffff']]},
-  {id:'sandia',name:'Sandía',L:[['M4 28A46 46 0 0 0 96 28Z','#3cb371'],['M9 28A41 41 0 0 0 91 28Z','#c8f08a'],['M13 28A37 37 0 0 0 87 28Z','#ff5d6c'],[ell(34,40,2.6,4)+ell(50,48,2.6,4)+ell(66,40,2.6,4)+ell(42,56,2.6,4)+ell(58,56,2.6,4),'#3d2748']]},
+  {id:'sandia',name:'Sandía',L:[['M4 28A46 46 0 0 0 96 28Z','#3cb371'],['M9 28A41 41 0 0 0 91 28Z','#c8f08a',{line:false}],['M13 28A37 37 0 0 0 87 28Z','#ff5d6c',{line:false}],[ell(34,40,2.6,4)+ell(50,48,2.6,4)+ell(66,40,2.6,4)+ell(42,56,2.6,4)+ell(58,56,2.6,4),'#3d2748',{line:false}]]},
   {id:'cerezas',name:'Cerezas',L:[['M30 62Q38 30 62 12L66 17Q44 34 36 63ZM68 66Q66 40 62 14L67 13Q73 40 75 66Z','#5b8f3a'],['M64 15Q78 0 94 8Q82 24 64 15Z','#5fcf7f'],[circ(32,72,18)+circ(70,74,18),'#ff2e57'],[ell(26,66,4,6)+ell(64,68,4,6),'#ffd0da']]},
-  {id:'mariquita',name:'Mariquita',L:[[circ(50,22,15),'#3d2748'],[circ(50,58,36),'#ff4d4d'],['M48 26H52V94H48Z'+circ(34,46,6.5)+circ(66,46,6.5)+circ(30,70,6)+circ(70,70,6)+circ(40,86,4.5)+circ(60,86,4.5),'#3d2748'],[circ(44,18,3.2)+circ(56,18,3.2),'#ffffff']]},
+  {id:'mariquita',name:'Mariquita',L:[[circ(50,22,15),'#3d2748'],[circ(50,58,36),'#ff4d4d'],['M48 26H52V94H48Z'+circ(34,46,6.5)+circ(66,46,6.5)+circ(30,70,6)+circ(70,70,6)+circ(40,86,4.5)+circ(60,86,4.5),'#3d2748',{line:false}],[circ(44,18,3.2)+circ(56,18,3.2),'#ffffff',{line:false}]]},
   {id:'globo',name:'Globo',L:[['M47 76H53Q60 87 51 98H45Q54 87 47 76Z','#a17cf0'],['M43 81L50 72L57 81Z','#e83f86'],[ell(50,40,31,35),'#ff5d8f'],[ell(38,26,6,10),'#ffd0e4']]},
   {id:'corona',name:'Corona',L:[['M10 82L14 30L32 52L50 18L68 52L86 30L90 82Z','#ffd447'],['M10 70H90V84H10Z','#f2a516'],[circ(14,28,6)+circ(50,16,6)+circ(86,28,6),'#ff8fc8'],[circ(50,77,5),'#ff5d8f'],[circ(28,77,4)+circ(72,77,4),'#6fd9ff']]},
   {id:'pececito',name:'Pececito',L:[['M68 50L96 26L90 50L96 74ZM34 30Q46 10 60 28Z','#ffa44f'],[ell(44,52,34,26),'#ff8a3d'],['M54 30Q64 52 54 74L60 72Q70 52 60 32Z','#ffd447'],[circ(26,46,7),'#ffffff'],[circ(25,46,3.5),'#3d2748'],[circ(8,22,5)+circ(16,10,3.5),'#a8e1ff']]},
-  {id:'planeta',name:'Planeta',L:[[circ(50,48,29),'#c9a3ff'],[circ(40,36,4.5)+circ(62,34,3)+circ(36,60,3),'#b18cff'],[ellR(50,54,47,13,-14)+ellR(50,54,34,6.5,-14,1),'#ffd447'],[starP(14,16,8,3.5),'#fff0a0']]},
+  {id:'planeta',name:'Planeta',L:[[ellR(50,54,47,13,-14)+ellR(50,54,34,6.5,-14,1),'#ffd447'],[circ(50,48,29),'#c9a3ff'],[circ(40,36,4.5)+circ(62,34,3)+circ(36,60,3),'#b18cff',{line:false}],(r=>[r.d,'#ffd447',{line:r.line}])(ringFront(50,54,47,13,34,6.5,-14)),[starP(14,16,8,3.5),'#fff0a0']]},
   {id:'huellita',name:'Huellita',L:[[ell(50,68,23,19),'#ff8fc8'],[ellR(23,42,8.5,11,-20)+ellR(40,27,8.5,11,-6)+ellR(60,27,8.5,11,6)+ellR(77,42,8.5,11,20),'#ffb3d9']]},
   {id:'lazo',name:'Lazo',L:[['M44 56L32 96L44 88L50 96L50 56ZM56 56L68 96L56 88L50 96L50 56Z','#e83f86'],['M50 50L10 24Q2 50 10 76ZM50 50L90 24Q98 50 90 76Z','#ff5d9e'],['M42 50L16 35Q12 50 16 65ZM58 50L84 35Q88 50 84 65Z','#ff8fc8'],[ell(50,50,10,13),'#e83f86']]},
   {id:'alitas',name:'Alitas',L:[[ellR(22,40,20,7,-28)+ellR(20,51,18,6,-10)+ellR(25,61,14,5,8)+ellR(78,40,20,7,28)+ellR(80,51,18,6,10)+ellR(75,61,14,5,-8),'#d4ecff'],['M50 84C32 72 24 62 24 50C24 41 31 35 39 35C44 35 48 38 50 43C52 38 56 35 61 35C69 35 76 41 76 50C76 62 68 72 50 84Z','#ff5d8f'],[ell(38,46,5,3.5),'#ffc2d6']]},
@@ -454,7 +459,8 @@ const SCENTS=[
   {id:'flores',name:'Flores',c:'#ff8fc8',mist:['#ffb3dc','#ffe0f0','#d4b8ff','#fff3a0'],L:STICKERS.find(x=>x.id==='flor').L},
 ];
 const SCENT={};SCENTS.forEach(s=>{SCENT[s.id]=s;s.paths=s.L.map(([d,f])=>[new Path2D(d),f]);s.all=new Path2D(s.L.map(l=>l[0]).join(' '));});
-const STK={};STICKERS.forEach(s=>{STK[s.id]=s;s.paths=s.L.map(([d,f])=>[new Path2D(d),f]);s.all=new Path2D(s.L.map(l=>l[0]).join(' '));});
+// A layer's optional third item sets its tattoo outline: {line:false} for none, {line:d} to trace d instead of the shape.
+const STK={};STICKERS.forEach(s=>{STK[s.id]=s;s.paths=s.L.map(([d,f,o={}])=>{const p=new Path2D(d);return [p,f,o.line===false?null:o.line?new Path2D(o.line):p];});s.all=new Path2D(s.L.map(l=>l[0]).join(' '));});
 
 /* ================= catalogs ================= */
 const FUR=[
@@ -658,7 +664,7 @@ function tattooImg(def){
   if(tattooCache[def.id])return tattooCache[def.id];
   const S=512,c=document.createElement('canvas');c.width=c.height=S;const x=c.getContext('2d');
   x.scale(S/112,S/112);x.translate(6,6);x.lineWidth=6.8;x.lineJoin='round';x.strokeStyle='#3a2a52';
-  for(const[p,f]of def.paths){x.stroke(p);x.fillStyle=f;x.fill(p);}
+  for(const[p,f,ln]of def.paths){if(ln)x.stroke(ln);x.fillStyle=f;x.fill(p);}
   return tattooCache[def.id]=c;
 }
 function drawSticker(x,def,mode){
@@ -1569,7 +1575,7 @@ function lipsSVG(o){
 }
 function stickerSVG(def,mode){
   const all=def.L.map(l=>l[0]).join(' ');
-  if(mode==='tatuaje')return `<svg viewBox="-6 -6 112 112" aria-hidden="true"><g opacity=".82">${def.L.map(([d,f])=>`<path d="${d}" fill="${f}" stroke="#3a2a52" stroke-width="6.8" stroke-linejoin="round" paint-order="stroke"/>`).join('')}</g></svg>`;
+  if(mode==='tatuaje')return `<svg viewBox="-6 -6 112 112" aria-hidden="true"><g opacity=".82">${def.L.map(([d,f,o={}])=>o.line===false?`<path d="${d}" fill="${f}"/>`:o.line?`<path d="${o.line}" fill="none" stroke="#3a2a52" stroke-width="6.8" stroke-linejoin="round"/><path d="${d}" fill="${f}"/>`:`<path d="${d}" fill="${f}" stroke="#3a2a52" stroke-width="6.8" stroke-linejoin="round" paint-order="stroke"/>`).join('')}</g></svg>`;
   return `<svg viewBox="-10 -10 120 120" aria-hidden="true"><path d="${all}" fill="#fff" stroke="#fff" stroke-width="15" stroke-linejoin="round"/>${def.L.map(([d,f])=>`<path d="${d}" fill="${f}"/>`).join('')}</svg>`;
 }
 
