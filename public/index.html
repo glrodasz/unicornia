@@ -1610,9 +1610,9 @@ const legRig=paws.map(p=>{
   shadowAll(sh);
   return{p,sh,knee,foot,k:0,on:false,qa:new THREE.Quaternion(),qb:new THREE.Quaternion()};
 });
-/* Tongue: a half-dome 😛 tongue coming out of the middle of the smile line (muzzle lat -21): flat edge on the mouth line, round edge down. */
+/* Tongue: a half-dome 😛 tongue coming out of the middle of the smile line (muzzle lat -21): flat edge on the mouth line, round edge down, sticking out at 45°. */
 const MOUTH_AT=muzzlePt(0,-21),MOUTH_N=V3(0,(MOUTH_AT.y-MZ.c.y)/(MZ.r.y*MZ.r.y),(MOUTH_AT.z-MZ.c.z)/(MZ.r.z*MZ.r.z)).normalize();
-const TONGUE_DIR=V3(0,-1,0).projectOnPlane(MOUTH_N).normalize().multiplyScalar(Math.cos(.3)).addScaledVector(MOUTH_N,Math.sin(.3)).normalize();
+const TONGUE_DIR=V3(0,-1,0).projectOnPlane(MOUTH_N).normalize().multiplyScalar(Math.cos(Math.PI/4)).addScaledVector(MOUTH_N,Math.sin(Math.PI/4)).normalize();
 const tongueG=new THREE.Group();tongueG.position.copy(MOUTH_AT);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.visible=false;headG.add(tongueG);
 const tongue=new THREE.Group();tongueG.add(tongue);
 {const dome=new THREE.Mesh(new THREE.SphereGeometry(1,40,20,0,TAU,0,Math.PI/2),clay('#ff7aa2',{roughness:.35,clearcoat:.6}));dome.castShadow=true;tongue.add(dome);
@@ -2121,18 +2121,21 @@ const PAW_CATS=[
 ];
 const pawDone={recortar:()=>state.paws.every(s=>s.cut===ALL_CUT),limar:()=>state.paws.every(s=>s.file>=1),pintar:()=>state.paws.every(s=>s.polish!=='sin'),decorar:()=>state.paws.every(s=>s.deco.length>0)};
 const PAW_TOOLS={
-  recortar:[{id:'rosa',name:'Rosa',c:'#ff6f9f'},{id:'cielo',name:'Cielo',c:'#4aa8f0'},{id:'menta',name:'Menta',c:'#2fbf8f'},{id:'oro',name:'Oro',c:'#f2b632'}],
+  recortar:[{id:'rosa',name:'Rosa',c:'#ff6f9f'},{id:'cielo',name:'Cielo',c:'#4aa8f0'},{id:'menta',name:'Menta',c:'#2fbf8f'},{id:'oro',name:'Oro',c:'#f2b632'},{id:'arcoiris',name:'Arcoíris',multi:1}],
   limar:[{id:'rosa',name:'Rosa',c:'#ff9cc4'},{id:'lila',name:'Lila',c:'#b89af6'},{id:'limon',name:'Limón',c:'#ffd84d'},{id:'arcoiris',name:'Arcoíris',multi:1}],
 };
+// Each copy gets its own gradient id: a url(#id) pointing into a hidden (display:none) svg renders black.
+let sciN=0; // shared by the scissors and nail-file icons
 function scissorsSVG(id){
-  const c=byId(PAW_TOOLS.recortar,id).c,line=(x,y,col)=>`<path d="M44 44L${x} ${y}" stroke="${INK}" stroke-width="12" stroke-linecap="round"/><path d="M44 44L${x} ${y}" stroke="${col}" stroke-width="6.5" stroke-linecap="round"/>`;
+  const o=byId(PAW_TOOLS.recortar,id),gid='scigrad'+(++sciN),c=o.multi?`url(#${gid})`:o.c,line=(x,y,col)=>`<path d="M44 44L${x} ${y}" stroke="${INK}" stroke-width="12" stroke-linecap="round"/><path d="M44 44L${x} ${y}" stroke="${col}" stroke-width="6.5" stroke-linecap="round"/>`;
   const loop=(x,y)=>`<circle cx="${x}" cy="${y}" r="12" fill="none" stroke="${INK}" stroke-width="11"/><circle cx="${x}" cy="${y}" r="12" fill="none" stroke="${c}" stroke-width="5.5"/>`;
-  return `<svg viewBox="0 0 100 100" aria-hidden="true"><g class="bA">${line(58,68,c)}${loop(64,80)}${line(10,10,'#eef2f8')}</g><g class="bB">${line(70,56,c)}${loop(81,61)}${line(5,24,'#eef2f8')}</g><circle cx="44" cy="44" r="4.5" fill="#fff" stroke="${INK}" stroke-width="2.5"/></svg>`;
+  const defs=o.multi?`<defs><linearGradient id="${gid}" gradientUnits="userSpaceOnUse" x1="44" y1="44" x2="90" y2="90">${RAINBOW.map((k,i,a)=>`<stop offset="${i/(a.length-1)}" stop-color="${k}"/>`).join('')}</linearGradient></defs>`:'';
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${defs}<g class="bA">${line(58,68,c)}${loop(64,80)}${line(10,10,'#eef2f8')}</g><g class="bB">${line(70,56,c)}${loop(81,61)}${line(5,24,'#eef2f8')}</g><circle cx="44" cy="44" r="4.5" fill="#fff" stroke="${INK}" stroke-width="2.5"/></svg>`;
 }
 function fileSVG(id){
-  const o=byId(PAW_TOOLS.limar,id),grit=[16,23,30,37,44,51].map((x,i)=>`<circle cx="${x}" cy="${i%2?46:54}" r="2" fill="${INK}" opacity=".28"/>`).join('');
-  const defs=o.multi?`<defs><linearGradient id="filegrad" x1="0" y1="0" x2="1" y2="0">${RAINBOW.map((c,i,a)=>`<stop offset="${i/(a.length-1)}" stop-color="${c}"/>`).join('')}</linearGradient></defs>`:'';
-  return `<svg viewBox="0 0 100 100" aria-hidden="true">${defs}<g transform="rotate(-35 50 50)"><rect x="6" y="38" width="88" height="24" rx="12" fill="${o.multi?'url(#filegrad)':o.c}" stroke="${INK}" stroke-width="3.5"/><path d="M64 39.5h18a10.5 10.5 0 0 1 0 21H64z" fill="#fff" opacity=".6"/>${grit}</g></svg>`;
+  const o=byId(PAW_TOOLS.limar,id),gid='filegrad'+(++sciN),grit=[16,23,30,37,44,51].map((x,i)=>`<circle cx="${x}" cy="${i%2?46:54}" r="2" fill="${INK}" opacity=".28"/>`).join('');
+  const defs=o.multi?`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="0">${RAINBOW.map((c,i,a)=>`<stop offset="${i/(a.length-1)}" stop-color="${c}"/>`).join('')}</linearGradient></defs>`:'';
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${defs}<g transform="rotate(-35 50 50)"><rect x="6" y="38" width="88" height="24" rx="12" fill="${o.multi?`url(#${gid})`:o.c}" stroke="${INK}" stroke-width="3.5"/><path d="M64 39.5h18a10.5 10.5 0 0 1 0 21H64z" fill="#fff" opacity=".6"/>${grit}</g></svg>`;
 }
 const polishCache={};
 function polishSwatch(o){
