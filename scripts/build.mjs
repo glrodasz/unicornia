@@ -1,8 +1,7 @@
 // Builds dist/ for Cloudflare Pages from public/ (no dependencies):
-//   /es  -> dist/es.html  the game pinned to Spanish, Spanish SEO/OG tags
-//   /en  -> dist/en.html  the game pinned to English, English SEO/OG tags
-//   /    -> dist/index.html  Spanish OG tags (link previews of the bare URL) and an
-//           instant redirect to /es or /en by browser language, Spanish by default.
+//   /    -> dist/index.html  the game pinned to English (the default), English SEO/OG tags;
+//           browsers whose first supported language is Spanish are sent to /es before it renders.
+//   /es  -> dist/es.html     the game pinned to Spanish, Spanish SEO/OG tags; never redirects.
 // Link-preview crawlers don't run JS, so every page carries its tags in the HTML itself.
 import { cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
@@ -10,8 +9,10 @@ const SITE = 'https://unicornia.pages.dev';
 const SRC = 'public';
 const OUT = 'dist';
 
+const DEFAULT_LANG = 'en';
 const COPY = {
   es: {
+    path: '/es',
     locale: 'es_ES',
     image: '/og/unicornia.jpg',
     title: 'Unicornia: viste y maquilla a tu unicornio',
@@ -20,6 +21,7 @@ const COPY = {
     imageAlt: 'Un unicornio blanco de plastilina con melena arcoíris y cuerno dorado, junto al título Unicornia.',
   },
   en: {
+    path: '/',
     locale: 'en_US',
     image: '/og/unicornia-en.jpg', // same picture, English subtitle
     title: 'Unicornia: dress up your unicorn',
@@ -39,18 +41,18 @@ function replaceOnce(html, re, to) {
   return html.replace(re, to);
 }
 
-function localize(html, lang, path) {
+function localize(html, lang) {
   const c = COPY[lang];
-  const url = SITE + path;
+  const url = SITE + c.path;
   const meta = (attr, key, value) => [new RegExp(`<meta ${attr}="${key}" content="[^"]*">`), `<meta ${attr}="${key}" content="${esc(value)}">`];
   const swaps = [
-    [/<html lang="[^"]*">/, path === '/' ? `<html lang="${lang}">` : `<html lang="${lang}" data-lang="${lang}">`],
+    [/<html lang="[^"]*">/, `<html lang="${lang}" data-lang="${lang}">`],
     [/<title>[^<]*<\/title>/, `<title>${esc(c.title)}</title>`],
     meta('name', 'description', c.description),
     [/<link rel="canonical" href="[^"]*">/, [
       `<link rel="canonical" href="${url}">`,
-      ...LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}/${l}">`),
-      `<link rel="alternate" hreflang="x-default" href="${SITE}/">`,
+      ...LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${COPY[l].path}">`),
+      `<link rel="alternate" hreflang="x-default" href="${SITE}${COPY[DEFAULT_LANG].path}">`,
     ].join('\n')],
     [/<meta property="og:locale" content="[^"]*">/, [
       `<meta property="og:locale" content="${c.locale}">`,
@@ -69,28 +71,18 @@ function localize(html, lang, path) {
   return swaps.reduce((h, [re, to]) => replaceOnce(h, re, to), html);
 }
 
-// The root page keeps the game's <head> tags (icons, manifest, OG) and nothing else.
-function rootPage(game) {
-  const head = game.slice(0, game.indexOf('<link rel="preconnect"'));
-  if (!head.includes('<meta property="og:title"')) throw new Error('build: OG tags not found before the font preconnect');
-  return `${localize(head, 'es', '/')}<style>html,body{margin:0;height:100%;background:#9fdcd0}</style>
-<script>
+// Runs right after <meta charset> on the default page, before anything renders.
+const REDIRECT = `<script>
 (function(){
-  var langs=${JSON.stringify(LANGS)},list=navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language],lang='es';
-  for(var i=0;i<list.length;i++){var b=String(list[i]||'').toLowerCase().split('-')[0];if(langs.indexOf(b)>=0){lang=b;break;}}
-  location.replace('/'+lang+location.search+location.hash);
+  var paths=${JSON.stringify(Object.fromEntries(LANGS.map((l) => [l, COPY[l].path])))},list=navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language];
+  for(var i=0;i<list.length;i++){var b=String(list[i]||'').toLowerCase().split('-')[0];if(paths[b]){if(b!=='${DEFAULT_LANG}')location.replace(paths[b]+location.search+location.hash);return;}}
 })();
-</script>
-</head>
-<body></body>
-</html>
-`;
-}
+</script>`;
 
 const game = readFileSync(`${SRC}/index.html`, 'utf8');
 rmSync(OUT, { recursive: true, force: true });
 cpSync(SRC, OUT, { recursive: true });
-for (const lang of LANGS) writeFileSync(`${OUT}/${lang}.html`, localize(game, lang, `/${lang}`));
-writeFileSync(`${OUT}/index.html`, rootPage(game));
-writeFileSync(`${OUT}/_redirects`, LANGS.map((l) => `/${l}/ /${l} 301`).join('\n') + '\n');
-console.log(`build: ${OUT}/ with /, ${LANGS.map((l) => '/' + l).join(', ')}`);
+writeFileSync(`${OUT}/index.html`, replaceOnce(localize(game, DEFAULT_LANG), /<meta charset="utf-8">/, `<meta charset="utf-8">\n${REDIRECT}`));
+writeFileSync(`${OUT}/es.html`, localize(game, 'es'));
+writeFileSync(`${OUT}/_redirects`, ['/es/ /es 301', '/en / 301', '/en/ / 301'].join('\n') + '\n');
+console.log(`build: ${OUT}/ with / (${DEFAULT_LANG}) and /es`);

@@ -9,7 +9,7 @@ public/                 ← fuente del sitio estático
   index.html            ← juego completo (HTML + CSS + JS en un solo archivo)
   og/                   ← imágenes para vistas previas al compartir (es y en)
   vendor/three.min.js   ← three.js r149, servido localmente (antes venía de jsDelivr)
-scripts/build.mjs       ← genera dist/ (lo que se publica): /es, /en y la raíz /
+scripts/build.mjs       ← genera dist/ (lo que se publica): / (inglés) y /es
 original/
   artifact-snapshot.html ← copia exacta del artifact original de Claude, como referencia
 ```
@@ -18,14 +18,15 @@ original/
 
 ## URLs por idioma
 
-- `/es` y `/en`: el juego fijado a ese idioma, con título, descripción y etiquetas Open Graph en ese idioma (las vistas previas de WhatsApp, etc. salen en el idioma del enlace).
-- `/`: lleva las etiquetas en español (idioma por defecto) y redirige al instante a `/es` o `/en` según el idioma del navegador; cualquier otro idioma va a `/es`.
+- `/`: el juego en inglés (idioma por defecto), con título, descripción y etiquetas Open Graph en inglés. Si el primer idioma soportado del navegador es español, redirige al instante a `/es`.
+- `/es`: el juego en español, con sus etiquetas en español. Nunca redirige: el idioma de la URL manda.
+- `/en`, `/en/` y `/es/` redirigen (301) a `/` y `/es`.
 - `public/index.html` sigue siendo la única fuente: `scripts/build.mjs` cambia solo las etiquetas del `<head>` y añade `hreflang`. Si renombras una de esas etiquetas, el build falla en vez de publicar etiquetas viejas.
 
 ## Ejecutar en local
 
 ```
-node scripts/build.mjs && npx serve dist   # como en producción (/, /es, /en)
+node scripts/build.mjs && npx serve dist   # como en producción (/ y /es)
 npx serve public                           # solo el juego, idioma del navegador
 ```
 
