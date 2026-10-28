@@ -1767,9 +1767,9 @@ function love(sc){
 }
 document.addEventListener('gesturestart',e=>e.preventDefault());
 /* Holding a finger on the unicorn (perfume) must not scroll/bounce the page, zoom, or open the long-press menu.
-   Pointer events still fire; only the browser's default touch gestures are cancelled. The options list keeps its own scroll. */
+   Pointer events still fire; only the browser's default touch gestures are cancelled. The options list and the photo gallery keep their own scroll. */
 canvas.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
-document.addEventListener('touchmove',e=>{if(!e.target.closest('.opts'))e.preventDefault();},{passive:false});
+document.addEventListener('touchmove',e=>{if(!e.target.closest('.opts,.gal-grid'))e.preventDefault();},{passive:false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
 function hitTest(cx,cy){
