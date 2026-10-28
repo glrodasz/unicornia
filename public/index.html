@@ -181,6 +181,43 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .act:disabled{opacity:.45}
 .row{display:flex;justify-content:space-between;align-items:flex-end;gap:12px;flex-wrap:wrap}
 
+/* ---------- Steps (1 unicorn → 2 hooves → …) and the hoof salon ---------- */
+.steps{display:flex;align-items:center;gap:6px;flex:none;padding-top:4px}
+.step{appearance:none;border:0;cursor:pointer;flex:1;min-width:0;position:relative;display:flex;align-items:center;gap:8px;min-height:50px;padding:4px 14px 4px 6px;border-radius:999px;background:var(--chip);color:var(--ink);box-shadow:0 3px 0 var(--chip-edge);font:800 18px/1.1 var(--font-display);transition:transform .12s}
+.step:active{transform:translateY(2px)}
+.step[aria-pressed="true"]{background:var(--ink);color:#fff;box-shadow:0 3px 0 #22142b}
+.step-ico{flex:none;width:40px;height:40px;border-radius:50%;background:#fff;display:grid;place-items:center}
+.step-ico svg{width:34px;height:34px}
+.step-nm{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.step b{position:absolute;top:-6px;left:-4px;width:22px;height:22px;border-radius:50%;background:var(--sun);color:var(--ink);font:800 14px/22px var(--font-display);text-align:center;box-shadow:0 2px 0 var(--sun-edge)}
+.step-arrow{flex:none;display:grid;color:var(--ink-soft)}
+.step-arrow svg{width:20px;height:20px}
+.cat{position:relative}
+.cat .num,.cat .done{position:absolute;top:-6px;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font:800 13px/1 var(--font-display);font-style:normal}
+.cat .num{left:-4px;background:#fff;color:var(--c-deep);box-shadow:0 2px 0 var(--c-edge)}
+.cat .done{right:-4px;background:#5cc98a;color:#fff;box-shadow:0 2px 0 #3a9d66;opacity:0;transform:scale(.3);transition:opacity .2s,transform .3s cubic-bezier(.3,1.8,.5,1)}
+.cat .done svg{width:15px;height:15px}
+.cat.is-done .done{opacity:1;transform:none}
+.cat.next{animation:nextbob 1.1s ease-in-out infinite}
+@keyframes nextbob{0%,100%{transform:none}50%{transform:translateY(-6px) scale(1.05)}}
+.sw.pol{background-size:cover}
+.ptool{position:absolute;left:0;top:0;width:100px;height:100px;z-index:3;pointer-events:none;filter:drop-shadow(0 6px 8px rgba(61,39,72,.25))}
+.ptool svg,.coach .mv .tool svg{width:100%;height:100%;display:block}
+.ptool .bB,.coach .bB{transform-box:view-box;transform-origin:44px 44px;transition:transform .08s}
+.ptool.cut .bB{transform:rotate(-16deg)}
+.coach .mv{left:0;top:0;width:0;height:0}
+.coach .mv>*{position:absolute}
+.coach .mv .tool{left:-72px;top:-76px;width:100px;height:100px;filter:drop-shadow(0 6px 8px rgba(61,39,72,.25))}
+.coach .mv .tool.file{left:-50px;top:-62px}
+.coach.swipe .finger,.coach.rub .finger{animation:none}
+.coach.swipe .mv{animation:coachSwipe 2.4s ease-in-out infinite}
+.coach.swipe .bB{animation:coachSnip .4s ease-in-out infinite}
+.coach.rub .mv{animation:coachRub 1.8s ease-in-out infinite}
+.coach .stk .sw{display:block;width:100%;height:100%;border-radius:50%;box-shadow:0 0 0 5px #fff,0 4px 10px rgba(61,39,72,.25)}
+@keyframes coachSwipe{0%{transform:translate(-80px,0);opacity:0}12%{opacity:1}72%{transform:translate(80px,4px);opacity:1}86%,100%{transform:translate(80px,4px);opacity:0}}
+@keyframes coachSnip{50%{transform:rotate(-16deg)}}
+@keyframes coachRub{0%{transform:translate(-34px,0);opacity:0}10%{opacity:1}25%,75%{transform:translate(34px,0)}50%{transform:translate(-34px,0)}90%{opacity:1}100%{transform:translate(-34px,0);opacity:0}}
+
 /* ---------- Photos ---------- */
 .snap{position:absolute;right:calc(14px + env(safe-area-inset-right,0px));bottom:calc(var(--ov) + 14px);z-index:3;appearance:none;border:0;cursor:pointer;width:76px;height:76px;border-radius:50%;display:grid;place-items:center;background:var(--pink);color:#fff;box-shadow:0 5px 0 #d23c6c,0 10px 22px rgba(160,30,80,.28);transition:transform .12s}
 .snap svg{width:42px;height:42px}
@@ -247,8 +284,12 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
   .snap svg{width:34px;height:34px}
   .album{width:56px;height:56px;padding:4px 4px 10px}
   .gbtn{width:60px;height:60px}
+  .step{min-height:40px;font-size:15px}
+  .step-ico{width:32px;height:32px}
+  .step-ico svg{width:27px;height:27px}
 }
 @media (max-width:420px) and (orientation:portrait){
+  .step{font-size:16px;padding-right:10px}
   .cat span{font-size:min(11px,18cqi);letter-spacing:0}
   .cat svg{width:34px;height:34px}
   .cat{padding-inline:2px}
@@ -284,9 +325,11 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
     <div class="sprayer" id="sprayer" hidden></div>
     <div class="coach" id="coach" hidden></div>
     <div class="spin" id="spin" hidden></div>
+    <div class="ptool" id="ptool" hidden></div>
     <div class="veil" id="veil"><div><div id="veilTxt">Amasando la plastilina…</div><div class="dots"><i></i><i></i><i></i></div></div></div>
   </section>
   <section class="tray" id="tray" aria-label="Opciones">
+    <nav class="steps" id="steps" aria-label="Pasos"></nav>
     <nav class="cats" id="cats" role="tablist" aria-label="Categorías"></nav>
     <div class="subs" id="subs" role="tablist"></div>
     <div class="opts" id="opts"></div>
@@ -360,6 +403,14 @@ const EN={
   'Turquesa':'Turquoise','Vainilla':'Vanilla','Verde':'Green','Violeta':'Violet','Ámbar':'Amber',
   'Sol':'Sun','Gatito':'Kitty','Pastelito':'Cupcake','Dona':'Donut','Sandía':'Watermelon','Cerezas':'Cherries','Mariquita':'Ladybug',
   'Globo':'Balloon','Corona':'Crown','Pececito':'Fishy','Planeta':'Planet','Huellita':'Paw','Alitas':'Wings','Cometa':'Comet',
+  /* hooves step */
+  'Pasos':'Steps','Paso {n}: {name}':'Step {n}: {name}','Pezuñas':'Hooves','Recortar':'Trim','Limar':'File','Pintar':'Paint','Decorar':'Decorate',
+  'Arrastra las tijeras por los pelitos':'Drag the scissors over the little hairs','Frota la lima en las pezuñas':'Rub the file on the hooves',
+  'Elige un esmalte y toca una pezuña':'Pick a polish and tap a hoof','Elige un adorno y toca una pezuña':'Pick a decoration and tap a hoof',
+  'Corta los pelitos':'Trim the little hairs','Lima las pezuñas':'File the hooves','Toca una pezuña para pintarla':'Tap a hoof to paint it','Toca una pezuña para decorarla':'Tap a hoof to decorate it',
+  'Otra vez':'Again','Degradados':'Gradients','Con formas':'Patterns',
+  'Atardecer':'Sunset','Sirena':'Mermaid','Océano':'Ocean','Limonada':'Lemonade','Lunares':'Polka dots','Rayas':'Stripes','Cuadros':'Checks','Francesa':'French tip',
+  'Estrellita':'Little star','Bolitas':'Dots',
 };
 function i18n(s,vars){
   let out=LANG==='en'&&Object.prototype.hasOwnProperty.call(EN,s)?EN[s]:s;
@@ -509,7 +560,39 @@ const NONE=new Set(['ninguna','ninguno']);
 const SIZES={s:.24,m:.38,l:.56};
 
 const CATALOG={fur:FUR,mane:MANE,hair:HAIR,horn:HORN,eye:EYE,lens:LENS,lashes:LASHES,lashColor:LASH_C,shadow:SHADOW,blush:BLUSH,freckles:FRECKLES,lips:LIPS,earring:EARRING,earTop:EAR_TOP,nose:NOSE,glasses:GLASSES,headAcc:HEADACC};
-const DEFAULT={fur:'nube',mane:'arcoiris',hair:'suelto',horn:'oro',eye:'violeta',lens:'normal',lashes:'largas',lashColor:'negro',shadow:'lila',blush:'rosa',freckles:'ninguna',lips:'natural',earring:'ninguno',earTop:'ninguno',nose:'ninguno',glasses:'ninguna',headAcc:'ninguno',stickers:[]};
+const DEFAULT={fur:'nube',mane:'arcoiris',hair:'suelto',horn:'oro',eye:'violeta',lens:'normal',lashes:'largas',lashColor:'negro',shadow:'lila',blush:'rosa',freckles:'ninguna',lips:'natural',earring:'ninguno',earTop:'ninguno',nose:'ninguno',glasses:'ninguna',headAcc:'ninguno',stickers:[],
+  paws:[{cut:0,file:0,polish:'sin',deco:[]},{cut:0,file:0,polish:'sin',deco:[]}]};
+
+/* ---- hooves (step 2): polish and tiny decorations. Each hoof keeps its own trim, file, polish and decorations. ---- */
+const POLISH=[
+  {id:'sin',name:'Sin'},
+  {id:'rosa',name:'Rosa',c:'#ff6f9f'},{id:'fucsia',name:'Fucsia',c:'#e8409b'},{id:'rojo',name:'Rojo',c:'#e3304f'},{id:'coral',name:'Coral',c:'#ff7d5c'},
+  {id:'limon',name:'Limón',c:'#ffd84d'},{id:'menta',name:'Menta',c:'#4fd0a0'},{id:'cielo',name:'Cielo',c:'#6cc0f5'},{id:'azul',name:'Azul',c:'#2f6fe6'},
+  {id:'lila',name:'Lila',c:'#b48cf2'},{id:'morado',name:'Morado',c:'#7a4fd6'},{id:'blanco',name:'Blanco',c:'#fbf7fb'},
+  {id:'oro',name:'Oro',c:'#eaa833',metal:1},{id:'plata',name:'Plata',c:'#d9dfe9',metal:1},
+  {id:'atardecer',name:'Atardecer',g:['#ff5d8f','#ffa44f','#ffd84d']},{id:'sirena',name:'Sirena',g:['#5ee7df','#7cb8f5','#b490ca']},
+  {id:'algodon',name:'Algodón',g:['#ffb3d9','#d9c4ff','#a8e1ff']},{id:'oceano',name:'Océano',g:['#a8f0ff','#3b8cf0','#2a3fa8']},
+  {id:'limonada',name:'Limonada',g:['#fff07a','#ffb3c8']},{id:'arcoiris',name:'Arcoíris',g:RAINBOW},
+  {id:'lunares',name:'Lunares',bg:'#ff8fc0',fg:'#ffffff',pat:'dots'},{id:'rayas',name:'Rayas',bg:'#ffffff',fg:'#7cc4f4',pat:'stripes'},
+  {id:'corazones',name:'Corazones',bg:'#ffe0ec',fg:'#ff4f86',pat:'hearts'},{id:'estrellas',name:'Estrellas',bg:'#4b3a9c',fg:'#ffd447',pat:'stars'},
+  {id:'cuadros',name:'Cuadros',bg:'#fff1f6',fg:'#b48cf2',pat:'checks'},{id:'francesa',name:'Francesa',bg:'#ffc9dc',fg:'#ffffff',pat:'tip'},
+  {id:'flores',name:'Flores',bg:'#b5f0d3',fg:'#ff8fc8',pat:'flowers'},{id:'galaxia',name:'Galaxia',bg:'#2a1b6e',fg:'#ffffff',pat:'galaxy'},
+  {id:'purpurina',name:'Purpurina',bg:'#c9a3ff',fg:'#ffffff',pat:'glitter'},
+];
+const POLISH_GROUPS=[{id:'colores',title:'Elige un esmalte y toca una pezuña',items:POLISH.filter(o=>o.id==='sin'||o.c)},{id:'degradados',title:'Degradados',items:POLISH.filter(o=>o.g)},{id:'formas',title:'Con formas',items:POLISH.filter(o=>o.pat)}];
+const DECOS=[
+  {id:'estrellita',name:'Estrellita',L:[[STAR,'#ffd447']]},
+  {id:'perla',name:'Perla',L:[[circ(50,50,42),'#ffe3ef'],[circ(46,46,34),'#fff7fb'],[circ(36,35,11),'#ffffff']]},
+  {id:'bolitas',name:'Bolitas',L:[[circ(27,64,18),'#ff5d8f'],[circ(72,66,15),'#5cb8f5'],[circ(52,27,16),'#ffd447'],[circ(22,58,5)+circ(68,61,4)+circ(48,22,4.5),'#ffffff']]},
+  ...['luna','corazon','flor','brillo','diamante','mariposa','lazo','arcoiris','cerezas'].map(id=>STK[id]),
+];
+const DECO={};DECOS.forEach(d=>{DECO[d.id]=d;if(!d.paths){d.paths=d.L.map(([dd,f])=>[new Path2D(dd),f]);d.all=new Path2D(d.L.map(l=>l[0]).join(' '));}});
+const N_TUFT=10, ALL_CUT=(1<<N_TUFT)-1;
+function sanitizePaws(a){
+  return DEFAULT.paws.map((d,i)=>{const p=Array.isArray(a)&&a[i]&&typeof a[i]==='object'?a[i]:{};
+    return {cut:(p.cut|0)&ALL_CUT,file:clamp(+p.file||0,0,1),polish:POLISH.some(o=>o.id===p.polish)?p.polish:'sin',
+      deco:Array.isArray(p.deco)?p.deco.filter(x=>x&&DECO[x.t]&&isFinite(x.u)&&isFinite(x.v)).slice(-40):[]};});
+}
 
 /* ================= state ================= */
 const KEY='salon-unicornio-v1';
@@ -520,15 +603,17 @@ function loadState(){
   if(s&&typeof s==='object'){
     for(const k in CATALOG){ if(CATALOG[k].some(o=>o.id===s[k])) out[k]=s[k]; }
     if(Array.isArray(s.stickers)) out.stickers=s.stickers.filter(st=>st&&STK[st.t]&&['head','muzzle','neck'].includes(st.m)).slice(-90);
+    out.paws=sanitizePaws(s.paws);
   }
   return out;
 }
 let state=loadState();
 let saveTimer=0;
 function save(){clearTimeout(saveTimer);saveTimer=setTimeout(()=>{try{localStorage.setItem(KEY,JSON.stringify(state));}catch(e){}},250);}
-const ui={cat:'maquillaje',sub:{maquillaje:'pestanas',accesorios:'aretes',colores:'pelo',stickers:'sticker',perfume:'perfume'},sticker:'estrella',size:'m',scent:'fresa'};
-try{const u=JSON.parse(localStorage.getItem(KEY+'-ui')||'null');if(u&&u.cat){ui.cat=u.cat;Object.assign(ui.sub,u.sub||{});}}catch(e){}
-function saveUI(){try{localStorage.setItem(KEY+'-ui',JSON.stringify({cat:ui.cat,sub:ui.sub}));}catch(e){}}
+const ui={step:'unicornio',cat:'maquillaje',sub:{maquillaje:'pestanas',accesorios:'aretes',colores:'pelo',stickers:'sticker',perfume:'perfume'},sticker:'estrella',size:'m',scent:'fresa',
+  pcat:'recortar',polish:'rosa',deco:'estrellita',tool:{recortar:'rosa',limar:'rosa'}};
+try{const u=JSON.parse(localStorage.getItem(KEY+'-ui')||'null');if(u&&u.cat){ui.cat=u.cat;Object.assign(ui.sub,u.sub||{});}if(u&&u.step){ui.step=u.step;ui.pcat=u.pcat||ui.pcat;}}catch(e){}
+function saveUI(){try{localStorage.setItem(KEY+'-ui',JSON.stringify({cat:ui.cat,sub:ui.sub,step:ui.step,pcat:ui.pcat}));}catch(e){}}
 
 /* ================= sound ================= */
 let actx=null, muted=false;
@@ -554,6 +639,8 @@ const sfx={
   undo(){tone(620,300,.16,'sine',.12);},
   shutter(){tone(2400,900,.04,'square',.05);tone(1400,500,.07,'square',.05,.06);[880,1175,1568].forEach((f,i)=>tone(f,f,.14,'triangle',.08,.16+i*.06));},
   spray(){hiss(.13,.07);},
+  snip(){tone(2600,1700,.035,'square',.05);tone(1900,1200,.05,'triangle',.07,.04);},
+  rub(){hiss(.09,.05);},
   love(){[523,659,784].forEach((f,i)=>tone(f*1.01,f,.32,'sine',.1,i*.11));tone(1047,1568,.4,'triangle',.06,.36);},
 };
 let noiseBuf=null;
@@ -1226,7 +1313,7 @@ function applyFur(){
   innerEarMat.color.set(mix(f.m,'#ff8fb3',f.id==='noche'?.3:.45));
   backdropTarget.set(f.id==='menta'||f.id==='cielo'?'#f8c2d6':'#9ddccf');
 }
-function applyAll(){applyFur();buildHair();applyHorn();buildLashes();applyLashColor();applyLids();paintEye();paintHead();paintMuzzle();paintNeck();buildEarrings();buildNose();buildGlasses();buildHeadAcc();}
+function applyAll(){applyFur();buildHair();applyHorn();buildLashes();applyLashColor();applyLids();paintEye();paintHead();paintMuzzle();paintNeck();buildEarrings();buildNose();buildGlasses();buildHeadAcc();applyPaws();}
 function apply(k){
   switch(k){
     case 'fur':applyFur();applyLids();paintHead();paintMuzzle();paintNeck();break;
@@ -1294,6 +1381,182 @@ function floatUp(pos,tex,size){
   f.m.position.copy(pos);f.v.set((Math.random()-.5)*.35,.55+Math.random()*.35,.15);f.m.scale.setScalar(.01);
 }
 
+/* ================= hooves (step 2): two front legs resting on a cushion ================= */
+// Pony-cure: trim the little hairs around each hoof, file the rough rim, paint, decorate. Shown instead of the bust.
+const pawsG=new THREE.Group();pawsG.visible=false;pawsG.position.set(0,-.78,.2);pawsG.scale.setScalar(1.12);scene.add(pawsG);
+const HOOF={h:.7,r0:.52,r1:.41,W:1024,H:224,RS:72,HS:20,nat:'#ead6c4'};
+const PAW_PX=HOOF.W/(TAU*(HOOF.r0+HOOF.r1)/2);
+const cushion=blob(clay('#ffc2d6',{roughness:.7,sheen:.9}),V3(0,-.17,.05),V3(1.8,.22,.85));pawsG.add(cushion);
+const pawRough=a=>.62*Math.sin(a*6+.5)+.34*Math.sin(a*11+2)+.24*Math.sin(a*19+1);
+function hoofR(t){const k=Math.min(1,t/.1);return lerp(HOOF.r0,HOOF.r1,Math.pow(t,1.2))*(.9+.1*Math.sqrt(k))+.025*Math.sin(t*Math.PI);}
+function hoofGeo(){
+  const{RS,HS}=HOOF,pos=[],uv=[],idx=[];
+  for(let i=0;i<=HS;i++)for(let j=0;j<=RS;j++){pos.push(0,0,0);uv.push(j/RS,i/HS);}
+  for(let i=0;i<HS;i++)for(let j=0;j<RS;j++){const a=i*(RS+1)+j,b=a+RS+1;idx.push(a,a+1,b,b,a+1,b+1);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);return g;
+}
+// Unfiled hooves have a bumpy, chipped rim; filing blends it back to the smooth shape.
+function shapeHoof(g,file){
+  const{RS,HS,h}=HOOF,p=g.attributes.position,rough=(1-file)*.075;
+  for(let i=0;i<=HS;i++){const t=i/HS,w=Math.pow(Math.max(0,1-t/.32),2);
+    for(let j=0;j<=RS;j++){const a=j/RS*TAU+Math.PI,n=pawRough(a),r=hoofR(t)*(1+rough*w*n);
+      p.setXYZ(i*(RS+1)+j,Math.sin(a)*r,t*h+(i===0?rough*Math.max(0,n)*.5:0),Math.cos(a)*r*.92+(1-t)*.09);}}
+  p.needsUpdate=true;g.computeVertexNormals();fixSeam(g,HS+1,RS);
+}
+const paws=[-1,1].map((sg,i)=>{
+  const g=new THREE.Group();g.position.set(sg*.8,0,0);pawsG.add(g);
+  const leg=new THREE.Mesh(new THREE.CylinderGeometry(.36,.4,3.4,48,1,true),furMat);leg.position.y=HOOF.h+1.55;g.add(leg);
+  g.add(blob(furMat,V3(0,HOOF.h+.28,.03),V3(.42,.34,.42)));
+  const c=document.createElement('canvas');c.width=HOOF.W;c.height=HOOF.H;
+  const tex=canvasTex(c),mat=new THREE.MeshPhysicalMaterial({map:tex,roughness:.6,clearcoat:.4,clearcoatRoughness:.15,bumpMap:clayBump,bumpScale:BUMP*.5,envMapIntensity:.9});
+  const wall=new THREE.Mesh(hoofGeo(),mat);wall.userData.paw=i;g.add(wall);
+  const sole=new THREE.Mesh(new THREE.CircleGeometry(1,48),clay('#cfae98'));sole.rotation.x=Math.PI/2;sole.position.set(0,.01,.09);sole.scale.set(HOOF.r0*.92,HOOF.r0*.85,1);g.add(sole);
+  const tufts=new THREE.Group();g.add(tufts);
+  return{g,sg,i,c,ctx:c.getContext('2d'),tex,mat,wall,tufts,tuft:[],file:-1,hop:9};
+});
+const pawWalls=paws.map(p=>p.wall);
+/* little hairs around the top of each hoof: long and scruffy until trimmed, then a neat short fringe */
+function buildTufts(p){
+  const r=rng(p.i?77:41),top=HOOF.h+.08;
+  for(let k=0;k<N_TUFT;k++){
+    const a=lerp(-2,2,k/(N_TUFT-1))+(r()-.5)*.16,d=V3(Math.sin(a),0,Math.cos(a)),side=V3(Math.cos(a),0,-Math.sin(a));
+    const B=d.clone().multiplyScalar(.36).add(V3(0,top,.04)),j=(r()-.5)*.22,len=.3+r()*.22,out=.3+r()*.08;
+    const long=tube([B,B.clone().addScaledVector(d,.15).add(V3(0,-.03,0)),B.clone().addScaledVector(d,out*.85).add(V3(0,-len*.55,0)).addScaledVector(side,j*.4),B.clone().addScaledVector(d,out+.06).add(V3(0,-len,0)).addScaledVector(side,j)],t=>.058*(1-t*.7)+.014,{seg:24,rad:10,flat:.75,c0:.1,c1:.12});
+    const short=tube([B,B.clone().addScaledVector(d,.13).add(V3(0,-.01,0)),B.clone().addScaledVector(d,.19).add(V3(0,-.09,0))],t=>.07,{seg:16,rad:10,flat:.8,c0:.2,c1:.45});
+    long.computeBoundingSphere();
+    const m=new THREE.Mesh(long,hm(k));m.userData={paw:p.i,k,long,short,keepGeo:true,pop:9};m.castShadow=true;p.tufts.add(m);p.tuft.push(m);
+  }
+}
+paws.forEach(buildTufts);
+shadowAll(pawsG);
+
+function paintPolish(x,W,H,o,k){
+  x.save();
+  if(o.c){x.fillStyle=o.c;x.fillRect(0,0,W,H);
+    if(o.metal){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'rgba(255,255,255,.45)');g.addColorStop(.5,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(0,0,0,.12)');x.fillStyle=g;x.fillRect(0,0,W,H);}}
+  else if(o.g){const g=x.createLinearGradient(0,0,0,H);o.g.forEach((c,i,a)=>g.addColorStop(i/(a.length-1),c));x.fillStyle=g;x.fillRect(0,0,W,H);}
+  else{
+    x.fillStyle=o.bg;x.fillRect(0,0,W,H);x.fillStyle=o.fg;const r=rng(13);
+    const grid=(f,dx,dy)=>{for(let row=0,y=dy/2;y<H+dy;y+=dy,row++)for(let X=(row%2?dx/2:0);X<W+dx;X+=dx)f(X,y,row);};
+    if(o.pat==='dots')grid((X,y)=>{x.beginPath();x.arc(X,y,k*.17,0,TAU);x.fill();},k*.62,k*.55);
+    else if(o.pat==='stripes'){x.save();x.rotate(-.5);for(let X=-H*2;X<W+H*2;X+=k*.55)x.fillRect(X,-H,k*.26,H*4);x.restore();}
+    else if(o.pat==='hearts')grid((X,y)=>drawShape(x,P_HEART,X,y,k*.38,k*.38,0,o.fg),k*.62,k*.55);
+    else if(o.pat==='stars')grid((X,y)=>drawShape(x,P_STAR,X,y,k*.4,k*.4,(r()-.5)*.6,r()<.75?o.fg:'#ffffff'),k*.62,k*.55);
+    else if(o.pat==='checks'){const s=k*.36;for(let y=0;y*s<H;y++)for(let X=0;X*s<W;X++)if((X+y)%2)x.fillRect(X*s,y*s,s,s);}
+    else if(o.pat==='tip'){x.beginPath();x.moveTo(0,H*.66);for(let X=0;X<=W;X+=k*.9)x.quadraticCurveTo(X+k*.45,H*.6,X+k*.9,H*.66);x.lineTo(W,H);x.lineTo(0,H);x.fill();}
+    else if(o.pat==='flowers')grid((X,y)=>{drawShape(x,P_PETALS,X,y,k*.44,k*.44,0,o.fg);x.fillStyle='#ffd447';x.beginPath();x.arc(X,y,k*.07,0,TAU);x.fill();},k*.66,k*.58);
+    else if(o.pat==='galaxy'){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#6a3fc4');g.addColorStop(1,'#120a33');x.fillStyle=g;x.fillRect(0,0,W,H);
+      for(let i=0;i<W*H/900;i++){x.fillStyle=r()<.7?'#ffffff':'#ffe27a';x.globalAlpha=.5+r()*.5;x.beginPath();x.arc(r()*W,r()*H,.6+r()*k*.03,0,TAU);x.fill();}x.globalAlpha=1;
+      for(let i=0;i<W/k*1.4;i++)drawShape(x,P_SPARK,r()*W,r()*H,k*.22,k*.22,0,'#fff6c2');}
+    else if(o.pat==='glitter'){const g=x.createLinearGradient(0,0,0,H);g.addColorStop(0,'#ffc2e6');g.addColorStop(1,o.bg);x.fillStyle=g;x.fillRect(0,0,W,H);
+      const cs=['#ffffff','#fff3a0','#ff8fd0','#a6e9ff'];for(let i=0;i<W*H/60;i++){x.fillStyle=cs[i%4];x.globalAlpha=.55+r()*.45;const s=1+r()*k*.035;x.fillRect(r()*W,r()*H,s,s);}x.globalAlpha=1;}
+  }
+  x.restore();
+}
+function drawDeco(x,def){
+  x.save();x.shadowColor='rgba(70,30,80,.35)';x.shadowBlur=6;x.shadowOffsetY=3;x.fillStyle='rgba(0,0,0,.25)';x.fill(def.all);x.restore();
+  for(const[p,f]of def.paths){x.fillStyle=f;x.fill(p);}
+  x.save();x.clip(def.all);const g=x.createLinearGradient(10,0,70,80);g.addColorStop(0,'rgba(255,255,255,.7)');g.addColorStop(.45,'rgba(255,255,255,0)');x.fillStyle=g;x.fillRect(-10,-10,120,120);x.restore();
+}
+const DECO_SIZE=.27;
+function paintPaw(i){
+  const p=paws[i],s=state.paws[i],x=p.ctx,W=HOOF.W,H=HOOF.H,o=byId(POLISH,s.polish),bare=o.id==='sin';
+  if(bare){x.fillStyle=HOOF.nat;x.fillRect(0,0,W,H);mottle(x,W,H,.2);
+    const r=rng(5+i),a=1-s.file;x.lineCap='round';
+    for(let k=0;k<170&&a>0;k++){const X=r()*W,Y=H*(.66+r()*.34),l=6+r()*16,an=(r()-.5)*1.4+Math.PI/2;x.strokeStyle=r()<.7?`rgba(120,78,58,${.42*a})`:`rgba(255,255,255,${.5*a})`;x.lineWidth=2+r()*3;x.beginPath();x.moveTo(X,Y);x.lineTo(X+Math.cos(an)*l,Y+Math.sin(an)*l);x.stroke();}
+  }else paintPolish(x,W,H,o,H*.42);
+  for(const d of s.deco){const def=DECO[d.t];if(!def)continue;const sz=DECO_SIZE*PAW_PX*(d.s||1);
+    for(const off of d.u<.1?[0,1]:d.u>.9?[0,-1]:[0]){x.save();x.translate((d.u+off)*W,(1-d.v)*H);x.scale(sz/100,sz/100);x.rotate(d.r||0);x.translate(-50,-50);drawDeco(x,def);x.restore();}}
+  p.tex.needsUpdate=true;
+  const m=p.mat;m.roughness=bare?lerp(.85,.45,s.file):o.metal?.22:.3;m.clearcoat=bare?s.file*.5:.8;m.envMapIntensity=bare?.9:o.metal?1.1:.55;m.metalness=o.metal?.75:o.pat==='glitter'?.3:0;m.clearcoatRoughness=bare?.3:.08;
+}
+function applyPaw(i){
+  const p=paws[i],s=state.paws[i];paintPaw(i);
+  if(p.file!==s.file){p.file=s.file;shapeHoof(p.wall.geometry,s.file);}
+  p.tuft.forEach((m,k)=>{m.geometry=s.cut&(1<<k)?m.userData.short:m.userData.long;});
+}
+function applyPaws(){applyPaw(0);applyPaw(1);}
+
+/* screen-space helpers: kids miss thin hairs, so tools work by distance on screen, not exact hits */
+const _v=new THREE.Vector3();
+function toScreen(v){v.project(camera);return[(v.x+1)/2*stage.clientWidth,(1-v.y)/2*stage.clientHeight];}
+function pawScreen(i){
+  const g=paws[i].g;g.updateMatrixWorld();const c=toScreen(_v.set(0,HOOF.h*.45,.1).applyMatrix4(g.matrixWorld)),e=toScreen(_v.set(HOOF.r0,HOOF.h*.45,.1).applyMatrix4(g.matrixWorld));
+  return{x:c[0],y:c[1],r:Math.hypot(e[0]-c[0],e[1]-c[1])};
+}
+function stageXY(cx,cy){const r=stage.getBoundingClientRect();return[cx-r.left,cy-r.top];}
+function pawNear(cx,cy,pad){const[x,y]=stageXY(cx,cy);let best=-1,bd=1e9;for(let i=0;i<2;i++){const s=pawScreen(i),d=Math.hypot((x-s.x)/s.r,(y-s.y)/(s.r*.95));if(d<(pad||1.25)&&d<bd){bd=d;best=i;}}return best;}
+function pawRay(cx,cy){const r=canvas.getBoundingClientRect();ndc.set((cx-r.left)/r.width*2-1,-((cy-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);const h=ray.intersectObjects(pawWalls,false)[0];return h&&h.uv?h:null;}
+function pawWorld(i,y,z){return paws[i].g.localToWorld(V3(0,y,z));}
+
+/* tools: scissors and nail file follow the finger while it's down */
+const ptool=$('#ptool');
+let pawTool=null,pawLove=9;
+function pawToolStart(e){
+  pawTool={id:e.pointerId,x:e.clientX,y:e.clientY,acc:0,hiss:0};canvas.setPointerCapture(e.pointerId);audio();
+  ptool.className='ptool '+ui.pcat;ptool.innerHTML=ui.pcat==='recortar'?scissorsSVG(ui.tool.recortar):fileSVG(ui.tool.limar);ptool.hidden=false;
+  hintSeen=true;updateHint();coachIdle=performance.now();showCoach(null);pawToolMove(e,true);
+}
+function pawToolMove(e,first){
+  const t=pawTool,dx=e.clientX-t.x,dy=e.clientY-t.y;t.x=e.clientX;t.y=e.clientY;coachIdle=performance.now();
+  const[x,y]=stageXY(t.x,t.y);ptool.style.transform=ui.pcat==='recortar'?`translate(${x-72}px,${y-76}px)`:`translate(${x-50}px,${y-62}px) rotate(${clamp(dx*1.5,-12,12)}deg)`;
+  if(ui.pcat==='recortar')snipNear(t.x,t.y);else if(!first)rubNear(t.x,t.y,Math.hypot(dx,dy));
+}
+function pawToolEnd(){pawTool=null;ptool.hidden=true;lastTouch=performance.now();}
+function snipNear(cx,cy){
+  const[x,y]=stageXY(cx,cy),pts=[[x,y],[x-30,y-32],[x-58,y-62]];let n=0;
+  for(const p of paws){const s=state.paws[p.i];
+    for(const m of p.tuft){const k=m.userData.k;if(s.cut&(1<<k))continue;
+      const wc=m.localToWorld(m.userData.long.boundingSphere.center.clone()),[tx,ty]=toScreen(wc.clone());
+      if(pts.some(([px,py])=>Math.hypot(px-tx,py-ty)<44)){s.cut|=1<<k;m.geometry=m.userData.short;m.userData.pop=0;n++;
+        const m2=byId(MANE,state.mane),cols=m2.multi||[m2.c];burst(wc,5,.7,[...cols,'#ffffff']);}}}
+  if(!n)return;save();sfx.snip();ptool.classList.add('cut');setTimeout(()=>ptool.classList.remove('cut'),110);
+  if(state.paws.every(s=>s.cut===ALL_CUT))pawStepDone('recortar');else refreshPawCats();
+}
+function rubNear(cx,cy,d){
+  const i=pawNear(cx,cy,1.35);if(i<0||!d)return;const s=state.paws[i];if(s.file>=1)return;
+  const k=pawScreen(i).r;s.file=Math.min(1,s.file+d/(k*14));pawTool.acc+=d;
+  if(pawTool.acc>k*.5){pawTool.acc=0;sfx.rub();burst(pawWorld(i,.06,HOOF.r0+.1),3,.5,['#ffffff','#fff1d6','#ffd0e6']);}
+  if(Math.abs(s.file-paws[i].file)>.04||s.file>=1){applyPaw(i);save();}
+  if(s.file>=1){burst(pawWorld(i,.2,.6),14,1.2);sfx.sticker();paws[i].hop=0;
+    if(state.paws.every(p=>p.file>=1))pawStepDone('limar');else refreshPawCats();}
+}
+function pawTap(cx,cy){
+  if(ui.pcat==='pintar'){
+    const h=pawRay(cx,cy),i=h?h.object.userData.paw:pawNear(cx,cy,1.4);if(i<0){sfx.undo();return;}
+    const s=state.paws[i];s.polish=ui.polish;applyPaw(i);save();paws[i].hop=0;hintSeen=true;updateHint();coachIdle=performance.now();
+    const o=byId(POLISH,ui.polish);sfx.sticker();burst(pawWorld(i,.35,.6),12,1.1,o.c?[o.c,'#ffffff']:o.g||[o.bg,o.fg,'#ffffff']);
+    if(state.paws.every(p=>p.polish!=='sin'))pawStepDone('pintar');else refreshPawCats();
+  }else if(ui.pcat==='decorar'){
+    const h=pawRay(cx,cy);if(!h){sfx.undo();return;}const i=h.object.userData.paw,s=state.paws[i];
+    s.deco.push({t:ui.deco,u:+h.uv.x.toFixed(4),v:+clamp(h.uv.y,.18,.86).toFixed(4),r:+((Math.random()-.5)*.7).toFixed(3),s:+(.85+Math.random()*.3).toFixed(2)});
+    if(s.deco.length>40)s.deco.shift();
+    pawDecoLog.push(i);
+    applyPaw(i);save();paws[i].hop=0;burst(h.point,8,.9);sfx.sticker();hintSeen=true;updateHint();coachIdle=performance.now();refreshPawActions();
+    if(state.paws.every(p=>p.deco.length))pawStepDone('decorar');else refreshPawCats();
+  }else{sfx.giggle();const i=pawNear(cx,cy,1.6);if(i>=0)paws[i].hop=0;}
+}
+/* a finished step: both legs do a happy little tap dance with hearts, then the tray moves on to the next step */
+function pawStepDone(id){
+  refreshPawCats();sfx.love();setTimeout(()=>sfx.giggle(),380);pawLove=0;
+  for(let i=0;i<2;i++){const w=pawWorld(i,HOOF.h+.4,.5);for(let k=0;k<4;k++)floatUp(w.clone().add(V3((Math.random()-.5)*.8,Math.random()*.3,0)),heartTex,.28);burst(w,10,1.2);}
+  const next={recortar:'limar',limar:'pintar'}[id];
+  const go=()=>{if(ui.step!=='pezunas'||ui.pcat!==id||!pawDone[id]())return;if(pawTool)setTimeout(go,300);else setPawCat(next);};
+  if(next)setTimeout(go,1400);
+}
+function pawsTick(dt,t){
+  if(!pawsG.visible)return;
+  pawsG.rotation.set(.1+pitch*.6,yaw*.5+(reduced?0:Math.sin(t*.6)*.03),0);
+  pawLove+=dt;
+  for(const p of paws){
+    p.hop+=dt;let y=reduced?0:Math.sin(t*1.6+p.i*1.3)*.012;
+    if(!reduced&&p.hop<.6)y+=Math.sin(p.hop/.6*Math.PI)*.12;
+    if(!reduced&&pawLove<1.6)y+=Math.max(0,Math.sin(pawLove*9+p.i*Math.PI))*.16*(1-pawLove/1.6);
+    p.g.position.y=y;
+    for(const m of p.tuft){const u=m.userData;if(u.pop<.5){u.pop+=dt;const k=1+Math.sin(u.pop/.5*Math.PI)*.25;m.scale.set(k,k,k);}else if(u.pop<9){u.pop=9;m.scale.set(1,1,1);}}
+  }
+}
+
 /* ================= camera fit ================= */
 let ovx=0,ovy=0;
 function layout(){
@@ -1302,11 +1565,13 @@ function layout(){
   const land=window.matchMedia('(orientation: landscape)').matches;const ov=22;ovx=land?ov:0;ovy=land?0:ov;
   const ew=w-ovx,eh=h-ovy;camera.aspect=w/h;
   const vf=camera.fov*D2R,hf=2*Math.atan(Math.tan(vf/2)*(ew/eh));
-  const halfH=1.58,halfW=1.72;const d=Math.max(halfH/Math.tan(vf/2)*(h/eh),halfW/Math.tan(hf/2))*1.02;
+  // Each step frames its own subject: the bust, or the two hooves on their cushion.
+  const F=ui.step==='pezunas'?{cy:-.3,halfH:1.15,halfW:2.3}:{cy:.32,halfH:1.58,halfW:1.72};
+  const d=Math.max(F.halfH/Math.tan(vf/2)*(h/eh),F.halfW/Math.tan(hf/2))*1.02;
   const wpp=2*d*Math.tan(vf/2)/h;const sx=ovx/2*wpp,sy=ovy/2*wpp;
-  camera.position.set(sx,.42-sy,d);camera.lookAt(sx,.32-sy,0);camera.updateProjectionMatrix();
+  camera.position.set(sx,F.cy+.1-sy,d);camera.lookAt(sx,F.cy-sy,0);camera.updateProjectionMatrix();
   const zb=-1.9,dist=d-zb,hh=Math.tan(vf/2)*dist,hw=hh*camera.aspect;
-  propItems.forEach(p=>{p.o.position.set(sx+p.fx*(hw-(ovx*wpp)),.32-sy+p.fy*hh,zb);});
+  propItems.forEach(p=>{p.o.position.set(sx+p.fx*(hw-(ovx*wpp)),F.cy-sy+p.fy*hh,zb);});
 }
 new ResizeObserver(layout).observe(stage);
 
@@ -1315,15 +1580,17 @@ const ray=new THREE.Raycaster(),ndc=new THREE.Vector2();
 let yaw=0,pitch=0,tYaw=0,tPitch=0,lastTouch=performance.now();
 const BASE_YAW=-.16,BASE_PITCH=.06;
 let drag=null;
-canvas.addEventListener('pointerdown',e=>{if(spray)return;
-  if(ui.cat==='perfume'&&!drag&&hitTest(e.clientX,e.clientY)){startSpray(e);return;}
+canvas.addEventListener('pointerdown',e=>{if(spray||pawTool)return;
+  if(ui.step==='pezunas'&&!drag&&(ui.pcat==='recortar'||ui.pcat==='limar')){pawToolStart(e);return;}
+  if(ui.step==='unicornio'&&ui.cat==='perfume'&&!drag&&hitTest(e.clientX,e.clientY)){startSpray(e);return;}
   if(drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),moved:false};canvas.setPointerCapture(e.pointerId);audio();});
 canvas.addEventListener('pointermove',e=>{if(spray&&e.pointerId===spray.id){spray.x=e.clientX;spray.y=e.clientY;placeSprayer();return;}
+  if(pawTool&&e.pointerId===pawTool.id){pawToolMove(e);return;}
   if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;
   if(!drag.moved&&Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)>9)drag.moved=true;
   if(drag.moved){if(!spun)markSpun();tYaw=clamp(tYaw+dx*.009,-1.05,1.05);tPitch=clamp(tPitch+dy*.005,-.32,.38);lastTouch=performance.now();}});
-function endDrag(e){if(spray&&e.pointerId===spray.id){stopSpray();return;}if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;lastTouch=performance.now();if(!d.moved&&performance.now()-d.t<600)tap(e.clientX,e.clientY);}
-canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',e=>{if(drag&&e.pointerId===drag.id)drag=null;if(spray&&e.pointerId===spray.id)stopSpray();});
+function endDrag(e){if(spray&&e.pointerId===spray.id){stopSpray();return;}if(pawTool&&e.pointerId===pawTool.id){pawToolEnd();return;}if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;lastTouch=performance.now();if(!d.moved&&performance.now()-d.t<600)tap(e.clientX,e.clientY);}
+canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',e=>{if(drag&&e.pointerId===drag.id)drag=null;if(pawTool&&e.pointerId===pawTool.id)pawToolEnd();if(spray&&e.pointerId===spray.id)stopSpray();});
 
 /* Perfume: press and hold (or tap repeatedly) on the unicorn to spray. It never touches the saved look. */
 const sprayer=$('#sprayer');
@@ -1337,12 +1604,14 @@ function startSpray(e){
 const coach=$('#coach');let coachIdle=performance.now();
 const fingerSVG=()=>`<svg viewBox="0 0 64 86" aria-hidden="true"><path d="M9.5 44V11a7.5 7.5 0 0 1 15 0v24l4-1.5c3.5-1.2 7 .2 8 3l1.5-.5c3.5-1 7 .5 8 3.5l1-.3c3.6-1 7.3 1.3 7.8 5l1.4 13c1 9.5-6 18.8-16 19.8H33C21 81 12 73 10 61l-6-11c-2-3.7.7-8 4.6-8z" fill="#ffd9c2" stroke="${INK}" stroke-width="2.8" stroke-linejoin="round"/><path d="M12.5 10a4.5 4.5 0 0 1 9 0v3.5h-9z" fill="#fff1e8"/><path d="M28.5 34v10M38.5 37v8M48 40v7" stroke="${INK}" stroke-width="2.4" stroke-linecap="round"/></svg>`;
 function showCoach(mode){
-  const key=mode?mode+(mode==='hold'?ui.scent:ui.sticker+ui.sub.stickers):'';
-  if(key===coach.dataset.k)return;coach.dataset.k=key;coach.hidden=!mode;coach.className='coach '+(mode||'');
+  const key=mode?mode+(mode==='hold'?ui.scent:mode==='tap'?ui.sticker+ui.sub.stickers:pawCoachKey()):'';
+  if(key===coach.dataset.k)return;coach.dataset.k=key;coach.hidden=!mode;coach.className='coach '+(PAW_COACH_CLASS[mode]||mode||'');
   if(mode==='hold'){const sc=SCENT[ui.scent];coach.style.setProperty('--mist',sc.mist[0]);coach.innerHTML=`<i class="ring"></i><i class="ring"></i><i class="puff"></i><i class="puff"></i><i class="puff"></i><div class="bottle">${bottleSVG(sc,true)}</div><div class="finger">${fingerSVG()}</div>`;}
+  else if(PAW_COACH_CLASS[mode])coach.innerHTML=pawCoachHTML(mode);
   else if(mode==='tap')coach.innerHTML=`<i class="ring"></i><i class="ring"></i><div class="stk">${stickerSVG(STK[ui.sticker],ui.sub.stickers==='tatuaje'?'tatuaje':'sticker')}</div><div class="finger">${fingerSVG()}</div>`;
 }
 function placeCoach(){
+  if(ui.step==='pezunas'){placePawCoach();return;}
   const wp=new THREE.Vector3();headMesh.getWorldPosition(wp);wp.add(V3(.4,-.26,.95)).project(camera);
   coach.style.transform=`translate(${(wp.x+1)/2*stage.clientWidth}px,${(1-wp.y)/2*stage.clientHeight}px)`;
 }
@@ -1399,6 +1668,7 @@ function hitTest(cx,cy){
 }
 let blinkT=-1,nextBlink=2;
 function tap(cx,cy){
+  if(ui.step==='pezunas'){pawTap(cx,cy);return;}
   const h=hitTest(cx,cy);if(!h)return;
   if(ui.cat==='stickers'){
     const sk=h.object.userData.skin;
@@ -1420,13 +1690,13 @@ function frame(){
   const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
   if(!drag&&performance.now()-lastTouch>7000){tYaw*=1-dt*.9;tPitch*=1-dt*.9;}
   yaw+=(tYaw-yaw)*Math.min(1,dt*9);pitch+=(tPitch-pitch)*Math.min(1,dt*9);
-  const coachMode=ui.cat==='perfume'?'hold':ui.cat==='stickers'?'tap':null;
-  const spinYaw=spinTick(dt,!!coachMode);
+  const coachMode=ui.step==='pezunas'?pawCoachMode():ui.cat==='perfume'?'hold':ui.cat==='stickers'?'tap':null;
+  const spinYaw=spinTick(dt,!!coachMode||ui.step==='pezunas');
   uni.rotation.set(BASE_PITCH+pitch+(reduced?0:Math.sin(t*.9)*.015),BASE_YAW+yaw+spinYaw+(reduced?0:Math.sin(t*.6)*.03),reduced?0:Math.sin(t*.75)*.02);
   headG.position.y=reduced?0:Math.sin(t*1.7)*.012;
   if(squashT<1.2&&!reduced){squashT+=dt;const k=Math.sin(squashT*Math.PI*3.4)*Math.exp(-squashT*4.6)*.075*squashK;headG.scale.set(1+k*.6,1-k,1+k*.6);}else headG.scale.set(1,1,1);
   nextBlink-=dt;if(nextBlink<=0&&blinkT<0){blinkT=0;nextBlink=2.5+Math.random()*3.5;}
-  if(coachMode&&!spray&&!drag){if(performance.now()-coachIdle>3000){showCoach(coachMode);placeCoach();}}else{coachIdle=performance.now();showCoach(null);}
+  if(coachMode&&!spray&&!drag&&!pawTool){if(performance.now()-coachIdle>3000){showCoach(coachMode);placeCoach();}}else{coachIdle=performance.now();showCoach(null);}
   if(spray){sprayAcc+=dt/.075;if(sprayAcc>=1){sprayAcc=Math.min(sprayAcc-1,1);sprayTick();}}else loveMeter=Math.max(0,loveMeter-dt*4);
   loveCool-=dt;sniffT-=dt;loveT+=dt;happyK=Math.max(0,happyK-dt*(spray?.5:1.1));
   const bliss=loveT<1.7?Math.min(1,loveT*6,(1.7-loveT)*4):0,lidBase=lerp(LID_OPEN,LID_SHUT,Math.max(happyK*.42,bliss*.97));
@@ -1437,6 +1707,7 @@ function frame(){
     p.m.position.addScaledVector(p.v,dt);p.v.multiplyScalar(Math.max(0,1-dt*3.4));p.v.y+=dt*.1;p.m.scale.setScalar(lerp(p.s0,p.s1,1-(1-k)*(1-k)));p.m.material.opacity=.78*Math.min(1,k*8)*Math.pow(1-k,1.3);p.m.material.rotation+=dt*.5;}
   for(const f of floaters){if(!f.m.visible)continue;f.life-=dt;if(f.life<=0){f.m.visible=false;continue;}const k=1-f.life/f.max;
     f.m.position.addScaledVector(f.v,dt);f.m.position.x+=Math.sin(k*7+f.ph)*.006;f.m.scale.setScalar(f.size*(k<.12?k/.12*1.2:k<.2?1.2-(k-.12)/.08*.2:1));f.m.material.opacity=k>.72?(1-k)/.28:1;}
+  pawsTick(dt,t);
   backdropMat.color.lerp(backdropTarget,Math.min(1,dt*3));
   if(!reduced)propItems.forEach((p,i)=>{p.o.position.y+=Math.sin(t*1.1+p.ph)*.0018;p.o.rotation.z=Math.sin(t*.8+p.ph)*.12;p.o.rotation.y=Math.sin(t*.5+p.ph)*.3;});
   for(const p of parts){if(!p.m.visible)continue;p.life-=dt*1.5;if(p.life<=0){p.m.visible=false;continue;}p.m.position.addScaledVector(p.v,dt);p.v.multiplyScalar(1-dt*2.2);p.v.y-=dt*.6;p.m.rotation.z+=p.spin*dt;p.m.material.opacity=Math.min(1,p.life*2);const s=p.m.scale.x;p.m.scale.setScalar(Math.max(.01,s*(1-dt*.6)));}
@@ -1653,14 +1924,17 @@ function tileHTML(group,o){
 function groupHTML(g){return `<div class="group" data-gkey="${g.key}">${g.title?`<div class="gtitle">${GROUP_ICON[g.key]||''}${i18n(g.title)}</div>`:''}<div class="grid">${CATALOG[g.key].map(o=>tileHTML(g,o)).join('')}</div></div>`;}
 let visibleGroups=[];
 function renderCats(){
+  if(ui.step==='pezunas'){renderPawCats();return;}
   catsEl.innerHTML=CATS.map(c=>`<button class="cat" role="tab" data-cat="${c.id}" aria-selected="${ui.cat===c.id}" style="--c:${c.col[0]};--c-soft:${c.col[1]};--c-edge:${c.col[2]};--c-deep:${c.col[3]}">${c.icon}<span>${i18n(c.name)}</span></button>`).join('');
   trayEl.style.setProperty('--cat-c',catOf(ui.cat).col[0]);
 }
 function renderSubs(){
+  if(ui.step==='pezunas'){subsEl.innerHTML='';return;}
   const c=catOf(ui.cat);if(!c.subs.some(s=>s.id===ui.sub[c.id]))ui.sub[c.id]=c.subs[0].id;
   subsEl.innerHTML=c.subs.length<2?'':c.subs.map(s=>`<button class="pill" role="tab" data-sub="${s.id}" aria-selected="${ui.sub[c.id]===s.id}">${SUB_ICON[s.id]||''}${i18n(s.name)}</button>`).join('');
 }
 function renderOpts(){
+  if(ui.step==='pezunas'){renderPawOpts();placeCredit();return;}
   const c=catOf(ui.cat);visibleGroups=[];
   if(c.id==='stickers')renderStickers();
   else if(c.id==='perfume')renderPerfume();
@@ -1697,6 +1971,144 @@ function renderPerfume(){
   optsEl.innerHTML=`<div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n('Elige un perfume y rocía al unicornio')}</div><div class="grid">${SCENTS.map(sc=>`<button class="tile scent" data-scent="${sc.id}" aria-pressed="${ui.scent===sc.id}" aria-label="${i18n('Perfume de {name}',{name:i18n(sc.name)})}"><span class="sw" style="background:${mix(sc.c,'#ffffff',.85)}">${bottleSVG(sc)}</span><span class="nm">${i18n(sc.name)}</span></button>`).join('')}</div></div>`;
   optsEl.scrollTop=0;
 }
+/* ---------- steps: 1 make your unicorn, 2 hooves. A later step (clothes) is one more entry in STEPS. ---------- */
+const stepsEl=$('#steps');
+const STEP_ICON={
+  unicornio:sv(`<path d="M15 32c-5-10 1-19 10-21M49 32c5-10-1-19-10-21" stroke="#ff8fb8" stroke-width="7" fill="none" stroke-linecap="round"/><path d="M17 23l3-12 8 8zM47 23l-3-12-8 8z" fill="#fff" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><ellipse cx="32" cy="37" rx="18" ry="18" fill="#fff" stroke="${INK}" stroke-width="3.5"/><path d="M32 3 28 19h8z" fill="#ffd447" stroke="${INK}" stroke-width="3" stroke-linejoin="round"/><ellipse cx="32" cy="47" rx="12" ry="7.5" fill="#ffe1ec"/><circle cx="25" cy="34" r="3" fill="${INK}"/><circle cx="39" cy="34" r="3" fill="${INK}"/>`),
+  pezunas:sv(`<path d="M22 2h20v32H22z" fill="#fff" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><ellipse cx="32" cy="33" rx="14" ry="7" fill="#fff" stroke="${INK}" stroke-width="3.5"/><path d="M16 40h32l4 17H12z" fill="#ff6f9f" stroke="${INK}" stroke-width="3.5" stroke-linejoin="round"/><path d="M19 45h7" stroke="#fff" stroke-width="3.5" stroke-linecap="round" opacity=".8"/><circle cx="38" cy="50" r="3" fill="#ffd447"/><path d="M52 8l2 4.5 4.5 2-4.5 2-2 4.5-2-4.5-4.5-2 4.5-2z" fill="#ffd447" stroke="${INK}" stroke-width="1.5" stroke-linejoin="round"/>`),
+};
+const STEPS=[{id:'unicornio',name:'Unicornio'},{id:'pezunas',name:'Pezuñas'}];
+const STEP_ARROW=`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>`;
+function renderSteps(){
+  stepsEl.innerHTML=STEPS.map((st,i)=>`${i?`<span class="step-arrow">${STEP_ARROW}</span>`:''}<button class="step" data-step="${st.id}" aria-pressed="${ui.step===st.id}" aria-label="${i18n('Paso {n}: {name}',{n:i+1,name:i18n(st.name)})}"><b>${i+1}</b><span class="step-ico">${STEP_ICON[st.id]}</span><span class="step-nm">${i18n(st.name)}</span></button>`).join('');
+}
+function setStep(id,quiet){
+  if(!STEPS.some(s=>s.id===id))id='unicornio';
+  if(spray)stopSpray();if(pawTool)pawToolEnd();
+  ui.step=id;const paw=id==='pezunas';uni.visible=!paw;pawsG.visible=paw;
+  tYaw=tPitch=0;hintSeen=false;coachIdle=performance.now();showCoach(null);
+  stepsEl.querySelectorAll('.step').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.step===id)));
+  trayEl.classList.toggle('paw-mode',paw);
+  layout();
+  renderCats();renderSubs();renderOpts();updateHint();
+  if(!quiet){saveUI();sfx.magic();burst(V3(0,.3,.9),18,1.4);}
+}
+stepsEl.addEventListener('click',e=>{const b=e.target.closest('[data-step]');if(b&&b.dataset.step!==ui.step)setStep(b.dataset.step);});
+
+/* ---------- hooves: 4 numbered sub-steps in the category row ---------- */
+const PAW_ICON={
+  recortar:`<svg viewBox="0 0 48 48" aria-hidden="true"><circle cx="13" cy="38" r="6.5" fill="none" stroke="currentColor" stroke-width="4"/><circle cx="35" cy="39" r="6.5" fill="none" stroke="currentColor" stroke-width="4"/><path d="M17 33 38 5M31 34 11 6" stroke="currentColor" stroke-width="4.5" stroke-linecap="round"/><circle class="dot" cx="24.3" cy="23" r="2.4"/></svg>`,
+  limar:`<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="3" y="18" width="42" height="12" rx="6" transform="rotate(-38 24 24)" fill="currentColor"/><g transform="rotate(-38 24 24)"><circle class="dot" cx="11" cy="24" r="1.8"/><circle class="dot" cx="17" cy="24" r="1.8"/><circle class="dot" cx="23" cy="24" r="1.8"/><circle class="dot" cx="29" cy="24" r="1.8"/></g></svg>`,
+  pintar:`<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="18.5" y="3" width="11" height="14" rx="2.5" fill="currentColor"/><rect x="10" y="16" width="28" height="29" rx="9" fill="currentColor" opacity=".75"/><circle class="dot" cx="24" cy="31" r="5.5"/></svg>`,
+  decorar:`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M20 5l4.4 9.2 10 1.3-7.3 6.8 1.9 9.9L20 27.4l-9 4.8 1.9-9.9-7.3-6.8 10-1.3z" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><circle cx="37" cy="35" r="6" fill="currentColor" opacity=".7"/><circle class="dot" cx="35.5" cy="33.5" r="2"/><circle cx="14" cy="41" r="4" fill="currentColor" opacity=".55"/><circle cx="41" cy="12" r="3" fill="currentColor" opacity=".55"/></svg>`,
+};
+const PAW_CATS=[
+  {id:'recortar',name:'Recortar',col:['#3fa9ec','#e1f3ff','#a9d8f5','#1f6fa8']},
+  {id:'limar',name:'Limar',col:['#f2a516','#fff1c7','#f0d38a','#9a6100']},
+  {id:'pintar',name:'Pintar',col:['#ff6f9f','#ffe1ec','#f2b3c9','#c83c6c']},
+  {id:'decorar',name:'Decorar',col:['#9a7bff','#ece6ff','#cbbcf5','#5b3fc2']},
+];
+const pawDone={recortar:()=>state.paws.every(s=>s.cut===ALL_CUT),limar:()=>state.paws.every(s=>s.file>=1),pintar:()=>state.paws.every(s=>s.polish!=='sin'),decorar:()=>state.paws.every(s=>s.deco.length>0)};
+const PAW_TOOLS={
+  recortar:[{id:'rosa',name:'Rosa',c:'#ff6f9f'},{id:'cielo',name:'Cielo',c:'#4aa8f0'},{id:'menta',name:'Menta',c:'#2fbf8f'},{id:'oro',name:'Oro',c:'#f2b632'}],
+  limar:[{id:'rosa',name:'Rosa',c:'#ff9cc4'},{id:'lila',name:'Lila',c:'#b89af6'},{id:'limon',name:'Limón',c:'#ffd84d'},{id:'arcoiris',name:'Arcoíris',multi:1}],
+};
+function scissorsSVG(id){
+  const c=byId(PAW_TOOLS.recortar,id).c,line=(x,y,col)=>`<path d="M44 44L${x} ${y}" stroke="${INK}" stroke-width="12" stroke-linecap="round"/><path d="M44 44L${x} ${y}" stroke="${col}" stroke-width="6.5" stroke-linecap="round"/>`;
+  const loop=(x,y)=>`<circle cx="${x}" cy="${y}" r="12" fill="none" stroke="${INK}" stroke-width="11"/><circle cx="${x}" cy="${y}" r="12" fill="none" stroke="${c}" stroke-width="5.5"/>`;
+  return `<svg viewBox="0 0 100 100" aria-hidden="true"><g class="bA">${line(58,68,c)}${loop(64,80)}${line(10,10,'#eef2f8')}</g><g class="bB">${line(70,56,c)}${loop(81,61)}${line(5,24,'#eef2f8')}</g><circle cx="44" cy="44" r="4.5" fill="#fff" stroke="${INK}" stroke-width="2.5"/></svg>`;
+}
+function fileSVG(id){
+  const o=byId(PAW_TOOLS.limar,id),grit=[16,23,30,37,44,51].map((x,i)=>`<circle cx="${x}" cy="${i%2?46:54}" r="2" fill="${INK}" opacity=".28"/>`).join('');
+  const defs=o.multi?`<defs><linearGradient id="filegrad" x1="0" y1="0" x2="1" y2="0">${RAINBOW.map((c,i,a)=>`<stop offset="${i/(a.length-1)}" stop-color="${c}"/>`).join('')}</linearGradient></defs>`:'';
+  return `<svg viewBox="0 0 100 100" aria-hidden="true">${defs}<g transform="rotate(-35 50 50)"><rect x="6" y="38" width="88" height="24" rx="12" fill="${o.multi?'url(#filegrad)':o.c}" stroke="${INK}" stroke-width="3.5"/><path d="M64 39.5h18a10.5 10.5 0 0 1 0 21H64z" fill="#fff" opacity=".6"/>${grit}</g></svg>`;
+}
+const polishCache={};
+function polishSwatch(o){
+  if(polishCache[o.id])return polishCache[o.id];
+  const c=document.createElement('canvas');c.width=c.height=120;paintPolish(c.getContext('2d'),120,120,o.id==='sin'?{c:HOOF.nat}:o,64);
+  return polishCache[o.id]=c.toDataURL('image/png');
+}
+const polishColor=o=>o.c||(o.g?o.g[0]:o.bg)||HOOF.nat;
+const nailBottleSVG=o=>sv(`<rect x="24" y="4" width="16" height="18" rx="3.5" fill="${INK}"/><rect x="11" y="21" width="42" height="39" rx="13" fill="${polishColor(o)}" stroke="${INK}" stroke-width="3.5"/><path d="M19 33q0-6 6-7" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round" opacity=".85"/>`);
+const decoSVG=d=>`<svg viewBox="-6 -6 112 112" aria-hidden="true">${d.L.map(([dd,f])=>`<path d="${dd}" fill="${f}"/>`).join('')}</svg>`;
+const POLISH_GICON={
+  degradados:sv(`<defs><linearGradient id="gicon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5d8f"/><stop offset=".5" stop-color="#ffa44f"/><stop offset="1" stop-color="#ffd84d"/></linearGradient></defs><circle cx="32" cy="32" r="24" fill="url(#gicon)" stroke="${INK}" stroke-width="3.5"/>`),
+  formas:sv(`<circle cx="32" cy="32" r="24" fill="#ff8fc0" stroke="${INK}" stroke-width="3.5"/><circle cx="23" cy="23" r="4.5" fill="#fff"/><circle cx="41" cy="24" r="4.5" fill="#fff"/><circle cx="32" cy="36" r="4.5" fill="#fff"/><circle cx="21" cy="43" r="4.5" fill="#fff"/><circle cx="43" cy="43" r="4.5" fill="#fff"/>`),
+};
+function renderPawCats(){
+  if(!PAW_CATS.some(c=>c.id===ui.pcat))ui.pcat='recortar';
+  catsEl.innerHTML=PAW_CATS.map((c,i)=>`<button class="cat" role="tab" data-pcat="${c.id}" aria-selected="${ui.pcat===c.id}" aria-label="${i18n('Paso {n}: {name}',{n:i+1,name:i18n(c.name)})}" style="--c:${c.col[0]};--c-soft:${c.col[1]};--c-edge:${c.col[2]};--c-deep:${c.col[3]}"><i class="num">${i+1}</i><i class="done">${ICON.check}</i>${PAW_ICON[c.id]}<span>${i18n(c.name)}</span></button>`).join('');
+  trayEl.style.setProperty('--cat-c',PAW_CATS.find(c=>c.id===ui.pcat).col[0]);
+  refreshPawCats();
+}
+/* ticks on finished sub-steps; when the current one is finished, the next one bobs to say "this way" */
+function refreshPawCats(){
+  if(ui.step!=='pezunas')return;let next=null;
+  catsEl.querySelectorAll('[data-pcat]').forEach(b=>{const d=pawDone[b.dataset.pcat]();b.classList.toggle('is-done',d);b.classList.remove('next');if(!d&&!next)next=b;});
+  if(next&&pawDone[ui.pcat]())next.classList.add('next');
+}
+function setPawCat(id){
+  if(pawTool)pawToolEnd();ui.pcat=id;renderPawCats();renderOpts();saveUI();
+  hintSeen=false;updateHint();coachIdle=performance.now();showCoach(null);sfx.tab();
+}
+catsEl.addEventListener('click',e=>{const b=e.target.closest('[data-pcat]');if(!b)return;if(b.dataset.pcat!==ui.pcat)setPawCat(b.dataset.pcat);else sfx.tab();});
+function renderPawOpts(){
+  const c=ui.pcat;let h;
+  if(c==='recortar'||c==='limar'){
+    h=`<div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n(c==='recortar'?'Arrastra las tijeras por los pelitos':'Frota la lima en las pezuñas')}</div><div class="grid">${PAW_TOOLS[c].map(t=>`<button class="tile" data-ptool="${t.id}" aria-pressed="${ui.tool[c]===t.id}" aria-label="${i18n(t.name)}"><span class="sw">${c==='recortar'?scissorsSVG(t.id):fileSVG(t.id)}</span><span class="nm">${i18n(t.name)}</span></button>`).join('')}</div></div>
+    <div class="actions"><button class="act" data-pact="again">${ICON.reset}${i18n('Otra vez')}</button></div>`;
+  }else if(c==='pintar'){
+    h=POLISH_GROUPS.map((g,i)=>`<div class="group"><div class="gtitle">${i?POLISH_GICON[g.id]:GROUP_ICON.tap}${i18n(g.title)}</div><div class="grid">${g.items.map(o=>`<button class="tile" data-pol="${o.id}" aria-pressed="${ui.polish===o.id}" aria-label="${i18n(o.name)}">${o.id==='sin'?`<span class="sw">${NONE_SVG}</span>`:`<span class="sw paint pol" style="--p:url(${polishSwatch(o)})"></span>`}<span class="nm">${i18n(o.name)}</span></button>`).join('')}</div></div>`).join('');
+  }else{
+    h=`<div class="actions" id="pawActs"></div><div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n('Elige un adorno y toca una pezuña')}</div><div class="grid">${DECOS.map(d=>`<button class="tile sticker" data-pdeco="${d.id}" aria-pressed="${ui.deco===d.id}" aria-label="${i18n(d.name)}"><span class="sw">${decoSVG(d)}</span><span class="nm">${i18n(d.name)}</span></button>`).join('')}</div></div>`;
+  }
+  optsEl.innerHTML=h;optsEl.scrollTop=0;refreshPawActions();refreshPawCats();
+}
+let pawClearArmed=0;const pawDecoLog=[];
+function refreshPawActions(){
+  const el=$('#pawActs');if(!el)return;const n=state.paws[0].deco.length+state.paws[1].deco.length;
+  el.innerHTML=`<button class="act" data-pact="undo" ${n?'':'disabled'}>${ICON.undo}${i18n('Deshacer')}</button><button class="act ${pawClearArmed?'warn':''}" data-pact="clear" ${n?'':'disabled'}>${ICON.trash}${i18n(pawClearArmed?'¿Quitar todos?':'Quitar todos')}</button>`;
+}
+optsEl.addEventListener('click',e=>{
+  if(ui.step!=='pezunas')return;
+  const pressOne=(b,sel)=>{optsEl.querySelectorAll(sel).forEach(x=>x.setAttribute('aria-pressed',String(x===b)));coachIdle=performance.now();showCoach(null);};
+  const t=e.target.closest('[data-ptool]');if(t){ui.tool[ui.pcat]=t.dataset.ptool;pressOne(t,'[data-ptool]');sfx.pop();updateHint();return;}
+  const pl=e.target.closest('[data-pol]');if(pl){ui.polish=pl.dataset.pol;pressOne(pl,'[data-pol]');sfx.pop();hintSeen=false;updateHint();return;}
+  const d=e.target.closest('[data-pdeco]');if(d){ui.deco=d.dataset.pdeco;pressOne(d,'[data-pdeco]');sfx.pop();hintSeen=false;updateHint();return;}
+  const a=e.target.closest('[data-pact]');if(!a)return;const act=a.dataset.pact;
+  if(act==='again'){
+    state.paws.forEach(s=>{if(ui.pcat==='recortar')s.cut=0;else s.file=0;});
+    applyPaws();paws.forEach(p=>p.tuft.forEach(m=>{m.userData.pop=0;}));save();sfx.magic();hintSeen=false;updateHint();refreshPawCats();
+  }else if(act==='undo'){
+    let i=pawDecoLog.pop();if(i==null||!state.paws[i].deco.length)i=state.paws[1].deco.length?1:0;
+    if(state.paws[i].deco.pop()){applyPaw(i);save();sfx.undo();}pawClearArmed=0;refreshPawCats();
+  }else if(act==='clear'){
+    if(!pawClearArmed){pawClearArmed=1;setTimeout(()=>{pawClearArmed=0;refreshPawActions();},3000);}
+    else{pawClearArmed=0;state.paws.forEach(s=>{s.deco=[];});pawDecoLog.length=0;applyPaws();save();sfx.magic();refreshPawCats();}
+  }
+  refreshPawActions();
+});
+/* coach (finger) per sub-step, pointed at the first hoof that still needs it */
+const PAW_COACH_CLASS={snip:'swipe',rub:'rub',paint:'tap',deco:'tap'};
+function pawCoachMode(){return pawDone[ui.pcat]()?null:{recortar:'snip',limar:'rub',pintar:'paint',decorar:'deco'}[ui.pcat];}
+function pawCoachKey(){return ui.pcat+(ui.pcat==='pintar'?ui.polish:ui.pcat==='decorar'?ui.deco:ui.tool[ui.pcat]);}
+function pawCoachTarget(){const s=state.paws,c=ui.pcat;for(let i=0;i<2;i++){if(c==='recortar'&&s[i].cut!==ALL_CUT||c==='limar'&&s[i].file<1||c==='pintar'&&s[i].polish==='sin'||c==='decorar'&&!s[i].deco.length)return i;}return 0;}
+function pawCoachHTML(mode){
+  if(mode==='snip')return `<div class="mv"><div class="tool">${scissorsSVG(ui.tool.recortar)}</div><div class="finger">${fingerSVG()}</div></div>`;
+  if(mode==='rub')return `<div class="mv"><div class="tool file">${fileSVG(ui.tool.limar)}</div><div class="finger">${fingerSVG()}</div></div>`;
+  const icon=mode==='paint'?`<span class="sw paint pol" style="--p:url(${polishSwatch(byId(POLISH,ui.polish))})"></span>`:decoSVG(DECO[ui.deco]);
+  return `<i class="ring"></i><i class="ring"></i><div class="stk">${icon}</div><div class="finger">${fingerSVG()}</div>`;
+}
+function placePawCoach(){
+  const c=pawScreen(pawCoachTarget()),dy=ui.pcat==='recortar'?-c.r*.55:ui.pcat==='limar'?c.r*.45:0,dx=ui.pcat==='recortar'?c.r*.5:0;
+  coach.style.transform=`translate(${c.x+dx}px,${c.y+dy}px)`;
+}
+function pawHint(h){
+  const c=ui.pcat,on=!hintSeen&&!pawDone[c]();h.hidden=!on;if(!on)return;
+  $('#hintIco').innerHTML=c==='recortar'?scissorsSVG(ui.tool.recortar):c==='limar'?fileSVG(ui.tool.limar):c==='pintar'?nailBottleSVG(byId(POLISH,ui.polish)):decoSVG(DECO[ui.deco]);
+  $('#hintTxt').textContent=i18n({recortar:'Corta los pelitos',limar:'Lima las pezuñas',pintar:'Toca una pezuña para pintarla',decorar:'Toca una pezuña para decorarla'}[c]);
+}
 let clearArmed=0;
 function refreshStickerActions(){
   const el=$('#stkActs');if(!el)return;const n=state.stickers.length;
@@ -1708,11 +2120,11 @@ function refreshDeps(changed){
 }
 let hintSeen=false;
 function updateHint(){
-  const h=$('#hint');const on=(ui.cat==='stickers'||ui.cat==='perfume')&&!hintSeen;h.hidden=!on;
+  const h=$('#hint');if(ui.step==='pezunas'){pawHint(h);return;}const on=(ui.cat==='stickers'||ui.cat==='perfume')&&!hintSeen;h.hidden=!on;
   if(on&&ui.cat==='perfume'){$('#hintIco').innerHTML=bottleSVG(SCENT[ui.scent]);$('#hintTxt').textContent=i18n('Mantén el dedo en el unicornio');return;}
   if(on){const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';$('#hintIco').innerHTML=stickerSVG(STK[ui.sticker],mode);$('#hintTxt').textContent=i18n(mode==='tatuaje'?'Toca el unicornio para el tatuaje':'Toca el unicornio para pegar');}
 }
-catsEl.addEventListener('click',e=>{const b=e.target.closest('.cat');if(!b)return;if(ui.cat!==b.dataset.cat){if(spray)stopSpray();ui.cat=b.dataset.cat;renderCats();renderSubs();renderOpts();saveUI();hintSeen=false;}updateHint();sfx.tab();});
+catsEl.addEventListener('click',e=>{const b=e.target.closest('.cat');if(!b||b.dataset.pcat)return;if(ui.cat!==b.dataset.cat){if(spray)stopSpray();ui.cat=b.dataset.cat;renderCats();renderSubs();renderOpts();saveUI();hintSeen=false;}updateHint();sfx.tab();});
 subsEl.addEventListener('click',e=>{const b=e.target.closest('.pill');if(!b)return;ui.sub[ui.cat]=b.dataset.sub;renderSubs();renderOpts();saveUI();if(ui.cat==='stickers')hintSeen=false;updateHint();sfx.tab();});
 optsEl.addEventListener('click',e=>{
   const t=e.target.closest('.tile[data-key]');
@@ -1738,10 +2150,11 @@ let resetArmed=0;
 function paintReset(){btnReset.classList.toggle('confirm',!!resetArmed);btnReset.innerHTML=ICON.reset+(resetArmed?`<span>${i18n('¿Empezar de nuevo?')}</span>`:'');btnReset.setAttribute('aria-label',i18n(resetArmed?'Toca otra vez para empezar de nuevo':'Empezar de nuevo'));}
 btnReset.addEventListener('click',()=>{
   if(!resetArmed){resetArmed=1;paintReset();setTimeout(()=>{resetArmed=0;paintReset();},3000);sfx.tab();return;}
-  resetArmed=0;state=JSON.parse(JSON.stringify(DEFAULT));applyAll();save();renderOpts();paintReset();sfx.magic();squash(1.3);tYaw=0;tPitch=0;burst(V3(0,.4,.9),24,1.6);
+  resetArmed=0;state=JSON.parse(JSON.stringify(DEFAULT));applyAll();save();renderCats();renderOpts();paintReset();sfx.magic();squash(1.3);tYaw=0;tPitch=0;burst(V3(0,.4,.9),24,1.6);
 });
 $('#btnWand').addEventListener('click',()=>{
   const r=(arr,noneP)=>{const o=arr.filter(x=>!NONE.has(x.id));return Math.random()<(noneP||0)?arr[0].id:pick(o).id;};
+  if(ui.step==='pezunas'){const pol=POLISH.filter(o=>o.id!=='sin');state.paws.forEach(p=>{p.polish=pick(pol).id;});applyPaws();save();renderPawCats();sfx.magic();pawLove=0;burst(pawWorld(0,.4,.6),14,1.4);burst(pawWorld(1,.4,.6),14,1.4);return;}
   Object.assign(state,{fur:r(FUR),mane:r(MANE),hair:r(HAIR),horn:r(HORN),eye:r(EYE),lens:Math.random()<.4?'normal':r(LENS),lashes:r(LASHES),lashColor:Math.random()<.5?'negro':r(LASH_C),shadow:r(SHADOW,.15),blush:r(BLUSH,.15),freckles:r(FRECKLES,.5),lips:r(LIPS),earring:r(EARRING,.35),earTop:r(EAR_TOP,.6),nose:r(NOSE,.6),glasses:r(GLASSES,.65),headAcc:r(HEADACC,.4)});
   applyAll();save();renderOpts();sfx.magic();squash(1.3);burst(V3(0,.5,.9),26,1.7);
 });
@@ -1852,6 +2265,7 @@ galView.addEventListener('click',e=>{
     const def=JSON.parse(JSON.stringify(DEFAULT)),L=viewing.look||{};
     for(const k in CATALOG)if(CATALOG[k].some(o=>o.id===L[k]))def[k]=L[k];
     if(Array.isArray(L.stickers))def.stickers=JSON.parse(JSON.stringify(L.stickers));
+    def.paws=sanitizePaws(L.paws);
     state=def;applyAll();save();renderOpts();closeGallery();sfx.magic();squash(1.3);burst(V3(0,.5,.9),26,1.7);
   }
   else if(act==='del'){
@@ -1863,7 +2277,7 @@ galView.addEventListener('click',e=>{
 /* ================= boot ================= */
 paintSound();paintReset();paintAlbum();
 applyAll();shadowAll(uni);
-renderCats();renderSubs();renderOpts();updateHint();
+renderSteps();setStep(ui.step,true);
 layout();
 requestAnimationFrame(frame);
 window.__uni={state,apply,applyAll,ui,renderOpts,renderCats,renderSubs,camera,tap,hitTest};
