@@ -1610,12 +1610,12 @@ const legRig=paws.map(p=>{
   shadowAll(sh);
   return{p,sh,knee,foot,k:0,on:false,qa:new THREE.Quaternion(),qb:new THREE.Quaternion()};
 });
-/* Tongue: comes out of the middle of the smile line (muzzle lat -21) through a small dark mouth opening, hanging down and out. */
+/* Tongue: a small round 😛 tongue peeking out just below the middle of the smile line (muzzle lat -21). */
 const MOUTH_AT=muzzlePt(0,-21),MOUTH_N=V3(0,(MOUTH_AT.y-MZ.c.y)/(MZ.r.y*MZ.r.y),(MOUTH_AT.z-MZ.c.z)/(MZ.r.z*MZ.r.z)).normalize();
-const TONGUE_DIR=V3(0,-1,0).projectOnPlane(MOUTH_N).normalize().multiplyScalar(Math.cos(.6)).addScaledVector(MOUTH_N,Math.sin(.6)).normalize();
+const TONGUE_DIR=V3(0,-1,0).projectOnPlane(MOUTH_N).normalize().multiplyScalar(Math.cos(.3)).addScaledVector(MOUTH_N,Math.sin(.3)).normalize();
 const tongueG=new THREE.Group();tongueG.position.copy(MOUTH_AT);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.visible=false;headG.add(tongueG);
-const mouthHole=blob(clay('#9c3a62',{roughness:.6}),V3(0,.005,-.012),V3(.13,.035,.03));mouthHole.quaternion.copy(new THREE.Quaternion().setFromAxisAngle(V3(1,0,0),-.6));tongueG.add(mouthHole);
 const tongue=blob(clay('#ff7aa2',{roughness:.35,clearcoat:.6}),V3(0,0,0),V3(1,1,1));tongue.castShadow=true;tongueG.add(tongue);
+tongueG.add(blob(clay('#e8578a',{roughness:.4}),V3(0,.07,.037),V3(.007,.04,.012)));
 let poseLegK=0,poseHeartT=0;const poseFace={lid:[0,0],tilt:0,tongue:0};
 function poseBy(id){return POSES.find(p=>p.id===id)||POSES[0];}
 function attachHoof(r,on){
@@ -1656,7 +1656,7 @@ function poseTick(dt,t){
   f.tilt+=((o.tilt||0)-f.tilt)*go;f.tongue+=((o.tongue||0)-f.tongue)*go;
   headG.rotation.z+=f.tilt+(o.hearts?Math.sin(t*1.6)*.04*m:0);headG.rotation.x-=.1*lk;
   tongueG.visible=f.tongue>.02;
-  if(tongueG.visible){const k=f.tongue;tongue.scale.set(.115,.12*k+.01,.045);tongue.position.set(0,.12*k-.03,.012);tongueG.rotation.set(0,0,0);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.rotateZ(Math.sin(t*6)*.12*m);}
+  if(tongueG.visible){const k=f.tongue;tongue.scale.set(.1,.075,.045);tongue.position.set(0,.06,.004);tongueG.scale.setScalar(k);tongueG.rotation.set(0,0,0);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.rotateZ(Math.sin(t*5)*.06*m);}
   if(o.hearts&&(poseHeartT-=dt)<=0){poseHeartT=.9;const hp=new THREE.Vector3();headMesh.getWorldPosition(hp);const a=Math.random()*Math.PI;floatUp(hp.add(V3(Math.cos(a)*1.2,Math.sin(a)*.6+.4,.6)),heartTex,.26+Math.random()*.1);}
 }
 
