@@ -1610,14 +1610,14 @@ const legRig=paws.map(p=>{
   shadowAll(sh);
   return{p,sh,knee,foot,k:0,on:false,qa:new THREE.Quaternion(),qb:new THREE.Quaternion()};
 });
-/* Tongue: a half-dome 😛 tongue coming out of the middle of the smile line (muzzle lat -21): flat edge on the mouth line, round edge down, sticking out at 45°. */
+/* Tongue: grows out of the middle of the smile line (muzzle lat -21) the way the ears grow out of the head: an ellipsoid whose
+   root is sunk inside the muzzle and whose tip sticks out and down at ~45° between the muzzle surface and its normal. */
 const MOUTH_AT=muzzlePt(0,-21),MOUTH_N=V3(0,(MOUTH_AT.y-MZ.c.y)/(MZ.r.y*MZ.r.y),(MOUTH_AT.z-MZ.c.z)/(MZ.r.z*MZ.r.z)).normalize();
-const TONGUE_DIR=V3(0,-1,0).projectOnPlane(MOUTH_N).normalize().multiplyScalar(Math.cos(Math.PI/4)).addScaledVector(MOUTH_N,Math.sin(Math.PI/4)).normalize();
-const tongueG=new THREE.Group();tongueG.position.copy(MOUTH_AT);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.visible=false;headG.add(tongueG);
+const TONGUE_DIR=muzzlePt(0,-31).sub(MOUTH_AT).normalize().add(MOUTH_N).normalize();
+const tongueG=new THREE.Group();tongueG.position.copy(MOUTH_AT);tongueG.visible=false;headG.add(tongueG);
 const tongue=new THREE.Group();tongueG.add(tongue);
-{const dome=new THREE.Mesh(new THREE.SphereGeometry(1,40,20,0,TAU,0,Math.PI/2),clay('#ff7aa2',{roughness:.35,clearcoat:.6}));dome.castShadow=true;tongue.add(dome);
- const lip=new THREE.Mesh(new THREE.CircleGeometry(1,40).rotateX(Math.PI/2),clay('#d9467a',{roughness:.5}));tongue.add(lip);}
-tongueG.add(blob(clay('#e8578a',{roughness:.4}),V3(0,.05,.045),V3(.008,.035,.013)));
+{const t=blob(clay('#ff7aa2',{roughness:.35,clearcoat:.6}),V3(0,.03,0),V3(.11,.13,.05));t.castShadow=true;tongue.add(t);
+ tongue.add(blob(clay('#e8578a',{roughness:.4}),V3(0,.07,.043),V3(.007,.05,.008)));}
 let poseLegK=0,poseHeartT=0;const poseFace={lid:[0,0],tilt:0,tongue:0};
 function poseBy(id){return POSES.find(p=>p.id===id)||POSES[0];}
 function attachHoof(r,on){
@@ -1658,7 +1658,7 @@ function poseTick(dt,t){
   f.tilt+=((o.tilt||0)-f.tilt)*go;f.tongue+=((o.tongue||0)-f.tongue)*go;
   headG.rotation.z+=f.tilt+(o.hearts?Math.sin(t*1.6)*.04*m:0);headG.rotation.x-=.1*lk;
   tongueG.visible=f.tongue>.02;
-  if(tongueG.visible){const k=f.tongue;tongue.scale.set(.13,.105,.055);tongue.position.set(0,0,0);tongueG.scale.setScalar(k);tongueG.rotation.set(0,0,0);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.rotateZ(Math.sin(t*5)*.06*m);}
+  if(tongueG.visible){const k=f.tongue;tongueG.scale.setScalar(k);tongueG.rotation.set(0,0,0);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.rotateZ(Math.sin(t*5)*.06*m);}
   if(o.hearts&&(poseHeartT-=dt)<=0){poseHeartT=.9;const hp=new THREE.Vector3();headMesh.getWorldPosition(hp);const a=Math.random()*Math.PI;floatUp(hp.add(V3(Math.cos(a)*1.2,Math.sin(a)*.6+.4,.6)),heartTex,.26+Math.random()*.1);}
 }
 
