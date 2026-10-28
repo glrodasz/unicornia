@@ -848,7 +848,10 @@ function paintMuzzle(){
     const lipInk=k=>{if(!L.rainbow)return mix(L.c,'#3a0f2a',k);const g=x.createLinearGradient(ax,0,bx,0);RAINBOW.forEach((c,i,a)=>g.addColorStop(i/(a.length-1),mix(c,'#3a0f2a',k)));return g;};
     x.strokeStyle=lipInk(.25);x.lineWidth=.07*pu;smile();x.stroke();
     x.strokeStyle=lipInk(0);x.lineWidth=.056*pu;smile();x.stroke();
-    x.save();x.translate(0,-.012*pu);x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=.012*pu;x.beginPath();x.moveTo(lerp(ax,mx,.35),lerp(ay,my,.25));x.quadraticCurveTo(qx,qy,lerp(bx,mx,.35),lerp(by,my,.25));x.stroke();x.restore();
+    // Gloss: a short soft glint on the middle stretch of the smile curve (t .38-.62), not a stripe along the whole lip.
+    {const t0=.38,t1=.62,P=t=>[(1-t)*(1-t)*ax+2*(1-t)*t*qx+t*t*bx,(1-t)*(1-t)*ay+2*(1-t)*t*qy+t*t*by],dP=t=>[2*(1-t)*(qx-ax)+2*t*(bx-qx),2*(1-t)*(qy-ay)+2*t*(by-qy)];
+    const[p0x,p0y]=P(t0),[p1x,p1y]=P(t1),[dx,dy]=dP(t0),h=(t1-t0)/2;
+    x.save();x.translate(0,-.012*pu);x.strokeStyle='rgba(255,255,255,.4)';x.lineWidth=.01*pu;x.beginPath();x.moveTo(p0x,p0y);x.quadraticCurveTo(p0x+dx*h,p0y+dy*h,p1x,p1y);x.stroke();x.restore();}
     if(L.glitter){const r=rng(5);for(let i=0;i<40;i++){const t=r(),X=(1-t)*(1-t)*ax+2*(1-t)*t*qx+t*t*bx+(r()-.5)*.05*pu,Y=(1-t)*(1-t)*ay+2*(1-t)*t*qy+t*t*by+(r()-.5)*.04*pu;x.fillStyle=r()<.5?'#ffffff':'#ffe27a';x.beginPath();x.arc(X,Y,(.004+r()*.005)*pu,0,TAU);x.fill();}}
   }
   // Smile-corner dimples only on bare lips: on painted lips they land inside the colour band and read as dark streaks.
