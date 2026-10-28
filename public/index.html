@@ -1610,14 +1610,15 @@ const legRig=paws.map(p=>{
   shadowAll(sh);
   return{p,sh,knee,foot,k:0,on:false,qa:new THREE.Quaternion(),qb:new THREE.Quaternion()};
 });
-/* Tongue: a half-dome 😛 tongue coming out of the middle of the smile line (muzzle lat -21): flat edge on the mouth line, round edge down, sticking out at 45°. */
+/* Tongue: a half-dome 😛 tongue coming out of the middle of the smile line (muzzle lat -21): flat edge on the mouth line, round edge down.
+   It lies along the muzzle (chord to lat -31, barely tilted out) with its back half sunk into it, so no gap shows from any side. */
 const MOUTH_AT=muzzlePt(0,-21),MOUTH_N=V3(0,(MOUTH_AT.y-MZ.c.y)/(MZ.r.y*MZ.r.y),(MOUTH_AT.z-MZ.c.z)/(MZ.r.z*MZ.r.z)).normalize();
-const TONGUE_DIR=V3(0,-1,0).projectOnPlane(MOUTH_N).normalize().multiplyScalar(Math.cos(Math.PI/4)).addScaledVector(MOUTH_N,Math.sin(Math.PI/4)).normalize();
+const TONGUE_DIR=muzzlePt(0,-31).sub(MOUTH_AT).normalize().addScaledVector(MOUTH_N,.08).normalize();
 const tongueG=new THREE.Group();tongueG.position.copy(MOUTH_AT);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.visible=false;headG.add(tongueG);
 const tongue=new THREE.Group();tongueG.add(tongue);
 {const dome=new THREE.Mesh(new THREE.SphereGeometry(1,40,20,0,TAU,0,Math.PI/2),clay('#ff7aa2',{roughness:.35,clearcoat:.6}));dome.castShadow=true;tongue.add(dome);
  const lip=new THREE.Mesh(new THREE.CircleGeometry(1,40).rotateX(Math.PI/2),clay('#d9467a',{roughness:.5}));tongue.add(lip);}
-tongueG.add(blob(clay('#e8578a',{roughness:.4}),V3(0,.05,.045),V3(.008,.035,.013)));
+tongueG.add(blob(clay('#e8578a',{roughness:.4}),V3(0,.035,.046),V3(.007,.025,.01)));
 let poseLegK=0,poseHeartT=0;const poseFace={lid:[0,0],tilt:0,tongue:0};
 function poseBy(id){return POSES.find(p=>p.id===id)||POSES[0];}
 function attachHoof(r,on){
