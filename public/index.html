@@ -1310,7 +1310,7 @@ function flower(G,pos,n,size,petalC,centerC){
   const k=5;for(let i=0;i<k;i++){const a=i/k*TAU;g.add(blob(pm,V3(Math.cos(a)*size*.62,Math.sin(a)*size*.62,0),V3(size*.55,size*.38,size*.22),new THREE.Quaternion().setFromAxisAngle(V3(0,0,1),a)));}
   g.add(blob(cm,V3(0,0,size*.12),V3(size*.32,size*.32,size*.22)));G.add(g);return g;
 }
-/* head accessories rest on whatever hairstyle is on: cast inward from outside the head and sit just past the outermost lock */
+/* head accessories rest on whatever hairstyle is on: cast inward from outside the head and sit just past the outermost lock (the tiara mirrors the higher side so it stays symmetric) */
 const hairRay=new THREE.Raycaster(),hairHits=[],liftMemo=new Map();
 function hairLift(lon,lat){
   const key=lon.toFixed(1)+','+lat.toFixed(1);if(liftMemo.has(key))return liftMemo.get(key);
@@ -1342,7 +1342,7 @@ function buildHeadAcc(){
   }else if(id==='tiara'){
     const tLat=lon=>74-.005*lon*lon,lons=[],lats=[];for(let i=0;i<=24;i++){const lon=-62+i*124/24;lons.push(lon);lats.push(tLat(lon));}
     const raw=lons.map((lon,i)=>i%2?0:hairLift(lon,lats[i]));for(let i=1;i<24;i+=2)raw[i]=(raw[i-1]+raw[i+1])/2;
-    const H=smoothLifts(raw,2).map(h=>Math.max(.13,h+.035));
+    const S=smoothLifts(raw,2),H=S.map((h,i)=>Math.max(.13,Math.max(h,S[24-i])+.035));
     const at=lon=>{const f=(lon+62)/124*24,i=Math.min(23,Math.floor(f));return lerp(H[i],H[i+1],f-i);};
     G.add(new THREE.Mesh(tube(lons.map((lon,i)=>surf(lon,lats[i],H[i])),[.032,.032],{seg:60,rad:10,flat:1,c0:.02,c1:.02}),MAT.silver));
     const gem=jellyMat('#ff5d9e');
