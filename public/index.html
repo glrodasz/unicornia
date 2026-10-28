@@ -1540,7 +1540,7 @@ function pawStepDone(id){
   refreshPawCats();sfx.love();setTimeout(()=>sfx.giggle(),380);pawLove=0;
   for(let i=0;i<2;i++){const w=pawWorld(i,HOOF.h+.4,.5);for(let k=0;k<4;k++)floatUp(w.clone().add(V3((Math.random()-.5)*.8,Math.random()*.3,0)),heartTex,.28);burst(w,10,1.2);}
   const next={recortar:'limar',limar:'pintar'}[id];
-  const go=()=>{if(ui.step!=='pezunas'||ui.pcat!==id)return;if(pawTool)setTimeout(go,300);else setPawCat(next);};
+  const go=()=>{if(ui.step!=='pezunas'||ui.pcat!==id||!pawDone[id]())return;if(pawTool)setTimeout(go,300);else setPawCat(next);};
   if(next)setTimeout(go,1400);
 }
 function pawsTick(dt,t){
