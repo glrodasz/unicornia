@@ -1599,7 +1599,7 @@ const POSES=[
   {id:'lengua',name:'Lengua',lid:[.4,.4],tilt:.1,tongue:1},
   {id:'tierna',name:'Tierna',lid:[.97,.97],tilt:.16,hearts:1},
 ];
-const LEG={L1:2.55,L2:.55,s:.7},DOWN=V3(0,-1,0),Q0=new THREE.Quaternion();
+const LEG={L1:2.55,L2:.7,s:.7},DOWN=V3(0,-1,0),Q0=new THREE.Quaternion();
 const legRig=paws.map(p=>{
   const sh=new THREE.Group();sh.position.set(p.sg*.7,-2.7,.3);sh.visible=false;uni.add(sh);
   const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.24,LEG.L1,8,24),furMat);arm.position.y=-LEG.L1/2;sh.add(arm);
@@ -1610,8 +1610,12 @@ const legRig=paws.map(p=>{
   shadowAll(sh);
   return{p,sh,knee,foot,k:0,on:false,qa:new THREE.Quaternion(),qb:new THREE.Quaternion()};
 });
-const tongue=blob(clay('#ff7aa2',{roughness:.4,clearcoat:.5}),V3(0,0,0),V3(.15,.07,.15));
-const TONGUE_AT=muzzlePt(0,-24,.02);tongue.visible=false;tongue.castShadow=true;headG.add(tongue);
+/* Tongue: comes out of the middle of the smile line (muzzle lat -21) through a small dark mouth opening, hanging down and out. */
+const MOUTH_AT=muzzlePt(0,-21),MOUTH_N=V3(0,(MOUTH_AT.y-MZ.c.y)/(MZ.r.y*MZ.r.y),(MOUTH_AT.z-MZ.c.z)/(MZ.r.z*MZ.r.z)).normalize();
+const TONGUE_DIR=V3(0,-1,0).projectOnPlane(MOUTH_N).normalize().multiplyScalar(Math.cos(.6)).addScaledVector(MOUTH_N,Math.sin(.6)).normalize();
+const tongueG=new THREE.Group();tongueG.position.copy(MOUTH_AT);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.visible=false;headG.add(tongueG);
+const mouthHole=blob(clay('#9c3a62',{roughness:.6}),V3(0,.005,-.012),V3(.13,.035,.03));mouthHole.quaternion.copy(new THREE.Quaternion().setFromAxisAngle(V3(1,0,0),-.6));tongueG.add(mouthHole);
+const tongue=blob(clay('#ff7aa2',{roughness:.35,clearcoat:.6}),V3(0,0,0),V3(1,1,1));tongue.castShadow=true;tongueG.add(tongue);
 let poseLegK=0,poseHeartT=0;const poseFace={lid:[0,0],tilt:0,tongue:0};
 function poseBy(id){return POSES.find(p=>p.id===id)||POSES[0];}
 function attachHoof(r,on){
@@ -1636,10 +1640,11 @@ function poseTick(dt,t){
     const want=!!(o.legs&&o.legs[i]);r.k=clamp(r.k+(want?dt*2.2:-dt*3),0,1);
     r.sh.visible=r.k>0;attachHoof(r,r.k>0);legK=Math.max(legK,r.k);if(!r.k)return;
     const sg=r.p.sg,wave=o.id==='hola';
-    // forearm reaches forward and up; the cannon hangs from the knee, paddling (rearing) or swinging side to side (hello)
+    // forearm reaches forward and up; the cannon hangs from the knee, paddling (rearing) or waving (hello).
+    // It always hangs forward and outward of the forearm, so the hoof and its little hairs never sink into the leg.
     _d1.set(sg*(wave?.45:.3),wave?2.8:2.45,wave?.6:.75).normalize();
-    if(wave){const a=Math.sin(t*7)*.55*m;_d2.set(Math.sin(a),-Math.cos(a),-.15);}
-    else _d2.set(0,-1,-.1+Math.sin(t*5+i*Math.PI)*.25*m);
+    if(wave){const a=sg*(.3+.45*(1+Math.sin(t*7)*m)/2);_d2.set(Math.sin(a),-Math.cos(a),.7);}
+    else _d2.set(sg*.3,-1,.7+Math.sin(t*5+i*Math.PI)*.2*m);
     _d2.normalize();
     r.qa.setFromUnitVectors(DOWN,_d1);r.qb.copy(r.qa).invert().multiply(_qi.setFromUnitVectors(DOWN,_d2));
     const e=want?easeBack(r.k):r.k*r.k*(3-2*r.k);
@@ -1650,8 +1655,8 @@ function poseTick(dt,t){
   eyes.forEach((e,j)=>{f.lid[j]+=((o.lid?o.lid[j]:0)-f.lid[j])*go;if(f.lid[j]>.002)e.lid.rotation.x=lerp(e.lid.rotation.x,LID_SHUT,f.lid[j]);});
   f.tilt+=((o.tilt||0)-f.tilt)*go;f.tongue+=((o.tongue||0)-f.tongue)*go;
   headG.rotation.z+=f.tilt+(o.hearts?Math.sin(t*1.6)*.04*m:0);headG.rotation.x-=.1*lk;
-  tongue.visible=f.tongue>.02;
-  if(tongue.visible){const k=f.tongue;tongue.position.copy(TONGUE_AT).add(V3(0,-.09*k,.07*k));tongue.scale.set(.18,.08,.19*k);tongue.rotation.set(.5,0,Math.sin(t*6)*.18*m);}
+  tongueG.visible=f.tongue>.02;
+  if(tongueG.visible){const k=f.tongue;tongue.scale.set(.115,.12*k+.01,.045);tongue.position.set(0,.12*k-.03,.012);tongueG.rotation.set(0,0,0);tongueG.quaternion.copy(quatYZ(TONGUE_DIR,MOUTH_N));tongueG.rotateZ(Math.sin(t*6)*.12*m);}
   if(o.hearts&&(poseHeartT-=dt)<=0){poseHeartT=.9;const hp=new THREE.Vector3();headMesh.getWorldPosition(hp);const a=Math.random()*Math.PI;floatUp(hp.add(V3(Math.cos(a)*1.2,Math.sin(a)*.6+.4,.6)),heartTex,.26+Math.random()*.1);}
 }
 
