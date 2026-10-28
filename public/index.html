@@ -851,7 +851,8 @@ function paintMuzzle(){
     x.save();x.translate(0,-.012*pu);x.strokeStyle='rgba(255,255,255,.55)';x.lineWidth=.012*pu;x.beginPath();x.moveTo(lerp(ax,mx,.35),lerp(ay,my,.25));x.quadraticCurveTo(qx,qy,lerp(bx,mx,.35),lerp(by,my,.25));x.stroke();x.restore();
     if(L.glitter){const r=rng(5);for(let i=0;i<40;i++){const t=r(),X=(1-t)*(1-t)*ax+2*(1-t)*t*qx+t*t*bx+(r()-.5)*.05*pu,Y=(1-t)*(1-t)*ay+2*(1-t)*t*qy+t*t*by+(r()-.5)*.04*pu;x.fillStyle=r()<.5?'#ffffff':'#ffe27a';x.beginPath();x.arc(X,Y,(.004+r()*.005)*pu,0,TAU);x.fill();}}
   }
-  for(const[ex,ey,sg]of[[ax,ay,-1],[bx,by,1]]){x.strokeStyle=darkM?'#20142e':mix(f.m,'#5a2440',.6);x.lineWidth=.016*pu;x.beginPath();x.moveTo(ex-.012*pu*sg,ey+.02*pu);x.quadraticCurveTo(ex+.004*pu*sg,ey+.004*pu,ex+.006*pu*sg,ey-.018*pu);x.stroke();}
+  // Smile-corner dimples only on bare lips: on painted lips they land inside the colour band and read as dark streaks.
+  if(L.id==='natural')for(const[ex,ey,sg]of[[ax,ay,-1],[bx,by,1]]){x.strokeStyle=darkM?'#20142e':mix(f.m,'#5a2440',.6);x.lineWidth=.016*pu;x.beginPath();x.moveTo(ex-.012*pu*sg,ey+.02*pu);x.quadraticCurveTo(ex+.004*pu*sg,ey+.004*pu,ex+.006*pu*sg,ey-.018*pu);x.stroke();}
   paintStickers(s); s.tex.needsUpdate=true;
 }
 function paintNeck(){
