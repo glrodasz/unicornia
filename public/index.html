@@ -1188,7 +1188,7 @@ const HAIRSTYLE={
   },
 };
 function V(x,y,z){return V3(x,y,z);}
-function buildHair(){disposeGroup(hairG);(HAIRSTYLE[state.hair]||HAIRSTYLE.suelto)();shadowAll(hairG);applyMane();}
+function buildHair(){disposeGroup(hairG);liftMemo.clear();(HAIRSTYLE[state.hair]||HAIRSTYLE.suelto)();shadowAll(hairG);applyMane();}
 function applyMane(){
   const m=byId(MANE,state.mane);const pal=m.multi||[m.c];
   hairMats.forEach((mat,i)=>{mat.color.set(pal[i%pal.length]);mat.sheenColor.set(mix(pal[i%pal.length],'#ffffff',.6));});
@@ -1310,29 +1310,49 @@ function flower(G,pos,n,size,petalC,centerC){
   const k=5;for(let i=0;i<k;i++){const a=i/k*TAU;g.add(blob(pm,V3(Math.cos(a)*size*.62,Math.sin(a)*size*.62,0),V3(size*.55,size*.38,size*.22),new THREE.Quaternion().setFromAxisAngle(V3(0,0,1),a)));}
   g.add(blob(cm,V3(0,0,size*.12),V3(size*.32,size*.32,size*.22)));G.add(g);return g;
 }
+/* head accessories rest on whatever hairstyle is on: cast inward from outside the head and sit just past the outermost lock */
+const hairRay=new THREE.Raycaster(),hairHits=[],liftMemo=new Map();
+function hairLift(lon,lat){
+  const key=lon.toFixed(1)+','+lat.toFixed(1);if(liftMemo.has(key))return liftMemo.get(key);
+  const p=surf(lon,lat),r=p.length(),dir=p.clone().divideScalar(-r);
+  const o=headG.localToWorld(p.clone().multiplyScalar(2.2)),d=dir.clone().transformDirection(headG.matrixWorld);
+  hairRay.set(o,d);hairHits.length=0;hairRay.intersectObject(hairG,true,hairHits);
+  const h=hairHits.length?Math.max(0,headG.worldToLocal(hairHits[0].point).length()/r-1):0;
+  liftMemo.set(key,h);return h;
+}
+/* highest hair over a small patch, so a flower or bow doesn't sink between two locks */
+function patchLift(lon,lat,spread){let m=hairLift(lon,lat);for(const [a,b] of[[-1,0],[1,0],[0,-.7],[0,.7]])m=Math.max(m,hairLift(lon+a*spread,lat+b*spread));return m;}
+function smoothLifts(L,w){
+  const mx=L.map((_,i)=>Math.max(...L.slice(Math.max(0,i-w),i+w+1)));
+  return mx.map((_,i)=>{const s=mx.slice(Math.max(0,i-w),i+w+1);return s.reduce((a,b)=>a+b,0)/s.length;});
+}
 function buildHeadAcc(){
   const G=accG.head;disposeGroup(G);const id=state.headAcc;if(NONE.has(id))return;
+  headG.updateWorldMatrix(true,true);
   if(id==='lazo'){
     const m=byId(MANE,state.mane),col=(m.id==='rosa'||m.id==='fucsia')?'#7cc4f4':'#ff4f8b';const mat=clay(col,{roughness:.45,sheen:.9,clearcoat:.3});
-    const lon=40,lat=62,g=new THREE.Group();g.position.copy(surf(lon,lat,.12));g.quaternion.copy(quatYZ(V3(0,1,0).lerp(surfN(lon,lat),.3),surfN(lon,lat)));
+    const lon=40,lat=62,g=new THREE.Group();g.position.copy(surf(lon,lat,Math.max(.12,patchLift(lon,lat,12)+.06)));g.quaternion.copy(quatYZ(V3(0,1,0).lerp(surfN(lon,lat),.3),surfN(lon,lat)));
     for(const sg of[-1,1]){g.add(blob(mat,V3(.17*sg,.02,0),V3(.19,.13,.08),new THREE.Quaternion().setFromAxisAngle(V3(0,0,1),-.32*sg)));
       g.add(blob(mat,V3(.06*sg,-.12,.01),V3(.05,.13,.035),new THREE.Quaternion().setFromAxisAngle(V3(0,0,1),.45*sg)));}
     g.add(blob(mat,V3(0,0,.03),V3(.07,.07,.06)));G.add(g);
   }else if(id==='flores'){
     const cols=['#ff8fc8','#fff3a8','#c9a7ff','#ffffff','#8fd9ff','#ffb27a'];
-    [-74,-50,-26,26,50,74].forEach((lon,i)=>{const lat=48-.0016*lon*lon;flower(G,surf(lon,lat,.09),surfN(lon,lat),.13,cols[i],'#ffd447');
-      const lf=blob(clay('#7bd389'),surf(lon+12*Math.sign(lon),lat-5,.06),V3(.07,.035,.02),new THREE.Quaternion().setFromUnitVectors(V3(0,0,1),surfN(lon,lat)));G.add(lf);});
+    [-74,-50,-26,26,50,74].forEach((lon,i)=>{const lat=48-.0016*lon*lon,h=Math.max(.09,patchLift(lon,lat,7)+.05);flower(G,surf(lon,lat,h),surfN(lon,lat),.13,cols[i],'#ffd447');
+      const lf=blob(clay('#7bd389'),surf(lon+12*Math.sign(lon),lat-5,h-.03),V3(.07,.035,.02),new THREE.Quaternion().setFromUnitVectors(V3(0,0,1),surfN(lon,lat)));G.add(lf);});
   }else if(id==='tiara'){
-    const pts=[];for(let i=0;i<=24;i++){const lon=-62+i*124/24;pts.push(surf(lon,52-.001*lon*lon,.13));}
-    G.add(new THREE.Mesh(tube(pts,[.032,.032],{seg:60,rad:10,flat:1,c0:.02,c1:.02}),MAT.silver));
+    const tLat=lon=>74-.005*lon*lon,lons=[],lats=[];for(let i=0;i<=24;i++){const lon=-62+i*124/24;lons.push(lon);lats.push(tLat(lon));}
+    const raw=lons.map((lon,i)=>i%2?0:hairLift(lon,lats[i]));for(let i=1;i<24;i+=2)raw[i]=(raw[i-1]+raw[i+1])/2;
+    const H=smoothLifts(raw,2).map(h=>Math.max(.13,h+.035));
+    const at=lon=>{const f=(lon+62)/124*24,i=Math.min(23,Math.floor(f));return lerp(H[i],H[i+1],f-i);};
+    G.add(new THREE.Mesh(tube(lons.map((lon,i)=>surf(lon,lats[i],H[i])),[.032,.032],{seg:60,rad:10,flat:1,c0:.02,c1:.02}),MAT.silver));
     const gem=jellyMat('#ff5d9e');
-    [[-52,.08],[-34,.12],[-16,.16],[16,.16],[34,.12],[52,.08]].forEach(([lon,h])=>{const lat=52-.001*lon*lon;const b=surf(lon,lat,.13),n=surfN(lon,lat),up=n.clone().multiplyScalar(.5).add(V3(0,.6,0)).normalize();
+    [[-52,.1],[-34,.15],[-16,.2],[16,.2],[34,.15],[52,.1]].forEach(([lon,h])=>{const lat=tLat(lon);const b=surf(lon,lat,at(lon)),n=surfN(lon,lat),up=n.clone().multiplyScalar(.5).add(V3(0,.6,0)).normalize();
       const c=new THREE.Mesh(new THREE.ConeGeometry(.032,h,10),MAT.silver);c.position.copy(b.clone().add(up.clone().multiplyScalar(h/2)));c.quaternion.setFromUnitVectors(V3(0,1,0),up);G.add(c);
       G.add(blob(gem,b.clone().add(up.clone().multiplyScalar(h+.012)),V3(.03,.03,.03)));});
-    const hg=new THREE.Mesh(extrude(heartShape(.075),.03,.014),gem);hg.position.copy(surf(0,52,.17));hg.lookAt(hg.position.clone().add(surfN(0,52)));G.add(hg);
+    const hg=new THREE.Mesh(extrude(heartShape(.075),.03,.014),gem);hg.position.copy(surf(0,tLat(0),at(0)+.04));hg.lookAt(hg.position.clone().add(surfN(0,tLat(0))));G.add(hg);
   }else if(id==='flor'){
-    const lon=-60,lat=42;flower(G,surf(lon,lat,.14),surfN(lon,lat).lerp(V3(0,0,1),.3).normalize(),.26,'#ff8fc8','#ffd447');
-    flower(G,surf(lon-18,lat-10,.12),surfN(lon-18,lat-10),.14,'#ffffff','#ff8fc8');
+    const lon=-60,lat=42,h=patchLift(lon,lat,12);flower(G,surf(lon,lat,Math.max(.14,h+.08)),surfN(lon,lat).lerp(V3(0,0,1),.3).normalize(),.26,'#ff8fc8','#ffd447');
+    flower(G,surf(lon-18,lat-10,Math.max(.12,patchLift(lon-18,lat-10,8)+.06)),surfN(lon-18,lat-10),.14,'#ffffff','#ff8fc8');
   }
   shadowAll(G);
 }
@@ -1349,7 +1369,7 @@ function apply(k){
   switch(k){
     case 'fur':applyFur();applyLids();paintHead();paintMuzzle();paintNeck();break;
     case 'mane':applyMane();if(state.headAcc==='lazo')buildHeadAcc();break;
-    case 'hair':buildHair();break;
+    case 'hair':buildHair();buildHeadAcc();break;
     case 'horn':applyHorn();break;
     case 'lashes':buildLashes();break;
     case 'lashColor':applyLashColor();break;
