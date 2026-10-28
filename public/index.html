@@ -311,11 +311,12 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 </div>
 
 <script>
-/* Language: first browser language we support wins (navigator.languages order), Spanish otherwise. No toggle, no per-language URLs.
+/* Language: the built pages / (en) and /es pin it (scripts/build.mjs sets <html data-lang>); otherwise the first browser language we support wins
+   (navigator.languages order), Spanish by default. No toggle.
    Spanish is the source text; EN maps it whole-sentence, and i18n() falls back to the Spanish string. */
 const LANGS=['es','en'],DEFAULT_LANG='es';
 function negotiateLang(list){for(const l of list){const b=String(l||'').toLowerCase().split('-')[0];if(LANGS.includes(b))return b;}return DEFAULT_LANG;}
-const LANG=negotiateLang(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language]);
+const LANG=LANGS.includes(document.documentElement.dataset.lang)?document.documentElement.dataset.lang:negotiateLang(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language]);
 const EN={
   'Unicornia: viste y maquilla a tu unicornio':'Unicornia: dress up your unicorn',
   'Unicornia es un juego para niños: viste, peina y maquilla a un unicornio de plastilina en 3D, ponle accesorios y tómale fotos. Gratis, sin anuncios.':'Unicornia is a game for kids: dress up, style and do the makeup of a 3D clay unicorn, add accessories and take photos. Free, no ads.',
