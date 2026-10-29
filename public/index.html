@@ -965,6 +965,22 @@ function starShape(R,r,path){const sh=path?new THREE.Path():new THREE.Shape();fo
 function extrude(shape,depth,bev){const g=new THREE.ExtrudeGeometry(shape,{depth:depth||.02,bevelEnabled:true,bevelThickness:bev||.012,bevelSize:(bev||.012)*.85,bevelSegments:3,curveSegments:18});g.center();return g;}
 const SPH=new THREE.SphereGeometry(1,40,28);
 function blob(mat,pos,scale,quat){const m=new THREE.Mesh(SPH,mat);m.position.copy(pos);m.scale.copy(scale);if(quat)m.quaternion.copy(quat);return m;}
+// A clay limb: a lathe whose radius follows smooth knots [t,r,z?] (t=0 bottom, 1 top; z bows the axis forward), with round
+// caps, so it reads as a soft leg with a knee instead of a pipe.
+function limbGeo(len,knots,cap0,cap1){
+  const sp=new THREE.SplineCurve(knots.map(([t,r])=>new THREE.Vector2(t,r))),bow=new THREE.SplineCurve(knots.map(([t,,z])=>new THREE.Vector2(t,z||0)));
+  const N=56,pts=[],e0=cap0?knots[0][1]/len:0,e1=cap1?knots[knots.length-1][1]/len:0;
+  for(let i=0;i<=N;i++){const q=sp.getPoint(i/N),t=clamp(q.x,0,1);let r=q.y;
+    if(t<e0)r*=Math.sqrt(Math.max(0,1-Math.pow(1-t/e0,2)));if(1-t<e1)r*=Math.sqrt(Math.max(0,1-Math.pow(1-(1-t)/e1,2)));
+    pts.push(new THREE.Vector2(Math.max(r,1e-3),t*len));}
+  const g=new THREE.LatheGeometry(pts,40,Math.PI),p=g.attributes.position,zs=[];
+  for(let i=0;i<=N;i++)zs.push(bow.getPoint(i/N).y);
+  for(let k=0;k<p.count;k++)p.setZ(k,p.getZ(k)+zs[k%(N+1)]);
+  g.computeVertexNormals();
+  const n=g.attributes.normal,P=N+1,S=40,a=new THREE.Vector3(),b=new THREE.Vector3();
+  for(let k=0;k<P;k++){a.fromBufferAttribute(n,k);b.fromBufferAttribute(n,S*P+k);a.add(b).normalize();n.setXYZ(k,a.x,a.y,a.z);n.setXYZ(S*P+k,a.x,a.y,a.z);}
+  return g;
+}
 function shadowAll(o){o.traverse(m=>{if(m.isMesh){m.castShadow=true;m.receiveShadow=true;}});return o;}
 function disposeGroup(g){g.traverse(m=>{if(m.isMesh&&m.geometry!==SPH&&!m.userData.keepGeo)m.geometry.dispose();});while(g.children.length)g.remove(g.children[0]);}
 
@@ -1458,9 +1474,11 @@ function shapeHoof(g,file){
       p.setXYZ(i*(RS+1)+j,Math.sin(a)*r,t*h+(i===0?rough*Math.max(0,n)*.5:0),Math.cos(a)*r*.92+(1-t)*.09);}}
   p.needsUpdate=true;g.computeVertexNormals();fixSeam(g,HS+1,RS);
 }
+// fetlock (hidden in the fur puff) → slim cannon → round knee → forearm that widens toward the chest.
+const PAW_LEG=limbGeo(3.3,[[0,.4],[.08,.37],[.2,.29],[.32,.285],[.41,.36,.03],[.48,.33,.02],[.6,.36,.04],[.8,.44,.06],[1,.5,.03]],true,false);
 const paws=[-1,1].map((sg,i)=>{
   const g=new THREE.Group();g.position.set(sg*.8,0,0);pawsG.add(g);
-  const leg=new THREE.Mesh(new THREE.CylinderGeometry(.36,.4,3.4,48,1,true),furMat);leg.position.y=HOOF.h+1.55;g.add(leg);
+  const leg=new THREE.Mesh(PAW_LEG,furMat);leg.position.y=HOOF.h+.12;g.add(leg);
   g.add(blob(furMat,V3(0,HOOF.h+.28,.03),V3(.42,.34,.42)));
   const c=document.createElement('canvas');c.width=HOOF.W;c.height=HOOF.H;
   const tex=canvasTex(c),mat=new THREE.MeshPhysicalMaterial({map:tex,roughness:.6,clearcoat:.4,clearcoatRoughness:.15,bumpMap:clayBump,bumpScale:BUMP*.5,envMapIntensity:.9});
@@ -1624,12 +1642,15 @@ const POSES=[
   {id:'tierna',name:'Tierna',lid:[.97,.97],tilt:.16,hearts:1},
 ];
 const LEG={L1:2.55,L2:.7,s:.7},DOWN=V3(0,-1,0),Q0=new THREE.Quaternion();
+// Same anatomy as the cushion legs at pose scale: a thick chest end tapering to the knee, then a slim cannon into the fetlock.
+const POSE_ARM=limbGeo(LEG.L1+.1,[[0,.22],[.1,.185],[.28,.24,.05],[.55,.33,.1],[.8,.37,.06],[1,.38]],true,true);
+const POSE_SHIN=limbGeo(LEG.L2+.12,[[0,.21],[.3,.16],[.6,.155],[.85,.18],[1,.21]],true,true);
 const legRig=paws.map(p=>{
   const sh=new THREE.Group();sh.position.set(p.sg*.7,-2.7,.3);sh.visible=false;uni.add(sh);
-  const arm=new THREE.Mesh(new THREE.CapsuleGeometry(.24,LEG.L1,8,24),furMat);arm.position.y=-LEG.L1/2;sh.add(arm);
+  const arm=new THREE.Mesh(POSE_ARM,furMat);arm.position.y=-LEG.L1;sh.add(arm);
   const knee=new THREE.Group();knee.position.y=-LEG.L1;sh.add(knee);
-  knee.add(blob(furMat,V3(0,0,0),V3(.25,.25,.25)));
-  const shin=new THREE.Mesh(new THREE.CapsuleGeometry(.2,LEG.L2,8,20),furMat);shin.position.y=-LEG.L2/2;knee.add(shin);
+  knee.add(blob(furMat,V3(0,0,.03),V3(.235,.23,.235)));
+  const shin=new THREE.Mesh(POSE_SHIN,furMat);shin.position.y=-LEG.L2-.04;knee.add(shin);
   const foot=new THREE.Group();foot.position.y=-LEG.L2;knee.add(foot);
   shadowAll(sh);
   return{p,sh,knee,foot,k:0,on:false,qa:new THREE.Quaternion(),qb:new THREE.Quaternion()};
