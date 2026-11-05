@@ -1,170 +1,172 @@
-<img src="public/favicon.svg" width="176" align="left" alt="Logo de Unicornia: cabeza de unicornio blanco con cuerno dorado y melena lila y azul sobre un cuadro verde menta">
+<img src="public/favicon.svg" width="176" align="left" alt="Unicornia logo: a white unicorn head with a golden horn and a lilac and blue mane on a mint green tile">
 
 # Unicornia
 
-**Viste, peina y maquilla a un unicornio de plastilina en 3D. Para niños que aún no leen; gratis y sin anuncios.**
+**Dress up, style and do the makeup of a 3D clay unicorn. Made for kids who can't read yet; free and with no ads.**
 
 [![Deploy](https://github.com/glrodasz/unicornia/actions/workflows/deploy.yml/badge.svg)](https://github.com/glrodasz/unicornia/actions/workflows/deploy.yml)
-[![Licencia](https://img.shields.io/badge/licencia-todos%20los%20derechos%20reservados-lightgrey)](LICENSE)
+[![License](https://img.shields.io/badge/license-all%20rights%20reserved-lightgrey)](LICENSE)
 [![three.js r149](https://img.shields.io/badge/three.js-r149-black?logo=threedotjs)](https://threejs.org)
 [![Cloudflare Pages](https://img.shields.io/badge/Cloudflare-Pages-F38020?logo=cloudflare&logoColor=white)](https://unicornia.pages.dev)
 
 <br clear="left">
 
-[**Jugar**](https://unicornia.pages.dev) · [Cómo funciona](#cómo-funciona) · [Arquitectura](#arquitectura) · [Ejecutar en local](#ejecutar-en-local) · [Despliegue](#despliegue-en-cloudflare-pages)
+[**Play**](https://unicornia.pages.dev) · [How it works](#how-it-works) · [Architecture](#architecture) · [Quick start](#quick-start) · [Deploy](#deploy-to-cloudflare-pages)
 
-<img src="public/og/unicornia.jpg" alt="Unicornia: viste y maquilla a tu unicornio. unicornia.pages.dev. Un unicornio blanco de plastilina con melena arcoíris y cuerno dorado." width="860">
+<img src="public/og/unicornia-en.jpg" alt="Unicornia: dress up your unicorn. unicornia.pages.dev. A white clay unicorn with a rainbow mane and a golden horn." width="860">
 
-## Por qué
+## Why
 
-Los juegos de vestir para niños pequeños suelen estar llenos de anuncios, compras dentro de la app y menús con texto que una niña de 4 años no puede leer. Unicornia es un salón de belleza para un solo unicornio, pensado para jugar sola en una tablet: todo se elige tocando iconos grandes, nada exige leer y no hay enlaces que saquen del juego.
+Dress-up games for young kids tend to be full of ads, in-app purchases and menus with text a 4-year-old can't read. Unicornia is a beauty salon for a single unicorn, built for a child to play alone on a tablet: everything is picked by tapping big icons, nothing requires reading, and no link ever leads out of the game.
 
-Está hecho para niños en edad preescolar con una tablet o un teléfono. Funciona en cualquier navegador moderno con WebGL, sin instalar nada y sin cuentas.
+It is made for preschoolers with a tablet or a phone. It runs in any modern browser with WebGL, with nothing to install and no accounts.
 
-| Principio | En la práctica |
+| Principle | In practice |
 |---|---|
-| Se juega sin leer | Cada opción lleva icono; los botones son grandes; los menús envuelven a otra línea en vez de desplazarse de lado. |
-| Pistas que se ven | Cuando un gesto no es obvio (girar el unicornio, rociar perfume, pegar stickers) aparece un dedito animado que lo muestra. |
-| Nada saca del juego | Sin enlaces externos: el crédito copia la URL del autor al portapapeles con un aviso discreto. |
-| Todo se queda en el aparato | El look, las fotos y los ajustes viven en `localStorage`; no hay servidor ni cuentas. |
-| Corre en equipos modestos | Un modo ligero se activa solo en GPUs lentas (Raspberry Pi, Chromebooks viejos). |
+| Playable without reading | Every option has an icon; buttons are big; menus wrap to a new line instead of scrolling sideways. |
+| Hints you can see | When a gesture isn't obvious (spinning the unicorn, spraying perfume, placing stickers), an animated finger shows how. |
+| Nothing leads out | No external links: the credit copies the author's URL to the clipboard with a quiet notice. |
+| Everything stays on the device | The look, the photos and the settings live in `localStorage`; there is no server and no account. |
+| Runs on modest hardware | A light mode turns on by itself on slow GPUs (Raspberry Pi, old Chromebooks). |
 
-## Ejecutar en local
+## Quick start
 
-Requisitos: Node.js 18 o superior. No hay `npm install`: el build no tiene dependencias.
+Requires Node.js 18 or later. There is no `npm install`: the build has no dependencies.
 
 ```bash
 git clone https://github.com/glrodasz/unicornia.git
 cd unicornia
-node scripts/build.mjs && npx serve dist   # como en producción: / (inglés) y /es
+node scripts/build.mjs && npx serve dist   # like production: / (English) and /es
 ```
 
-Abre la URL que imprime `serve`. Para ver solo el juego, en el idioma del navegador y sin build:
+Open the URL `serve` prints. To run just the game, in the browser's language and with no build:
 
 ```bash
 npx serve public
 ```
 
-## Cómo funciona
+## How it works
 
-Todo el juego es un solo archivo, [`public/index.html`](public/index.html): HTML, CSS y JavaScript sin framework, con [three.js](https://threejs.org) r149 servido desde `public/vendor/`. El unicornio se modela en código (tornos, elipsoides y curvas) y su aspecto de plastilina sale de una textura de ruido generada en un `<canvas>`.
+The whole game is one file, [`public/index.html`](public/index.html): HTML, CSS and framework-free JavaScript, with [three.js](https://threejs.org) r149 served from `public/vendor/`. The unicorn is modeled in code (lathes, ellipsoids and curves), and its clay look comes from a noise texture generated in a `<canvas>`.
 
-El juego se organiza en pasos, en la barra superior de la bandeja:
+The game is organized in steps, shown in the bar at the top of the tray:
 
-| Paso | Qué se hace |
+| Step | What you do |
 |---|---|
-| **1 · Unicornio** | **Maquillaje** (pestañas, ojos y lentes de contacto, sombras, rubor, pecas, labios), **Accesorios** (aretes arriba y abajo, nariz, gafas, cabeza), **Colores** (pelaje, peinado y color del pelo, cuerno), **Stickers** y tatuajes, y **Perfume**. |
-| **2 · Pezuñas** | Recortar pelitos, limar, pintar con esmaltes (colores, degradados y diseños) y decorar cada pezuña. |
+| **1 · Unicorn** | **Makeup** (lashes, eyes and contact lenses, eyeshadow, blush, freckles, lips), **Accessories** (top and bottom earrings, nose, glasses, head), **Colors** (fur, hairstyle and hair color, horn), **Stickers** and tattoos, and **Perfume**. |
+| **2 · Hooves** | Trim the tufts, file, paint with polishes (colors, gradients and patterns) and decorate each hoof. |
 
-Sobre el escenario:
+On the stage:
 
-- **Arrastrar** gira el unicornio en 3D.
-- **Sorpresa** cambia todo al azar.
-- **Cámara** toma una foto cuadrada de 640 px; el botón de **poses** ofrece Normal, ¡Patas arriba!, Hola, Guiño, Lengua y Tierna.
-- **Mis fotos** guarda hasta 24 fotos. Desde el álbum se puede guardar una foto en la tablet (hoja de compartir del sistema o descarga) o volver a vestir al unicornio igual que en la foto.
-- Los sonidos se sintetizan con Web Audio; el botón de sonido los silencia.
+- **Drag** spins the unicorn in 3D.
+- **Surprise** randomizes everything.
+- **Camera** takes a 640 px square photo; the **poses** button offers Normal, Hooves up!, Hello, Wink, Silly tongue and Sweet.
+- **My photos** keeps up to 24 photos. From the album a photo can be saved to the tablet (system share sheet or download), or the unicorn can be dressed exactly as in the photo.
+- Sounds are synthesized with Web Audio; the sound button mutes them.
 
-## Arquitectura
+The game is in English at `/` and in Spanish at `/es`; the Spanish strings are the source and the `EN` dictionary in `index.html` translates them.
+
+## Architecture
 
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/diagrams/context-dark.svg">
-  <img src="docs/diagrams/context-light.svg" alt="Un niño juega a Unicornia en la tablet; Guillermo hace push a main, GitHub Actions despliega en Cloudflare Pages, que sirve el juego; el juego pide fuentes a Google Fonts y guarda el look y las fotos en localStorage." width="880">
+  <img src="docs/diagrams/context-light.svg" alt="A child plays Unicornia on a tablet; Guillermo pushes to main, GitHub Actions deploys to Cloudflare Pages, which serves the game; the game loads fonts from Google Fonts and saves the look and photos in localStorage." width="880">
 </picture>
 
-Unicornia es un sitio estático: el juego corre entero en el navegador y no habla con ningún servidor propio. Cloudflare Pages (en ámbar) sirve los archivos; la única petición externa en tiempo de juego es a Google Fonts, y si falla se usan las fuentes del sistema.
+Unicornia is a static site: the game runs entirely in the browser and talks to no server of its own. Cloudflare Pages (amber) serves the files; the only external request during play goes to Google Fonts, and system fonts take over if it fails.
 
-`scripts/build.mjs` copia `public/` a `dist/` y genera dos páginas desde el mismo `index.html`: `/` en inglés y `/es` en español, cada una con su título, descripción, Open Graph y `hreflang` en el HTML, porque los crawlers de vistas previas no ejecutan JavaScript. Cada push a `main` despliega a producción y cada pull request recibe su propia URL de vista previa.
+`scripts/build.mjs` copies `public/` to `dist/` and generates two pages from the same `index.html`: `/` in English and `/es` in Spanish, each with its own title, description, Open Graph and `hreflang` tags in the HTML, because link-preview crawlers don't run JavaScript. Every push to `main` deploys to production and every pull request gets its own preview URL.
 
-**Tech stack:** juego en HTML, CSS y JavaScript sin framework · 3D con three.js r149 · build en Node sin dependencias · alojamiento en Cloudflare Pages · CI/CD con GitHub Actions y Wrangler.
+**Tech stack:** game in HTML, CSS and framework-free JavaScript · 3D with three.js r149 · dependency-free Node build · hosting on Cloudflare Pages · CI/CD with GitHub Actions and Wrangler.
 
-## Configuración
+## Configuration
 
-### URLs por idioma
+### Language URLs
 
-- `/`: el juego en inglés (idioma por defecto), con título, descripción y etiquetas Open Graph en inglés. Si el primer idioma soportado del navegador es español, redirige al instante a `/es`.
-- `/es`: el juego en español, con sus etiquetas en español. Nunca redirige: el idioma de la URL manda.
-- `/en`, `/en/` y `/es/` redirigen (301) a `/` y `/es`.
-- `public/index.html` sigue siendo la única fuente: `scripts/build.mjs` cambia solo las etiquetas del `<head>` y añade `hreflang`. Si renombras una de esas etiquetas, el build falla en vez de publicar etiquetas viejas.
+- `/`: the game in English (the default), with English title, description and Open Graph tags. If the browser's first supported language is Spanish, it redirects to `/es` right away.
+- `/es`: the game in Spanish, with Spanish tags. It never redirects: the URL's language wins.
+- `/en`, `/en/` and `/es/` redirect (301) to `/` and `/es`.
+- `public/index.html` stays the single source: `scripts/build.mjs` only swaps the `<head>` tags and adds `hreflang`. If one of those tags is renamed, the build fails instead of shipping stale tags.
 
-### Parámetros de URL
+### URL parameters
 
-| Parámetro | Efecto |
+| Parameter | Effect |
 |---|---|
-| `?lite=1` | Fuerza el modo ligero. |
-| `?lite=0` | Desactiva el modo ligero. |
-| `?fps=1` | Muestra FPS, modo y GPU en una esquina. |
+| `?lite=1` | Forces light mode. |
+| `?lite=0` | Turns light mode off. |
+| `?fps=1` | Shows FPS, mode and GPU in a corner. |
 
-El **modo ligero** quita antialias, sombras y brillos extra de los materiales (sheen y clearcoat), baja píxeles, polígonos y partículas, y limita a 30 fps. Se activa solo si el nombre de la GPU está en la lista lenta, o si los primeros segundos van a menos de ~22 fps; en ese caso se recuerda 7 días.
+**Light mode** drops antialiasing, shadows and the extra material sheen (sheen and clearcoat), lowers pixels, polygons and particles, and caps the frame rate at 30 fps. It turns on by itself when the GPU name is on the slow list, or when the first seconds run below ~22 fps; in that case it is remembered for 7 days.
 
-### Datos guardados
+### Saved data
 
-Todo vive en `localStorage` del navegador, con el prefijo `salon-unicornio-v1`:
+Everything lives in the browser's `localStorage`, under the `salon-unicornio-v1` prefix:
 
-| Clave | Contenido |
+| Key | Contents |
 |---|---|
-| `salon-unicornio-v1` | Apariencia del unicornio, pezuñas y stickers. |
-| `salon-unicornio-v1-ui` | Paso, categoría y pestaña activas. |
-| `salon-unicornio-v1-fotos` | Hasta 24 fotos (JPEG en data URL). |
-| `salon-unicornio-v1-mute` | Sonido silenciado. |
-| `salon-unicornio-v1-girado` | Ya giró el unicornio (oculta la pista de girar). |
-| `salon-unicornio-v1-ligero` | Fecha en que se activó el modo ligero. |
+| `salon-unicornio-v1` | The unicorn's look, hooves and stickers. |
+| `salon-unicornio-v1-ui` | Active step, category and tab. |
+| `salon-unicornio-v1-fotos` | Up to 24 photos (JPEG data URLs). |
+| `salon-unicornio-v1-mute` | Sound muted. |
+| `salon-unicornio-v1-girado` | The unicorn has been spun (hides the spin hint). |
+| `salon-unicornio-v1-ligero` | When light mode was turned on. |
 
-### Despliegue en Cloudflare Pages
+### Deploy to Cloudflare Pages
 
-[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) ejecuta `node scripts/build.mjs` y publica `dist/` con Wrangler:
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) runs `node scripts/build.mjs` and publishes `dist/` with Wrangler:
 
-- Cada push a `main` se publica en producción: https://unicornia.pages.dev
-- Cada pull request recibe su propia URL de vista previa, enlazada en un comentario del PR que se actualiza en cada push.
+- Every push to `main` goes to production: https://unicornia.pages.dev
+- Every pull request gets its own preview URL, linked from a PR comment that is updated on every push.
 
-Necesita los secretos del repositorio `CLOUDFLARE_API_TOKEN` y `CLOUDFLARE_ACCOUNT_ID`; sin ellos el workflow construye pero no despliega. El proyecto de Pages se crea solo en el primer despliegue.
+It needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets; without them the workflow builds but doesn't deploy. The Pages project is created on the first deploy.
 
-Para desplegar a mano:
+To deploy by hand:
 
 ```bash
 node scripts/build.mjs && npx wrangler pages deploy dist --project-name unicornia
 ```
 
-### Estructura del proyecto
+### Project layout
 
 ```
-public/                   fuente del sitio estático
-  index.html              juego completo (HTML + CSS + JS en un solo archivo)
-  og/                     imágenes para vistas previas al compartir (es y en)
-  icons/, favicon.*       iconos de la app y manifiesto
-  vendor/three.min.js     three.js r149, servido localmente
-scripts/build.mjs         genera dist/: / (inglés) y /es
+public/                   static site source
+  index.html              the whole game (HTML + CSS + JS in one file)
+  og/                     link-preview images (es and en)
+  icons/, favicon.*       app icons and manifest
+  vendor/three.min.js     three.js r149, served locally
+scripts/build.mjs         builds dist/: / (English) and /es
 original/
-  artifact-snapshot.html  copia exacta del artifact original de Claude, como referencia
-docs/diagrams/            diagrama de contexto
-.github/workflows/        despliegue a Cloudflare Pages
+  artifact-snapshot.html  exact copy of the original Claude artifact, for reference
+docs/diagrams/            context diagram
+.github/workflows/        deploy to Cloudflare Pages
 ```
 
-El juego nació como un artifact de Claude; `original/artifact-snapshot.html` guarda esa versión tal cual.
+The game started as a Claude artifact; `original/artifact-snapshot.html` keeps that version as it was.
 
-## Documentación
+## Documentation
 
-| Doc | Qué contiene |
+| Doc | What's in it |
 |---|---|
-| [`scripts/build.mjs`](scripts/build.mjs) | Cómo se generan `/` y `/es`, sus etiquetas SEO y Open Graph, y las redirecciones. |
-| [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) | Build y despliegue a producción y a vistas previas de cada PR. |
-| [`original/artifact-snapshot.html`](original/artifact-snapshot.html) | El artifact original del que partió el juego. |
+| [`scripts/build.mjs`](scripts/build.mjs) | How `/` and `/es` are generated, their SEO and Open Graph tags, and the redirects. |
+| [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) | Build and deploy to production and to per-PR previews. |
+| [`original/artifact-snapshot.html`](original/artifact-snapshot.html) | The original artifact the game grew from. |
 
-## Contribuir
+## Contributing
 
-Casi todo el contenido del juego son listas al principio del `<script>` de `public/index.html`. Para añadir una opción:
+Almost all of the game's content is lists at the top of the `<script>` in `public/index.html`. To add an option:
 
-1. Agrega la entrada a su lista: `STICKERS`, `HAIR`, `HORN`, `EYE`, `LENS`, `LASHES`, `GLASSES`, `HEADACC`, `POLISH`, `DECOS`, `POSES`… Cada una lleva un `id` estable y un `name` en español; los stickers y decoraciones se dibujan con capas de trazados SVG (`L`).
-2. Añade la traducción al diccionario `EN` (`'Nombre en español':'English name'`), o se mostrará en español en `/`.
-3. Comprueba que el build pasa y prueba en el navegador, en tablet y teléfono:
+1. Add the entry to its list: `STICKERS`, `HAIR`, `HORN`, `EYE`, `LENS`, `LASHES`, `GLASSES`, `HEADACC`, `POLISH`, `DECOS`, `POSES`… Each one has a stable `id` and a Spanish `name`; stickers and decorations are drawn from layers of SVG paths (`L`).
+2. Add the translation to the `EN` dictionary (`'Spanish name':'English name'`), or it shows in Spanish at `/`.
+3. Check that the build passes and try it in the browser, on a tablet and a phone:
 
    ```bash
    node scripts/build.mjs && npx serve dist
    ```
 
-Cada pull request despliega su propia vista previa en Cloudflare Pages; los PRs con cambios visuales llevan capturas de antes y después.
+Every pull request deploys its own preview on Cloudflare Pages; PRs with visual changes include before and after screenshots.
 
-## Licencia
+## License
 
-© 2026 Guillermo Rodas. Todos los derechos reservados. Ver [LICENSE](LICENSE).
+© 2026 Guillermo Rodas. All rights reserved. See [LICENSE](LICENSE).
 
-[three.js](https://github.com/mrdoob/three.js) (incluido en `public/vendor/`) es © 2010-2023 Three.js Authors, bajo licencia MIT. Las fuentes Baloo 2 y Nunito se cargan desde Google Fonts bajo la SIL Open Font License.
+[three.js](https://github.com/mrdoob/three.js) (bundled in `public/vendor/`) is © 2010-2023 Three.js Authors, under the MIT License. The Baloo 2 and Nunito fonts load from Google Fonts under the SIL Open Font License.
