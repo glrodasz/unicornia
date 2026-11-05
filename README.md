@@ -44,4 +44,5 @@ Para desplegar a mano: `node scripts/build.mjs && npx wrangler pages deploy dist
 ## Notas
 
 - El estado (apariencia del unicornio, stickers, pestaña activa, silencio) se guarda en `localStorage` con la clave `salon-unicornio-v1`.
+- **Modo ligero** para equipos lentos (Raspberry Pi, Chromebooks viejos, render por software): sin antialias, sin sombras, materiales sin brillo extra (sheen/clearcoat), menos píxeles y polígonos, menos partículas y 30 fps. Se activa solo si el nombre de la GPU es de la lista lenta, o si los primeros segundos van a menos de ~22 fps (y se recuerda 7 días en `salon-unicornio-v1-ligero`). Para probar: `?lite=1` lo fuerza, `?lite=0` lo desactiva, `?fps=1` muestra FPS, modo y GPU en una esquina.
 - Dependencias externas: solo Google Fonts (Baloo 2, Nunito). Si fallan, se usan fuentes del sistema.

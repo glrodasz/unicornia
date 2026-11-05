@@ -327,6 +327,11 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 @media (prefers-reduced-motion:reduce){
   *,*::before,*::after{animation:none!important;transition:none!important}
 }
+/* ?fps=1 debug readout */
+.fps{position:absolute;left:8px;top:8px;z-index:5;max-width:calc(100% - 16px);padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.6);color:#fff;font:600 12px/1.3 ui-monospace,monospace;pointer-events:none}
+/* light mode (slow GPUs): no backdrop blur or drop-shadow filters, which repaint every frame on top of the 3D */
+.lite .gal{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(61,39,72,.8)}
+.lite .sprayer,.lite .ptool,.lite .coach *,.lite .spin *{filter:none}
 </style>
 </head>
 <body>
@@ -356,6 +361,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
     <div class="coach" id="coach" hidden></div>
     <div class="spin" id="spin" hidden></div>
     <div class="ptool" id="ptool" hidden></div>
+    <div class="fps" id="fps" hidden></div>
     <div class="veil" id="veil"><div><div id="veilTxt">Amasando la plastilina…</div><div class="dots"><i></i><i></i><i></i></div></div></div>
   </section>
   <section class="tray" id="tray" aria-label="Opciones">
@@ -686,15 +692,35 @@ function hiss(dur,vol){
 
 /* ================= renderer / scene ================= */
 const canvas=$('#c'), stage=$('#stage');
+/* Light mode for slow GPUs (Raspberry Pi, old Chromebooks, software rendering): no MSAA, no shadows, plain clay
+   shading (no sheen/clearcoat), fewer pixels and polygons, fewer particles, 30 fps. Chosen before the renderer exists
+   from ?lite=1|0, a known slow GPU name, or a verdict remembered for a week; if the first seconds still run slow it
+   switches on the fly (everything but MSAA and polygons) and remembers it for the next visit. */
+const LITE_KEY=KEY+'-ligero', LITE_DAYS=7;
+const qs=new URLSearchParams(location.search), liteParam=qs.get('lite');
+function gpuName(){
+  try{const c=document.createElement('canvas'),gl=c.getContext('webgl');if(!gl)return '';
+    const d=gl.getExtension('WEBGL_debug_renderer_info'),n=String(gl.getParameter(d?d.UNMASKED_RENDERER_WEBGL:gl.RENDERER)||'');
+    const lose=gl.getExtension('WEBGL_lose_context');if(lose)lose.loseContext();return n;}catch(e){return '';}
+}
+const GPU=gpuName();
+const SLOW_GPU=/VideoCore|V3D|llvmpipe|softpipe|SwiftShader|Mali-4|Mali-T[67]|PowerVR SGX|Adreno \(TM\) [1-4]\d\d\b|Intel.*HD Graphics [2-5]\d{3}\b/i;
+function rememberedLite(){try{const t=+localStorage.getItem(LITE_KEY);return t>0&&Date.now()-t<LITE_DAYS*864e5;}catch(e){return false;}}
+let LITE=liteParam==='1'||(liteParam!=='0'&&(SLOW_GPU.test(GPU)||rememberedLite()));
+const LOD=LITE?.55:1, segs=n=>Math.max(6,Math.round(n*LOD));
+document.documentElement.classList.toggle('lite',LITE);
 let renderer;
 try{
-  renderer=new THREE.WebGLRenderer({canvas,antialias:true,powerPreference:'high-performance'});
+  renderer=new THREE.WebGLRenderer({canvas,antialias:!LITE,powerPreference:'high-performance'});
 }catch(e){ veilTxt.textContent=i18n('Este navegador no puede mostrar 3D.'); veil.querySelector('.dots').remove(); return; }
+// Sheen, clearcoat and iridescence add a lot of per-pixel work; in light mode every physical material reads them as 0.
+for(const k of ['sheen','clearcoat','iridescence']){const P=THREE.MeshPhysicalMaterial.prototype,d=Object.getOwnPropertyDescriptor(P,k);
+  if(d&&d.get)Object.defineProperty(P,k,{configurable:true,get(){return LITE?0:d.get.call(this);},set:d.set});}
 renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2));
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.toneMapping=THREE.ACESFilmicToneMapping;
 renderer.toneMappingExposure=1.0;
-renderer.shadowMap.enabled=true;
+renderer.shadowMap.enabled=!LITE;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 const MAX_ANISO=renderer.capabilities.getMaxAnisotropy();
 
@@ -750,7 +776,7 @@ const MAT={
   gold:metal('#eaa833',{roughness:.3}), silver:metal('#e3e7ef',{roughness:.22}), pearl:gloss('#fff8f2',{roughness:.2,sheen:1,sheenColor:new THREE.Color('#ffd8ee'),iridescence:.6}),
   tie:clay('#ffffff'), tieY:clay('#ffd447'),
 };
-function canvasTex(c){const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=MAX_ANISO;return t;}
+function canvasTex(c){const t=new THREE.CanvasTexture(c);t.encoding=THREE.sRGBEncoding;t.anisotropy=LITE?Math.min(4,MAX_ANISO):MAX_ANISO;return t;}
 
 /* ================= paintable skins ================= */
 const RX=1, RY=.94, RZ=.92;
@@ -937,7 +963,7 @@ function quatYZ(up,front){const Y=up.clone().normalize();const Z=front.clone().s
 function fixSeam(g,rings,rad){const n=g.attributes.normal;const a=new THREE.Vector3(),b=new THREE.Vector3();for(let i=0;i<rings;i++){const k0=i*(rad+1),k1=k0+rad;a.fromBufferAttribute(n,k0);b.fromBufferAttribute(n,k1);a.add(b).normalize();n.setXYZ(k0,a.x,a.y,a.z);n.setXYZ(k1,a.x,a.y,a.z);}n.needsUpdate=true;}
 function tube(pts,prof,o){
   o=o||{};const closed=!!o.closed;const curve=pts.getPointAt?pts:new THREE.CatmullRomCurve3(pts,closed,closed?'catmullrom':'centripetal');
-  const seg=o.seg||48,rad=o.rad||16,flat=o.flat==null?.8:o.flat,gr=o.groove==null?0:o.groove,gn=o.gn||5;
+  const seg=segs(o.seg||48),rad=o.rad||16,flat=o.flat==null?.8:o.flat,gr=o.groove==null?0:o.groove,gn=o.gn||5;
   const fr=curve.computeFrenetFrames(seg,closed),pos=[],uv=[],idx=[],p=new THREE.Vector3();
   for(let i=0;i<=seg;i++){
     const t=i/seg;curve.getPointAt(t,p);const N=fr.normals[i],B=fr.binormals[i];
@@ -963,7 +989,7 @@ function heartShape(s,path){const sh=path?new THREE.Path():new THREE.Shape();con
   sh.moveTo(...q(50,88));sh.bezierCurveTo(...q(22,68),...q(6,50),...q(6,33));sh.bezierCurveTo(...q(6,18),...q(17,8),...q(30,8));sh.bezierCurveTo(...q(39,8),...q(46,13),...q(50,21));sh.bezierCurveTo(...q(54,13),...q(61,8),...q(70,8));sh.bezierCurveTo(...q(83,8),...q(94,18),...q(94,33));sh.bezierCurveTo(...q(94,50),...q(78,68),...q(50,88));return sh;}
 function starShape(R,r,path){const sh=path?new THREE.Path():new THREE.Shape();for(let i=0;i<10;i++){const a=Math.PI/2+i*Math.PI/5,rr=i%2?r:R;i?sh.lineTo(Math.cos(a)*rr,Math.sin(a)*rr):sh.moveTo(Math.cos(a)*rr,Math.sin(a)*rr);}sh.closePath();return sh;}
 function extrude(shape,depth,bev){const g=new THREE.ExtrudeGeometry(shape,{depth:depth||.02,bevelEnabled:true,bevelThickness:bev||.012,bevelSize:(bev||.012)*.85,bevelSegments:3,curveSegments:18});g.center();return g;}
-const SPH=new THREE.SphereGeometry(1,40,28);
+const SPH=new THREE.SphereGeometry(1,segs(40),segs(28));
 function blob(mat,pos,scale,quat){const m=new THREE.Mesh(SPH,mat);m.position.copy(pos);m.scale.copy(scale);if(quat)m.quaternion.copy(quat);return m;}
 // A clay limb: a lathe whose radius follows smooth knots [t,r,z?] (t=0 bottom, 1 top; z bows the axis forward), with round
 // caps, so it reads as a soft leg with a knee instead of a pipe.
@@ -990,21 +1016,21 @@ const headG=new THREE.Group(); uni.add(headG);
 const furMat=clay('#ffffff');
 const innerEarMat=clay('#ffc2d4');
 
-const headMesh=new THREE.Mesh(new THREE.SphereGeometry(1,112,72,-Math.PI/2),clay('#ffffff',{map:SKIN.head.tex}));
+const headMesh=new THREE.Mesh(new THREE.SphereGeometry(1,segs(112),segs(72),-Math.PI/2),clay('#ffffff',{map:SKIN.head.tex}));
 headMesh.scale.set(RX,RY,RZ); headMesh.userData.skin='head'; headG.add(headMesh);
-const muzzleMesh=new THREE.Mesh(new THREE.SphereGeometry(1,80,56,-Math.PI/2),clay('#ffffff',{map:SKIN.muzzle.tex}));
+const muzzleMesh=new THREE.Mesh(new THREE.SphereGeometry(1,segs(80),segs(56),-Math.PI/2),clay('#ffffff',{map:SKIN.muzzle.tex}));
 muzzleMesh.position.copy(MZ.c); muzzleMesh.scale.copy(MZ.r); muzzleMesh.userData.skin='muzzle'; headG.add(muzzleMesh);
 const neckMesh=new THREE.Mesh(new THREE.CylinderGeometry(NECK.rt,NECK.rb,NECK.h,72,1,true,Math.PI),clay('#ffffff',{map:SKIN.neck.tex}));
 neckMesh.position.set(0,-1.5,-.3); neckMesh.rotation.x=.18; neckMesh.userData.skin='neck'; uni.add(neckMesh);
 
 /* eyes */
-const eyeGeo=new THREE.SphereGeometry(1,56,40);
+const eyeGeo=new THREE.SphereGeometry(1,segs(56),segs(40));
 {const p=eyeGeo.attributes.position,uv=eyeGeo.attributes.uv;for(let i=0;i<p.count;i++)uv.setXY(i,.5+p.getX(i)/2,.5+p.getY(i)/2);uv.needsUpdate=true;}
 const eyeMat=new THREE.MeshPhysicalMaterial({map:eyeTex,roughness:.12,clearcoat:1,clearcoatRoughness:.04,envMapIntensity:1.1});
 const lidMat=clay('#ffffff');
 const lashMat=new THREE.MeshPhysicalMaterial({color:new THREE.Color('#2a1f33'),roughness:.45,clearcoat:.6});
 const EYE_R=.27, LID_R=.284, LID_OPEN=-.74, LID_SHUT=1.08;
-const lidGeo=new THREE.SphereGeometry(LID_R,56,24,0,TAU,0,Math.PI/2);
+const lidGeo=new THREE.SphereGeometry(LID_R,segs(56),segs(24),0,TAU,0,Math.PI/2);
 const lidRimGeo=new THREE.TorusGeometry(LID_R,.016,10,56,Math.PI);lidRimGeo.rotateX(Math.PI/2);
 const eyes=[-1,1].map(sg=>{
   const g=new THREE.Group();const lon=27*sg,lat=10;
@@ -1065,7 +1091,7 @@ function earSafe(pts,prof){
 }
 function hairCap(ci,span,tilt){
   span=span||1.5;tilt=tilt==null?-1.12:tilt;const sc=V3(RX*1.05,RY*1.06,RZ*1.05);
-  const g=new THREE.SphereGeometry(1,96,56,0,TAU,0,span);
+  const g=new THREE.SphereGeometry(1,segs(96),segs(56),0,TAU,0,span);
   const m=new THREE.Mesh(g,hm(ci||0));m.scale.copy(sc);m.rotation.x=tilt;hairG.add(m);
   const e=new THREE.Euler(tilt,0,0),pts=[];
   for(let i=0;i<48;i++){const a=i/48*TAU;pts.push(V3(Math.sin(span)*Math.cos(a)*sc.x,Math.cos(span)*sc.y,Math.sin(span)*Math.sin(a)*sc.z).applyEuler(e));}
@@ -1410,7 +1436,7 @@ const bdCanvas=document.createElement('canvas');bdCanvas.width=bdCanvas.height=5
 {const x=bdCanvas.getContext('2d'),g=x.createRadialGradient(256,230,30,256,256,360);g.addColorStop(0,'#ffffff');g.addColorStop(1,'#dcebe8');x.fillStyle=g;x.fillRect(0,0,512,512);x.globalAlpha=.25;x.globalCompositeOperation='overlay';x.fillStyle=x.createPattern(noiseCanvas,'repeat');x.fillRect(0,0,512,512);}
 const backdropMat=new THREE.MeshBasicMaterial({color:new THREE.Color('#9ddccf'),map:canvasTex(bdCanvas),toneMapped:false});
 const backdrop=new THREE.Mesh(new THREE.PlaneGeometry(32,22),backdropMat);backdrop.position.set(0,0,-4.01);scene.add(backdrop);
-const shadowCatcher=new THREE.Mesh(new THREE.PlaneGeometry(32,22),new THREE.ShadowMaterial({color:new THREE.Color('#3b2a52'),opacity:.17}));shadowCatcher.position.set(0,0,-4);shadowCatcher.receiveShadow=true;scene.add(shadowCatcher);
+const shadowCatcher=new THREE.Mesh(new THREE.PlaneGeometry(32,22),new THREE.ShadowMaterial({color:new THREE.Color('#3b2a52'),opacity:.17}));shadowCatcher.position.set(0,0,-4);shadowCatcher.receiveShadow=true;shadowCatcher.visible=!LITE;scene.add(shadowCatcher);
 
 const props=new THREE.Group();scene.add(props);
 const propItems=[];
@@ -1424,6 +1450,7 @@ const parts=[];for(let i=0;i<48;i++){const m=new THREE.Mesh(partGeo,new THREE.Me
 let partIdx=0;
 function burst(pos,n,spread,colors){
   colors=colors||['#fff3a0','#ffffff','#ff9ccc','#a7e8ff','#c9a8ff'];
+  if(LITE)n=Math.ceil(n*.6);
   for(let i=0;i<n;i++){const p=parts[partIdx++%parts.length];p.m.visible=true;p.life=1;p.m.position.copy(pos);
     p.v.set((Math.random()-.5),(Math.random()-.2),(Math.random()*.5+.3)).normalize().multiplyScalar(spread*(.6+Math.random()*.8));
     p.m.material.color.set(pick(colors));p.spin=(Math.random()-.5)*12;p.m.scale.setScalar(.7+Math.random()*.8);}
@@ -1442,7 +1469,7 @@ const floaters=[];for(let i=0;i<28;i++){const m=new THREE.Sprite(new THREE.Sprit
 let floatIdx=0;
 function puff(from,to,sc){
   const dir=to.clone().sub(from);
-  for(let i=0;i<9;i++){const p=mist[mistIdx++%mist.length];p.m.visible=true;p.max=p.life=.9+Math.random()*.7;
+  for(let i=0,n=LITE?5:9;i<n;i++){const p=mist[mistIdx++%mist.length];p.m.visible=true;p.max=p.life=.9+Math.random()*.7;
     p.m.position.copy(from).addScaledVector(dir,Math.random()*.25);
     p.v.copy(dir).multiplyScalar(2.2+Math.random()*1.4).add(V3((Math.random()-.5)*.9,(Math.random()-.5)*.9,(Math.random()-.5)*.5));
     p.s0=.05+Math.random()*.06;p.s1=.32+Math.random()*.34;p.m.material.color.set(pick(sc.mist));p.m.material.rotation=Math.random()*TAU;}
@@ -1711,7 +1738,7 @@ function poseTick(dt,t){
 let ovx=0,ovy=0;
 function layout(){
   const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio||1,2,Math.sqrt(2.8e6/(w*h))));renderer.setSize(w,h,false);
+  renderer.setPixelRatio(LITE?Math.min(window.devicePixelRatio||1,1,Math.sqrt(1e6/(w*h))):Math.min(window.devicePixelRatio||1,2,Math.sqrt(2.8e6/(w*h))));renderer.setSize(w,h,false);
   const land=window.matchMedia('(orientation: landscape)').matches;const ov=22;ovx=land?ov:0;ovy=land?0:ov;
   fitCamera();
 }
@@ -1840,8 +1867,34 @@ function tap(cx,cy){
 /* ================= animation ================= */
 let squashT=9,squashK=1;function squash(k){squashT=0;squashK=k||1;}
 const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-const clock=new THREE.Clock();let started=false;
-function frame(){
+const clock=new THREE.Clock();let started=false,lastFrame=0;
+function setLite(){
+  if(LITE)return;LITE=true;document.documentElement.classList.add('lite');
+  renderer.shadowMap.enabled=false;shadowCatcher.visible=false;
+  const dirty=m=>{if(m&&m.isMaterial)m.needsUpdate=true;};
+  scene.traverse(o=>{if(o.material)[].concat(o.material).forEach(dirty);});Object.values(MAT).forEach(dirty);hairMats.forEach(dirty);
+  layout();
+  try{localStorage.setItem(LITE_KEY,String(Date.now()));}catch(e){}
+}
+/* Watches the frame rate once the scene has warmed up; a device that can't hold ~22 fps drops to light mode.
+   A gap over 2 s (tab in the background, a blocking dialog) restarts the sample instead of counting as slow. */
+const perf={n:0,sum:0,wait:1.2,done:LITE||liteParam==='0'};
+function perfTick(ms){
+  if(perf.done)return;
+  if(ms>2000||document.hidden){perf.n=perf.sum=0;return;}
+  if((perf.wait-=ms/1000)>0)return;
+  perf.n++;perf.sum+=ms;
+  if(perf.sum>3000){perf.done=true;if(perf.n/perf.sum*1000<22)setLite();}
+}
+const fpsEl=qs.get('fps')==='1'?$('#fps'):null;let fpsN=0,fpsT=0;
+function frame(now){
+  requestAnimationFrame(frame);
+  // The photo album covers the stage with a blur; freezing the scene behind it saves the GPU (and the blur) every frame.
+  if(started&&!gal.hidden){lastFrame=now;return;}
+  if(LITE&&now-lastFrame<1000/30-3)return;
+  if(lastFrame)perfTick(now-lastFrame);
+  if(fpsEl){fpsN++;if(now-fpsT>1000){fpsEl.hidden=false;fpsEl.textContent=`${Math.round(fpsN*1000/(now-fpsT))} fps · ${LITE?'lite':'full'} · ${GPU}`;fpsN=0;fpsT=now;}}
+  lastFrame=now;
   const dt=Math.min(clock.getDelta(),.05),t=clock.elapsedTime;
   if(!drag&&performance.now()-lastTouch>7000){tYaw*=1-dt*.9;tPitch*=1-dt*.9;}
   yaw+=(tYaw-yaw)*Math.min(1,dt*9);pitch+=(tPitch-pitch)*Math.min(1,dt*9);
@@ -1868,7 +1921,6 @@ function frame(){
   for(const p of parts){if(!p.m.visible)continue;p.life-=dt*1.5;if(p.life<=0){p.m.visible=false;continue;}p.m.position.addScaledVector(p.v,dt);p.v.multiplyScalar(1-dt*2.2);p.v.y-=dt*.6;p.m.rotation.z+=p.spin*dt;p.m.material.opacity=Math.min(1,p.life*2);const s=p.m.scale.x;p.m.scale.setScalar(Math.max(.01,s*(1-dt*.6)));}
   renderer.render(scene,camera);
   if(!started){started=true;veil.classList.add('gone');}
-  requestAnimationFrame(frame);
 }
 
 /* ================= UI ================= */
