@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 880 430" width="880" role="img">
+  <title>Contexto de Unicornia</title>
+  <desc>Un niño juega a Unicornia en la tablet; Guillermo hace push a main, GitHub Actions despliega en Cloudflare Pages, que sirve el juego; el juego pide fuentes a Google Fonts y guarda el look y las fotos en localStorage.</desc>
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk" d="M2 1L8 5L2 9"/></marker>
+    <marker id="al" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path class="mk e-coral" d="M2 1L8 5L2 9"/></marker>
+  </defs>
+
+  <g class="s-gray"><rect x="200" y="30" width="200" height="50" rx="25"/>
+    <text class="th" x="300" y="47" text-anchor="middle" dominant-baseline="central">Niña o niño</text>
+    <text class="ts" x="300" y="65" text-anchor="middle" dominant-baseline="central">juega en la tablet</text></g>
+  <g class="s-gray"><rect x="480" y="30" width="200" height="50" rx="25"/>
+    <text class="th" x="580" y="47" text-anchor="middle" dominant-baseline="central">Guillermo Rodas</text>
+    <text class="ts" x="580" y="65" text-anchor="middle" dominant-baseline="central">crea el juego</text></g>
+
+  <g class="s-pink"><rect x="250" y="150" width="380" height="70" rx="12"/>
+    <text class="th" x="440" y="175" text-anchor="middle" dominant-baseline="central">Unicornia</text>
+    <text class="ts" x="440" y="196" text-anchor="middle" dominant-baseline="central">juego 3D en el navegador</text></g>
+
+  <g class="s-gray"><rect x="45" y="300" width="175" height="56" rx="8"/>
+    <text class="tm" x="132" y="320" text-anchor="middle" dominant-baseline="central">localStorage</text>
+    <text class="ts" x="132" y="339" text-anchor="middle" dominant-baseline="central">look, fotos, ajustes</text></g>
+  <g class="s-gray"><rect x="250" y="300" width="175" height="56" rx="8"/>
+    <text class="th" x="337" y="320" text-anchor="middle" dominant-baseline="central">Google Fonts</text>
+    <text class="ts" x="337" y="339" text-anchor="middle" dominant-baseline="central">Baloo 2 y Nunito</text></g>
+  <g class="s-amber"><rect x="455" y="300" width="175" height="56" rx="8"/>
+    <text class="th" x="542" y="320" text-anchor="middle" dominant-baseline="central">Cloudflare Pages</text>
+    <text class="ts" x="542" y="339" text-anchor="middle" dominant-baseline="central">unicornia.pages.dev</text></g>
+  <g class="s-gray"><rect x="660" y="300" width="175" height="56" rx="8"/>
+    <text class="th" x="747" y="320" text-anchor="middle" dominant-baseline="central">GitHub Actions</text>
+    <text class="tm" x="747" y="339" text-anchor="middle" dominant-baseline="central">deploy.yml</text></g>
+
+  <path class="arr" d="M300 80 V148" marker-end="url(#a)"/>
+  <text class="ts" x="308" y="114" dominant-baseline="central">viste, maquilla, fotos</text>
+
+  <path class="arr" d="M680 55 H747 V298" marker-end="url(#a)"/>
+  <text class="ts" x="755" y="200" dominant-baseline="central">push a main</text>
+
+  <path class="arr" d="M747 356 V390 H542 V358" marker-end="url(#a)"/>
+  <text class="ts" x="644" y="404" text-anchor="middle" dominant-baseline="central">despliega dist/</text>
+
+  <path class="arr" d="M542 300 V222" marker-end="url(#a)"/>
+  <text class="ts" x="550" y="260" dominant-baseline="central">sirve / y /es</text>
+
+  <path class="arr" d="M337 220 V298" marker-end="url(#a)"/>
+  <text class="ts" x="345" y="260" dominant-baseline="central">pide fuentes</text>
+
+  <path class="arr" d="M250 185 H132 V298" marker-end="url(#a)"/>
+  <text class="ts" x="140" y="250" dominant-baseline="central">guarda el look</text>
+</svg>
