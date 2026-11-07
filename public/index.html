@@ -507,6 +507,8 @@ const RAINBOW=['#ff6b81','#ffa44f','#ffd84d','#6fd68f','#5cb8f5','#a17cf0'];
 const rainbowTint=col=>RAINBOW.map(c=>mix(c,col,.4));
 const galaxyTint=col=>[mix('#6a3fc4',col,.55),mix('#2a1b6e',col,.4),mix('#0e0828',col,.15)];
 const PASTEL=['#ffb3cf','#c9b3ff','#a8e1ff','#b5f0d3','#fff0a6'];
+// Soft rainbow for big surfaces (fur, mist): the full RAINBOW reads too loud on the whole head.
+const RAINBOW_SOFT=RAINBOW.map(c=>mix(c,'#ffffff',.45));
 
 const STICKERS=[
   {id:'estrella',name:'Estrella',L:[[STAR,'#ffd447'],[circ(38,46,4.5)+circ(60,46,4.5),'#3d2748'],[ell(50,58,6,3.5),'#ff7aa6']]},
@@ -546,6 +548,7 @@ const SCENTS=[
   {id:'helado',name:'Vainilla',c:'#ffb36b',mist:['#fff1d6','#ffe0b8','#ffd1e6','#ffffff'],L:STICKERS.find(x=>x.id==='helado').L},
   {id:'chocolate',name:'Chocolate',c:'#8a5636',mist:['#c08a64','#e8c3a6','#a8714d','#f4dccb'],L:[['M24 8H76Q86 8 86 18V82Q86 92 76 92H24Q14 92 14 82V18Q14 8 24 8Z','#7a4a2e'],['M22 16H46V34H22ZM54 16H78V34H54ZM22 40H46V56H22ZM54 40H78V56H54Z','#a8714d'],['M14 62H86V82Q86 92 76 92H24Q14 92 14 82Z','#ff6f9f'],['M14 62H86V68H14Z','#ffd447']]},
   {id:'flores',name:'Flores',c:'#ff8fc8',mist:['#ffb3dc','#ffe0f0','#d4b8ff','#fff3a0'],L:STICKERS.find(x=>x.id==='flor').L},
+  {id:'arcoiris',name:'Arcoíris',c:'#a17cf0',rainbow:1,mist:RAINBOW_SOFT,L:STICKERS.find(x=>x.id==='arcoiris').L},
 ];
 const SCENT={};SCENTS.forEach(s=>{SCENT[s.id]=s;s.paths=s.L.map(([d,f])=>[new Path2D(d),f]);s.all=new Path2D(s.L.map(l=>l[0]).join(' '));});
 // A layer's optional third item sets its tattoo outline: {line:false} for none, {line:d} to trace d instead of the shape.
@@ -562,6 +565,7 @@ const FUR=[
   {id:'limon',name:'Limón',c:'#f9e7a1',m:'#fff6d6'},
   {id:'perla',name:'Perla',c:'#d7d3df',m:'#f1eef5'},
   {id:'noche',name:'Noche',c:'#4a3f66',m:'#6c5d8c'},
+  {id:'arcoiris',name:'Arcoíris',c:'#fde3ec',m:'#fff4f7',rainbow:1},
 ];
 const MANE=[
   {id:'rosa',name:'Rosa',c:'#ff8fb8'},{id:'fucsia',name:'Fucsia',c:'#e8509b'},{id:'lila',name:'Lila',c:'#b48cf2'},
@@ -579,13 +583,14 @@ const HORN=[
 const EYE=[
   {id:'azul',name:'Azul',c:'#3b8cf0'},{id:'verde',name:'Verde',c:'#35b86a'},{id:'violeta',name:'Violeta',c:'#8a5cf0'},{id:'rosa',name:'Rosa',c:'#f0589f'},
   {id:'ambar',name:'Ámbar',c:'#ee9b2f'},{id:'turquesa',name:'Turquesa',c:'#1fbdb8'},{id:'cafe',name:'Café',c:'#8a5636'},{id:'rubi',name:'Rubí',c:'#e0364d'},
+  {id:'arcoiris',name:'Arcoíris',c:'#a17cf0',rainbow:1},
 ];
 const LENS=[{id:'normal',name:'Normal'},{id:'corazon',name:'Corazón'},{id:'estrella',name:'Estrella'},{id:'flor',name:'Flor'},{id:'arcoiris',name:'Arcoíris'},{id:'galaxia',name:'Galaxia'}];
 const LASHES=[{id:'ninguna',name:'Sin'},{id:'cortas',name:'Cortas'},{id:'largas',name:'Largas'},{id:'drama',name:'Drama'},{id:'puntas',name:'Puntas'}];
-const LASH_C=[{id:'negro',name:'Negro',c:'#2a1f33'},{id:'cafe',name:'Café',c:'#6b4430'},{id:'rosa',name:'Rosa',c:'#ff5f9e'},{id:'morado',name:'Morado',c:'#7d4ee8'},{id:'azul',name:'Azul',c:'#2f7de6'},{id:'oro',name:'Oro',c:'#e8b53a',metal:1}];
+const LASH_C=[{id:'negro',name:'Negro',c:'#2a1f33'},{id:'cafe',name:'Café',c:'#6b4430'},{id:'rosa',name:'Rosa',c:'#ff5f9e'},{id:'morado',name:'Morado',c:'#7d4ee8'},{id:'azul',name:'Azul',c:'#2f7de6'},{id:'oro',name:'Oro',c:'#e8b53a',metal:1},{id:'arcoiris',name:'Arcoíris',c:'#ff6b81',rainbow:1}];
 const SHADOW=[{id:'ninguna',name:'Sin'},{id:'rosa',name:'Rosa',c:'#ff9cc4'},{id:'lila',name:'Lila',c:'#b89af6'},{id:'cielo',name:'Cielo',c:'#89cbf5'},{id:'menta',name:'Menta',c:'#86ddbd'},{id:'durazno',name:'Durazno',c:'#ffb089'},{id:'oro',name:'Oro',c:'#f2c35a',metal:1},{id:'plata',name:'Plata',c:'#cfd6e4',metal:1},{id:'arcoiris',name:'Arcoíris',tex:'rainbow'}];
-const BLUSH=[{id:'ninguno',name:'Sin'},{id:'rosa',name:'Rosa',c:'#ff7aa6'},{id:'coral',name:'Coral',c:'#ff8a6a'},{id:'fucsia',name:'Fucsia',c:'#e9479a'},{id:'lila',name:'Lila',c:'#b27ff0'},{id:'corazones',name:'Corazones',c:'#ff5f93'}];
-const FRECKLES=[{id:'ninguna',name:'Sin'},{id:'pocas',name:'Pocas'},{id:'muchas',name:'Muchas'},{id:'corazones',name:'Corazones'},{id:'estrellas',name:'Estrellas'}];
+const BLUSH=[{id:'ninguno',name:'Sin'},{id:'rosa',name:'Rosa',c:'#ff7aa6'},{id:'coral',name:'Coral',c:'#ff8a6a'},{id:'fucsia',name:'Fucsia',c:'#e9479a'},{id:'lila',name:'Lila',c:'#b27ff0'},{id:'corazones',name:'Corazones',c:'#ff5f93'},{id:'arcoiris',name:'Arcoíris',c:'#ff7aa6',rainbow:1}];
+const FRECKLES=[{id:'ninguna',name:'Sin'},{id:'pocas',name:'Pocas'},{id:'muchas',name:'Muchas'},{id:'corazones',name:'Corazones'},{id:'estrellas',name:'Estrellas'},{id:'arcoiris',name:'Arcoíris'}];
 const LIPS=[{id:'natural',name:'Natural'},{id:'rosa',name:'Rosa',c:'#ff6f9f'},{id:'rojo',name:'Rojo',c:'#e3304f'},{id:'coral',name:'Coral',c:'#ff7d5c'},{id:'morado',name:'Morado',c:'#9150d8'},{id:'brillo',name:'Brillo',c:'#ff8ccf',glitter:1},{id:'arcoiris',name:'Arcoíris',c:'#ff6b81',rainbow:1}];
 const EARRING=[{id:'ninguno',name:'Sin'},{id:'aro-oro',name:'Aro oro'},{id:'aro-plata',name:'Aro plata'},{id:'perla',name:'Perla'},{id:'estrella',name:'Estrella'},{id:'corazon',name:'Corazón'},{id:'tres',name:'Tres aros'}];
 const EAR_TOP=[{id:'ninguno',name:'Sin'},{id:'aros',name:'Dos aros'},{id:'brillos',name:'Brillitos'},{id:'perlas',name:'Perlas'},{id:'estrella',name:'Estrella'},{id:'corazon',name:'Corazón'},{id:'flor',name:'Florecita'}];
@@ -828,25 +833,32 @@ function paintStickers(s){
   }
 }
 function furC(){return byId(FUR,state.fur);}
+const FUR_RAINBOW=RAINBOW.map(c=>mix(c,'#ffffff',.3));
+function furRainbow(x,y0,y1){const g=x.createLinearGradient(0,y0,0,y1);FUR_RAINBOW.forEach((c,i,a)=>g.addColorStop(i/(a.length-1),c));return g;}
 function paintHead(){
   const s=SKIN.head,x=s.ctx,W=s.W,H=s.H,f=furC();
-  x.fillStyle=f.c;x.fillRect(0,0,W,H);mottle(x,W,H,.24);
+  x.fillStyle=f.rainbow?furRainbow(x,uvLL(0,78)[1]*H,uvLL(0,-40)[1]*H):f.c;x.fillRect(0,0,W,H);mottle(x,W,H,.24);
   const bl=byId(BLUSH,state.blush), fr=state.freckles, dark=lum(f.c)<.45;
   for(const sg of[-1,1]){
     const[u,v]=uvLL(47*sg,-12),cx=u*W,cy=v*H,[pu,pv]=s.px(u,v);
     if(bl.id==='corazones'){
       [[0,0,.11,0],[-.1*sg,.07,.07,-.3],[.1*sg,.075,.06,.3]].forEach(([dx,dy,sz,r])=>drawShape(x,P_HEART,cx+dx*pu,cy-dy*pv,sz*pu,sz*pv,r*sg,rgba(bl.c,.85)));
+    }else if(bl.rainbow){
+      // A little rainbow arch on each cheek, soft enough to read as blush.
+      x.save();x.translate(cx,cy+.02*pv);x.scale(pu,pv);x.lineCap='round';x.globalAlpha=dark?.85:.7;
+      RAINBOW.forEach((c,i)=>{x.strokeStyle=c;x.lineWidth=.021;x.beginPath();x.arc(0,0,.13-i*.019,Math.PI*1.08,Math.PI*1.92);x.stroke();});x.restore();
     }else if(bl.c){
       x.save();x.translate(cx,cy);x.scale(pu*.21,pv*.135);const g=x.createRadialGradient(0,0,0,0,0,1);
       g.addColorStop(0,rgba(bl.c,dark?.75:.6));g.addColorStop(.55,rgba(bl.c,dark?.4:.3));g.addColorStop(1,rgba(bl.c,0));x.fillStyle=g;x.beginPath();x.arc(0,0,1,0,TAU);x.fill();x.restore();
     }
     if(fr!=='ninguna'){
-      const r=rng(sg>0?31:31), n=fr==='muchas'?13:fr==='pocas'?6:5, col=dark?'#ffe3a3':'#b5765a';
+      const r=rng(sg>0?31:31), n=fr==='muchas'?13:fr==='pocas'?6:fr==='arcoiris'?9:5, col=dark?'#ffe3a3':'#b5765a';
       for(let i=0;i<n;i++){
         const a=r()*TAU, d=Math.sqrt(r()), dx=Math.cos(a)*d*.15*sg-.02*sg, dy=Math.sin(a)*d*.08+.05;
         const X=cx+dx*pu, Y=cy-dy*pv;
         if(fr==='corazones')drawShape(x,P_HEART,X,Y,.045*pu,.045*pv,(r()-.5)*.6,'#ff5f93');
         else if(fr==='estrellas')drawShape(x,P_STAR,X,Y,.05*pu,.05*pv,(r()-.5)*.8,'#f2b632');
+        else if(fr==='arcoiris'){x.fillStyle=RAINBOW[i%RAINBOW.length];x.beginPath();x.ellipse(X,Y,.017*pu,.017*pv,0,0,TAU);x.fill();}
         else{x.fillStyle=rgba(col,.75);x.beginPath();x.ellipse(X,Y,(.011+r()*.008)*pu,(.011+r()*.006)*pv,0,0,TAU);x.fill();}
       }
     }
@@ -886,7 +898,7 @@ function paintMuzzle(){
 }
 function paintNeck(){
   const s=SKIN.neck,x=s.ctx,f=furC();
-  x.fillStyle=f.c;x.fillRect(0,0,s.W,s.H);mottle(x,s.W,s.H,.24);
+  x.fillStyle=f.rainbow?furRainbow(x,0,s.H):f.c;x.fillRect(0,0,s.W,s.H);mottle(x,s.W,s.H,.24);
   paintStickers(s); s.tex.needsUpdate=true;
 }
 const paintBy={head:paintHead,muzzle:paintMuzzle,neck:paintNeck};
@@ -905,6 +917,9 @@ function paintEye(){
     const gt=galaxyTint(col),g=x.createRadialGradient(cx-R*.2,cy+R*.2,R*.1,cx,cy,R);g.addColorStop(0,gt[0]);g.addColorStop(.6,gt[1]);g.addColorStop(1,gt[2]);x.fillStyle=g;x.fillRect(0,0,S,S);
     const r=rng(9);for(let i=0;i<46;i++){x.fillStyle=r()<.7?'#ffffff':'#ffe27a';x.beginPath();x.arc(cx+(r()-.5)*2*R,cy+(r()-.5)*2*R,1+r()*3.2,0,TAU);x.fill();}
     for(let i=0;i<4;i++)drawShape(x,P_SPARK,cx+(r()-.5)*1.4*R,cy+(r()-.5)*1.4*R,30,30,0,'#fff6c2');
+  }else if(byId(EYE,state.eye).rainbow){
+    RAINBOW.forEach((c,i,a)=>{const a0=-Math.PI/2+i/a.length*TAU;x.fillStyle=c;x.beginPath();x.moveTo(cx,cy);x.arc(cx,cy,R*1.05,a0-.01,a0+TAU/a.length+.01);x.closePath();x.fill();});
+    const g=x.createRadialGradient(cx,cy,R*.1,cx,cy,R);g.addColorStop(0,'rgba(255,255,255,.45)');g.addColorStop(.6,'rgba(255,255,255,0)');g.addColorStop(1,'rgba(18,10,32,.35)');x.fillStyle=g;x.fillRect(0,0,S,S);
   }else{
     const g=x.createRadialGradient(cx,cy+R*.3,R*.08,cx,cy,R);g.addColorStop(0,mix(col,'#ffffff',.5));g.addColorStop(.62,col);g.addColorStop(1,mix(col,'#120a20',.5));x.fillStyle=g;x.fillRect(0,0,S,S);
     x.strokeStyle=rgba(mix(col,'#ffffff',.65),.35);x.lineWidth=3;for(let i=0;i<30;i++){const a=i/30*TAU;x.beginPath();x.moveTo(cx+Math.cos(a)*R*.45,cy+Math.sin(a)*R*.45);x.lineTo(cx+Math.cos(a)*R*.92,cy+Math.sin(a)*R*.92);x.stroke();}
@@ -946,6 +961,12 @@ function hornTex(kind){
     const r=rng(4),cs=['#ffffff','#fff3a0','#ff8fd0','#a6e9ff','#c9a8ff'];for(let i=0;i<2600;i++){x.fillStyle=cs[Math.floor(r()*cs.length)];x.globalAlpha=.6+r()*.4;x.fillRect(r()*W,r()*H,1+r()*2.5,1+r()*2.5);}x.globalAlpha=1;
   }
   const t=canvasTex(c);t.wrapS=THREE.RepeatWrapping;hornTexCache[kind]=t;return t;
+}
+let furRainbowT=null;
+function furRainbowTex(){
+  if(furRainbowT)return furRainbowT;
+  const c=document.createElement('canvas');c.width=16;c.height=256;const x=c.getContext('2d');x.fillStyle=furRainbow(x,0,256);x.fillRect(0,0,16,256);
+  return furRainbowT=canvasTex(c);
 }
 let lidRainbowTex=null;
 function lidRainbow(){
@@ -1029,6 +1050,7 @@ const eyeGeo=new THREE.SphereGeometry(1,segs(56),segs(40));
 const eyeMat=new THREE.MeshPhysicalMaterial({map:eyeTex,roughness:.12,clearcoat:1,clearcoatRoughness:.04,envMapIntensity:1.1});
 const lidMat=clay('#ffffff');
 const lashMat=new THREE.MeshPhysicalMaterial({color:new THREE.Color('#2a1f33'),roughness:.45,clearcoat:.6});
+const LASH_RB=RAINBOW.map(c=>new THREE.MeshPhysicalMaterial({color:new THREE.Color(c),roughness:.45,clearcoat:.6}));
 const EYE_R=.27, LID_R=.284, LID_OPEN=-.74, LID_SHUT=1.08;
 const lidGeo=new THREE.SphereGeometry(LID_R,segs(56),segs(24),0,TAU,0,Math.PI/2);
 const lidRimGeo=new THREE.TorusGeometry(LID_R,.016,10,56,Math.PI);lidRimGeo.rotateX(Math.PI/2);
@@ -1258,14 +1280,14 @@ function applyHorn(){hornMesh.material=hornMat(state.horn);}
 const LASHDEF={cortas:{n:5,a0:-10,a1:72,l0:.06,l1:.095,t:.017,c:.45},largas:{n:7,a0:-28,a1:86,l0:.08,l1:.17,t:.02,c:.55},drama:{n:11,a0:-46,a1:98,l0:.11,l1:.25,t:.024,c:.7},puntas:{n:3,a0:58,a1:98,l0:.15,l1:.22,t:.026,c:.75}};
 function buildLashes(){
   for(const e of eyes){
-    disposeGroup(e.lashes);const d=LASHDEF[state.lashes];if(!d)continue;
+    disposeGroup(e.lashes);const d=LASHDEF[state.lashes],rb=byId(LASH_C,state.lashColor).rainbow;if(!d)continue;
     for(let i=0;i<d.n;i++){
       const t=d.n>1?i/(d.n-1):1,phi=lerp(d.a0,d.a1,t)*e.sg*D2R,len=lerp(d.l0,d.l1,Math.pow(t,1.2));
       const rh=V3(Math.sin(phi),0,Math.cos(phi)),up=V3(0,1,0);
       const D=rh.clone().multiplyScalar(.72).add(up.clone().multiplyScalar(.7)).normalize();
       const C=up.clone().sub(D.clone().multiplyScalar(up.dot(D))).normalize();
       const X=new THREE.Vector3().crossVectors(D,C);
-      const m=new THREE.Mesh(lashGeo(len,d.t,d.c),lashMat);
+      const m=new THREE.Mesh(lashGeo(len,d.t,d.c),rb?LASH_RB[Math.round(t*(LASH_RB.length-1))]:lashMat);
       m.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(X,D,C));
       m.position.copy(rh.multiplyScalar(LID_R*.985));m.castShadow=true;e.lashes.add(m);
     }
@@ -1406,7 +1428,8 @@ function buildHeadAcc(){
 /* ---------- apply ---------- */
 const backdropTarget=new THREE.Color('#9ddccf');
 function applyFur(){
-  const f=furC();furMat.color.set(f.c);furMat.sheenColor.set(mix(f.c,'#ffffff',.6));
+  const f=furC();furMat.color.set(f.rainbow?'#ffffff':f.c);furMat.sheenColor.set(mix(f.c,'#ffffff',.6));
+  furMat.map=f.rainbow?furRainbowTex():null;furMat.needsUpdate=true;
   innerEarMat.color.set(mix(f.m,'#ff8fb3',f.id==='noche'?.3:.45));
   backdropTarget.set(f.id==='menta'||f.id==='cielo'?'#f8c2d6':'#9ddccf');
 }
@@ -1418,7 +1441,7 @@ function apply(k){
     case 'hair':buildHair();buildHeadAcc();break;
     case 'horn':applyHorn();break;
     case 'lashes':buildLashes();break;
-    case 'lashColor':applyLashColor();break;
+    case 'lashColor':applyLashColor();buildLashes();break;
     case 'eye':case 'lens':paintEye();break;
     case 'shadow':applyLids();break;
     case 'blush':case 'freckles':paintHead();break;
@@ -1950,7 +1973,7 @@ const tr=(d,x,y,s,fill,extra)=>`<path d="${d}" transform="translate(${x-50*s} ${
 
 function patternCSS(o){
   if(o.multi)return `conic-gradient(from 200deg,${o.multi.join(',')},${o.multi[0]})`;
-  if(o.tex==='rainbow')return `conic-gradient(from 200deg,${RAINBOW.join(',')},${RAINBOW[0]})`;
+  if(o.tex==='rainbow'||o.rainbow)return `conic-gradient(from 200deg,${RAINBOW.join(',')},${RAINBOW[0]})`;
   if(o.tex==='primary')return 'conic-gradient(#ff3b3b 0 33.3%,#ffd21f 0 66.6%,#2f6bff 0)';
   if(o.tex==='candy')return 'repeating-linear-gradient(45deg,#ff7eb0 0 8px,#fff6f9 8px 16px)';
   if(o.tex==='stars')return 'radial-gradient(circle at 30% 34%,#fff 0 2px,transparent 3px),radial-gradient(circle at 66% 58%,#ffe27a 0 3px,transparent 4px),radial-gradient(circle at 44% 74%,#fff 0 1.5px,transparent 2.5px),radial-gradient(circle at 72% 30%,#fff 0 1.5px,transparent 2.5px),linear-gradient(160deg,#7a4bc4,#231c5c)';
@@ -1962,6 +1985,7 @@ function eyeSVG(lens,col){
   const cx=32,cy=33,R=17;let iris;
   if(lens==='arcoiris')iris=rainbowTint(col).map((c,i)=>`<circle cx="${cx}" cy="${cy}" r="${R*(1-i*.13)}" fill="${c}"/>`).join('');
   else if(lens==='galaxia')iris=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${galaxyTint(col)[1]}"/><circle cx="26" cy="28" r="1.4" fill="#fff"/><circle cx="38" cy="38" r="1.2" fill="#ffe27a"/><circle cx="37" cy="26" r="1" fill="#fff"/><circle cx="27" cy="40" r="1.1" fill="#fff"/>`;
+  else if(byId(EYE,state.eye).rainbow)iris=RAINBOW.map((c,i,a)=>{const p=k=>{const t=-Math.PI/2+k/a.length*TAU;return `${(cx+Math.cos(t)*R).toFixed(2)} ${(cy+Math.sin(t)*R).toFixed(2)}`;};return `<path d="M${cx} ${cy}L${p(i)}A${R} ${R} 0 0 1 ${p(i+1)}Z" fill="${c}"/>`;}).join('');
   else iris=`<circle cx="${cx}" cy="${cy}" r="${R}" fill="${col}"/>`;
   let pup;const pc='#1d1330';
   if(lens==='corazon')pup=tr(HEART,cx,cy+1,.34,pc);else if(lens==='estrella')pup=tr(STAR,cx,cy-1,.38,pc);else if(lens==='flor')pup=tr(PETALS,cx,cy,.34,pc);
@@ -1972,13 +1996,13 @@ function lashSVG(style,col){
   const d=LASHDEF[style];let lashes='';
   if(d){for(let i=0;i<d.n;i++){const t=d.n>1?i/(d.n-1):1;const a=lerp(d.a0,d.a1,t);const tt=clamp(.5+a/200,.08,.98);
     const bx=(1-tt)*(1-tt)*10+2*(1-tt)*tt*32+tt*tt*54,by=(1-tt)*(1-tt)*36+2*(1-tt)*tt*14+tt*tt*36;const tx=2*(1-tt)*(32-10)+2*tt*(54-32),ty=2*(1-tt)*(14-36)+2*tt*(36-14);const L=Math.hypot(tx,ty);const nx=ty/L,ny=-tx/L;const len=lerp(d.l0,d.l1,Math.pow(t,1.2))*80;
-    lashes+=`<path d="M${bx.toFixed(1)} ${by.toFixed(1)}q${(nx*len*.6+.25*len).toFixed(1)} ${(ny*len*.6).toFixed(1)} ${(nx*len+.35*len).toFixed(1)} ${(ny*len-.2*len).toFixed(1)}" stroke="${col}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;}}
+    lashes+=`<path d="M${bx.toFixed(1)} ${by.toFixed(1)}q${(nx*len*.6+.25*len).toFixed(1)} ${(ny*len*.6).toFixed(1)} ${(nx*len+.35*len).toFixed(1)} ${(ny*len-.2*len).toFixed(1)}" stroke="${col==='rainbow'?RAINBOW[Math.round(t*(RAINBOW.length-1))]:col}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;}}
   return sv(`<path d="M10 36Q32 14 54 36Q32 52 10 36Z" fill="#fff" stroke="${INK}" stroke-width="2.4"/><circle cx="32" cy="37" r="8" fill="${byId(EYE,state.eye).c}"/><circle cx="32" cy="37" r="3.6" fill="#1d1330"/><circle cx="29.5" cy="34.5" r="1.7" fill="#fff"/>${lashes}`);
 }
 function freckleSVG(style){
   const base=`<ellipse cx="32" cy="34" rx="25" ry="19" fill="#ffe7e0"/>`;const r=rng(31);let s='';const n=style==='muchas'?14:6;
-  for(let i=0;i<(style==='pocas'?6:style==='muchas'?14:6);i++){const x=14+r()*36,y=24+r()*20;
-    if(style==='corazones')s+=tr(HEART,x,y,.1,'#ff5f93');else if(style==='estrellas')s+=tr(STAR,x,y,.11,'#f2b632');else s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(1.6+r()*1.2).toFixed(1)}" fill="#b5765a"/>`;}
+  for(let i=0;i<(style==='pocas'?6:style==='muchas'?14:style==='arcoiris'?9:6);i++){const x=14+r()*36,y=24+r()*20;
+    if(style==='corazones')s+=tr(HEART,x,y,.1,'#ff5f93');else if(style==='arcoiris')s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="2.6" fill="${RAINBOW[i%RAINBOW.length]}"/>`;else if(style==='estrellas')s+=tr(STAR,x,y,.11,'#f2b632');else s+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${(1.6+r()*1.2).toFixed(1)}" fill="#b5765a"/>`;}
   return sv(base+s);
 }
 function hairFill(){const m=byId(MANE,state.mane);return m.multi?'url(#hgrad)':m.c;}
@@ -2108,7 +2132,7 @@ const catOf=id=>CATS.find(c=>c.id===id)||CATS[0];
 if(!CATS.some(c=>c.id===ui.cat))ui.cat='maquillaje';
 
 function swInner(group,o){
-  if(group.kind==='lash')return NONE.has(o.id)?NONE_SVG:lashSVG(o.id,byId(LASH_C,state.lashColor).c);
+  if(group.kind==='lash'){const lc=byId(LASH_C,state.lashColor);return NONE.has(o.id)?NONE_SVG:lashSVG(o.id,lc.rainbow?'rainbow':lc.c);}
   if(group.kind==='lens')return eyeSVG(o.id,byId(EYE,state.eye).c);
   if(group.kind==='freckle')return NONE.has(o.id)?NONE_SVG:freckleSVG(o.id);
   if(group.kind==='hair')return hairSVG(o.id);
@@ -2118,6 +2142,7 @@ function swInner(group,o){
   if(group.kind==='glasses')return glassesSVG(o.id);
   if(group.kind==='head')return headSVG(o.id);
   if(group.kind==='lips')return lipsSVG(o);
+  if(group.kind==='blush'&&o.rainbow)return sv(RAINBOW.map((c,i)=>`<path d="M${12+i*3.4} 44a${20-i*3.4} ${20-i*3.4} 0 0 1 ${40-i*6.8} 0" stroke="${c}" stroke-width="3.6" fill="none" stroke-linecap="round"/>`).join(''));
   if(group.kind==='blush'&&o.id==='corazones')return sv(tr(HEART,24,30,.22,o.c)+tr(HEART,42,40,.16,o.c)+tr(HEART,40,22,.12,o.c));
   if(NONE.has(o.id))return NONE_SVG;
   return '';
@@ -2169,10 +2194,14 @@ function renderStickers(){
   <div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n(mode==='tatuaje'?'Elige un tatuaje y toca al unicornio':'Elige un sticker y toca al unicornio')}</div><div class="grid">${STICKERS.map(d=>`<button class="tile sticker" data-stk="${d.id}" aria-pressed="${ui.sticker===d.id}" aria-label="${i18n(d.name)}"><span class="sw">${stickerSVG(d,mode)}</span><span class="nm">${i18n(d.name)}</span></button>`).join('')}</div></div>`;
   refreshStickerActions();
 }
+let bottleN=0;
 function bottleSVG(sc,big){
+  // Each inline SVG needs its own gradient id: a shared id would point at the hidden sprayer's copy and paint nothing.
+  const gid=sc.rainbow?'bottleRb'+(bottleN++):'',defs=sc.rainbow?`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="1" y2="1">${RAINBOW.map((c,i,a)=>`<stop offset="${i/(a.length-1)}" stop-color="${c}"/>`).join('')}</linearGradient><linearGradient id="${gid}s" x1="0" y1="0" x2="1" y2="1">${RAINBOW_SOFT.map((c,i,a)=>`<stop offset="${i/(a.length-1)}" stop-color="${c}"/>`).join('')}</linearGradient></defs>`:'';
+  const glass=sc.rainbow?`url(#${gid}s)`:mix(sc.c,'#ffffff',.62),juice=sc.rainbow?`url(#${gid})`:sc.c;
   const icon=`<svg x="13" y="${big?37:35}" width="38" height="38" viewBox="-8 -8 116 116"><path d="${sc.L.map(l=>l[0]).join(' ')}" fill="#fff" stroke="#fff" stroke-width="14" stroke-linejoin="round"/>${sc.L.map(([d,f])=>`<path d="${d}" fill="${f}"/>`).join('')}</svg>`;
   const pump=`<g class="pump"><rect x="22" y="7" width="20" height="13" rx="4" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><path d="M22 12.5H8.5a2.5 2.5 0 0 0 0 5H22" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4" stroke-linejoin="round"/></g>`;
-  return `<svg viewBox="0 0 64 ${big?80:76}" aria-hidden="true">${big?pump:`<rect x="23" y="5" width="18" height="13" rx="4" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><path d="M23 10.5H12" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`}<rect x="26" y="${big?19:17}" width="12" height="9" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><rect x="9" y="${big?27:25}" width="46" height="${big?50:48}" rx="15" fill="${mix(sc.c,'#ffffff',.62)}" stroke="${INK}" stroke-width="2.6"/><path d="M11.5 ${big?54:52}h41v${big?6:6}c0 8-6.5 14-14 14h-13c-7.5 0-14-6-14-14z" fill="${sc.c}" opacity=".55"/><path d="M16 ${big?36:34}q0-4 4-5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>${icon}</svg>`;
+  return `<svg viewBox="0 0 64 ${big?80:76}" aria-hidden="true">${defs}${big?pump:`<rect x="23" y="5" width="18" height="13" rx="4" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><path d="M23 10.5H12" stroke="${INK}" stroke-width="3" stroke-linecap="round"/>`}<rect x="26" y="${big?19:17}" width="12" height="9" fill="#f4f0f8" stroke="${INK}" stroke-width="2.4"/><rect x="9" y="${big?27:25}" width="46" height="${big?50:48}" rx="15" fill="${glass}" stroke="${INK}" stroke-width="2.6"/><path d="M11.5 ${big?54:52}h41v${big?6:6}c0 8-6.5 14-14 14h-13c-7.5 0-14-6-14-14z" fill="${juice}" opacity=".55"/><path d="M16 ${big?36:34}q0-4 4-5" stroke="#fff" stroke-width="3" fill="none" stroke-linecap="round" opacity=".85"/>${icon}</svg>`;
 }
 function renderPerfume(){
   optsEl.innerHTML=`<div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n('Elige un perfume y rocía al unicornio')}</div><div class="grid">${SCENTS.map(sc=>`<button class="tile scent" data-scent="${sc.id}" aria-pressed="${ui.scent===sc.id}" aria-label="${i18n('Perfume de {name}',{name:i18n(sc.name)})}"><span class="sw" style="background:${mix(sc.c,'#ffffff',.85)}">${bottleSVG(sc)}</span><span class="nm">${i18n(sc.name)}</span></button>`).join('')}</div></div>`;
