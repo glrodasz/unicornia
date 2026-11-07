@@ -2083,7 +2083,7 @@ const GROUP_ICON={lashColor:PALETTE_ICON,eye:PALETTE_ICON,mane:PALETTE_ICON,lens
 const CATS=[
   {id:'maquillaje',name:'Maquillaje',col:['#ff6f9f','#ffe1ec','#f2b3c9','#c83c6c'],subs:[
     {id:'pestanas',name:'Pestañas',groups:[{key:'lashes',kind:'lash',deps:['lashColor','eye']},{key:'lashColor',kind:'paint',title:'Color de pestañas'}]},
-    {id:'ojos',name:'Ojos',groups:[{key:'eye',kind:'paint',title:'Color de ojos'},{key:'lens',kind:'lens',title:'Lentes de contacto',deps:['eye']}]},
+    {id:'ojos',name:'Ojos',groups:[{key:'lens',kind:'lens',title:'Lentes de contacto',deps:['eye']},{key:'eye',kind:'paint',title:'Color de ojos'}]},
     {id:'sombras',name:'Sombras',groups:[{key:'shadow',kind:'paint'}]},
     {id:'rubor',name:'Rubor',groups:[{key:'blush',kind:'blush'}]},
     {id:'pecas',name:'Pecas',groups:[{key:'freckles',kind:'freckle'}]},
