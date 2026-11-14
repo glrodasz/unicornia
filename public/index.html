@@ -101,7 +101,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .coach.tap .ring+.ring{animation-delay:.53s}
 .coach .stk{left:-40px;top:-40px;width:80px;height:80px;opacity:0;animation:coachStk 2.4s infinite}
 .coach .stk svg{width:100%;height:100%;display:block}
-.coach.erase{--ring:#c9a46a}
+.coach.erase{--ring:#5f9de8}
 .coach.erase .stk{animation-name:coachStkOut}
 .coach.erase .finger{animation-name:coachTap}
 .coach.erase .ring{animation-name:coachTapRing}
@@ -186,7 +186,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .tile[aria-pressed="true"] .sw{transform:scale(1.06);box-shadow:0 0 0 4px var(--tray),0 0 0 8px var(--cat-c),0 4px 0 var(--chip-edge)}
 .tile:active .sw{transform:scale(.9)}
 .tile.sticker .sw svg{width:74%;height:74%;filter:drop-shadow(0 2px 2px rgba(61,39,72,.22))}
-.tile.eraser .sw{background:#fff}
+.tile.eraser .sw{background:#eef3fb}
 .tile.eraser .sw svg{width:80%;height:80%}
 .tile.eraser:disabled{opacity:.4}
 .actions{display:flex;gap:10px;flex-wrap:wrap}
@@ -2135,7 +2135,7 @@ function lipsSVG(o){
   const defs=o.rainbow?`<defs><linearGradient id="lipsRb" x1="17" x2="47" gradientUnits="userSpaceOnUse">${RAINBOW.map((k,i,a)=>`<stop offset="${i/(a.length-1)}" stop-color="${k}"/>`).join('')}</linearGradient></defs>`:'';
   return sv(`${defs}<ellipse cx="32" cy="32" rx="25" ry="19" fill="#ffe3ea"/><path d="M17 30q15 14 30 0" stroke="${c}" stroke-width="${w}" fill="none" stroke-linecap="round"/>${o.glitter?'<circle cx="26" cy="35" r="1.4" fill="#fff"/><circle cx="36" cy="36" r="1.2" fill="#fff3a0"/><circle cx="31" cy="37" r="1" fill="#fff"/>':''}${o.c?'<path d="M24 33q8 5 16 0" stroke="#fff" stroke-width="1.6" fill="none" opacity=".6" stroke-linecap="round"/>':''}`);
 }
-const ERASER_SVG=`<svg viewBox="0 0 100 100" aria-hidden="true"><g transform="rotate(-16 50 50)" stroke="#3d2748" stroke-width="4.5" stroke-linejoin="round"><path d="M24 34h60l-6 12H18z" fill="#fffaf0"/><path d="M84 34v26q0 4-3 7l-3 4V46z" fill="#e3cfa2"/><path d="M18 46h60v25H27q-9 0-9-9z" fill="#f6ead0"/><path d="M30 40h34" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".9"/><path d="M24 53h4M36 58h3M50 52h3M62 61h3M30 65h3" stroke="#e3cfa2" stroke-width="3" stroke-linecap="round"/></g><path d="M14 84q3-4 7 0t7 0" fill="none" stroke="#3d2748" stroke-width="8" stroke-linecap="round"/><path d="M14 84q3-4 7 0t7 0" fill="none" stroke="#f1e2c0" stroke-width="3.6" stroke-linecap="round"/><path d="M34 90q3-3 6 0" fill="none" stroke="#3d2748" stroke-width="8" stroke-linecap="round"/><path d="M34 90q3-3 6 0" fill="none" stroke="#f1e2c0" stroke-width="3.6" stroke-linecap="round"/><path d="M74 86q3-3 6 0t6 0" fill="none" stroke="#3d2748" stroke-width="8" stroke-linecap="round"/><path d="M74 86q3-3 6 0t6 0" fill="none" stroke="#f1e2c0" stroke-width="3.6" stroke-linecap="round"/><path d="M84 12l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z" fill="#ffd447" stroke="#3d2748" stroke-width="2" stroke-linejoin="round"/></svg>`;
+const ERASER_SVG=`<svg viewBox="0 0 100 100" aria-hidden="true"><path d="M8 80q8-10 16 0t16 0" fill="none" stroke="#9a93a6" stroke-width="5" stroke-linecap="round"/><path d="M44 80q4-5 8-2" fill="none" stroke="#c9c3d1" stroke-width="5" stroke-linecap="round" stroke-dasharray="2 6"/><g transform="rotate(-32 56 42)" stroke="#3d2748" stroke-width="4.5" stroke-linejoin="round"><path d="M22 28h58a6 6 0 0 1 6 6v20a6 6 0 0 1-6 6H22q-8 0-8-8V36q0-8 8-8z" fill="#ffffff"/><path d="M48 25h30a6 6 0 0 1 6 6v26a6 6 0 0 1-6 6H48z" fill="#5f9de8"/><path d="M48 36h36M48 52h36" stroke="#ffffff" stroke-width="3.5"/><path d="M22 34q-3 0-3 4" fill="none" stroke="#e6e1ea" stroke-width="3" stroke-linecap="round"/></g><path d="M60 84q3-3 6 0" fill="none" stroke="#3d2748" stroke-width="7" stroke-linecap="round"/><path d="M60 84q3-3 6 0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><path d="M74 90q3-3 6 0t6 0" fill="none" stroke="#3d2748" stroke-width="7" stroke-linecap="round"/><path d="M74 90q3-3 6 0t6 0" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/><path d="M86 8l2.4 5.6 5.6 2.4-5.6 2.4-2.4 5.6-2.4-5.6-5.6-2.4 5.6-2.4z" fill="#ffd447" stroke="#3d2748" stroke-width="2" stroke-linejoin="round"/></svg>`;
 function stickerSVG(def,mode){
   const all=def.L.map(l=>l[0]).join(' ');
   if(mode==='tatuaje')return `<svg viewBox="-6 -6 112 112" aria-hidden="true"><g opacity=".82">${def.L.map(([d,f,o={}])=>o.line===false?`<path d="${d}" fill="${f}"/>`:o.line?`<path d="${o.line}" fill="none" stroke="#3a2a52" stroke-width="6.8" stroke-linejoin="round"/><path d="${d}" fill="${f}"/>`:`<path d="${d}" fill="${f}" stroke="#3a2a52" stroke-width="6.8" stroke-linejoin="round" paint-order="stroke"/>`).join('')}</g></svg>`;
