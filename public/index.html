@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
 <style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
 <title>Unicornia: viste y maquilla a tu unicornio</title>
 <meta name="description" content="Unicornia es un juego para niños: viste, peina y maquilla a un unicornio de plastilina en 3D, ponle accesorios y tómale fotos. Gratis, sin anuncios.">
@@ -1875,11 +1875,21 @@ function love(sc){
   for(let i=0;i<10;i++){const a=-.3+i/9*(Math.PI+.6);floatUp(hp.clone().add(V3(Math.cos(a)*1.15,Math.sin(a)*.9+.25,.6)),i%2?heartTex:sc.tex,.3+Math.random()*.14);}
   burst(hp.clone().add(V3(0,.5,.9)),18,1.4,[sc.c,'#ffffff','#ff9ccc','#fff3a0']);
 }
-document.addEventListener('gesturestart',e=>e.preventDefault());
+/* Fast taps with a second finger on the screen can still pinch-zoom Safari on iPad (it ignores maximum-scale for pinch).
+   While zoomed we stop blocking gestures so it can be pinched back, and after a short pause we snap the page back to 1x. */
+const vv=window.visualViewport,vpMeta=document.querySelector('meta[name=viewport]'),VP=vpMeta.content;
+const pageZoomed=()=>!!vv&&vv.scale>1.01;
+let unzoomT=0;
+function unzoom(){vpMeta.content=VP+',user-scalable=no';setTimeout(()=>{vpMeta.content=VP;},300);}
+function scheduleUnzoom(){clearTimeout(unzoomT);if(pageZoomed())unzoomT=setTimeout(()=>{if(pageZoomed())unzoom();},900);}
+if(vv)vv.addEventListener('resize',scheduleUnzoom);
+document.addEventListener('touchend',e=>{if(!e.touches.length)scheduleUnzoom();},{passive:true});
+document.addEventListener('gesturestart',e=>{if(!pageZoomed())e.preventDefault();});
+document.addEventListener('dblclick',e=>e.preventDefault());
 /* Holding a finger on the unicorn (perfume) must not scroll/bounce the page, zoom, or open the long-press menu.
    Pointer events still fire; only the browser's default touch gestures are cancelled. The options list and the photo gallery keep their own scroll. */
-canvas.addEventListener('touchstart',e=>e.preventDefault(),{passive:false});
-document.addEventListener('touchmove',e=>{if(!e.target.closest('.opts,.gal-grid'))e.preventDefault();},{passive:false});
+canvas.addEventListener('touchstart',e=>{if(!pageZoomed())e.preventDefault();},{passive:false});
+document.addEventListener('touchmove',e=>{if(!pageZoomed()&&!e.target.closest('.opts,.gal-grid'))e.preventDefault();},{passive:false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
 
 function hitTest(cx,cy){
