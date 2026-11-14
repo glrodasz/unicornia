@@ -1887,14 +1887,10 @@ function hitTest(cx,cy){
   const hits=ray.intersectObject(uni,true).filter(h=>!h.object.userData.noPick);if(!hits.length)return null;const f=hits[0];if(f.object.userData.skin)return f;const sk=hits.find(h=>h.object.userData.skin&&h.distance<f.distance+.14);return sk||f;
 }
 let blinkT=-1,nextBlink=2;
-/* Eyeshadow lives on the eyelids, so while the Eyeshadow menu is open the unicorn keeps its eyes half shut to show them off,
-   and closes them almost all the way for a moment after each new colour so the child sees the lids change. */
-let shadowK=0,shadowPeekT=9;
-const SHADOW_HALF=.5,SHADOW_PEEK=.9,SHADOW_PEEK_S=1.4;
-function shadowLidTarget(){
-  if(ui.step!=='unicornio'||ui.cat!=='maquillaje'||ui.sub.maquillaje!=='sombras')return 0;
-  return shadowPeekT<SHADOW_PEEK_S?SHADOW_PEEK:SHADOW_HALF;
-}
+/* Eyeshadow lives on the eyelids, so while the Eyeshadow menu is open the unicorn keeps its eyes half shut to show the colour. */
+let shadowK=0;
+const SHADOW_LID=.5;
+const shadowLidTarget=()=>ui.step==='unicornio'&&ui.cat==='maquillaje'&&ui.sub.maquillaje==='sombras'?SHADOW_LID:0;
 function tap(cx,cy){
   if(ui.step==='pezunas'){pawTap(cx,cy);return;}
   const h=hitTest(cx,cy);if(!h)return;
@@ -1953,7 +1949,7 @@ function frame(now){
   if(coachMode&&!spray&&!drag&&!pawTool){if(performance.now()-coachIdle>3000){showCoach(coachMode);placeCoach();}}else{coachIdle=performance.now();showCoach(null);}
   if(spray){sprayAcc+=dt/.075;if(sprayAcc>=1){sprayAcc=Math.min(sprayAcc-1,1);sprayTick();}}else loveMeter=Math.max(0,loveMeter-dt*4);
   loveCool-=dt;sniffT-=dt;loveT+=dt;happyK=Math.max(0,happyK-dt*(spray?.5:1.1));
-  shadowPeekT+=dt;shadowK+=(shadowLidTarget()-shadowK)*Math.min(1,dt*(reduced?60:7));
+  shadowK+=(shadowLidTarget()-shadowK)*Math.min(1,dt*(reduced?60:7));
   const bliss=loveT<1.7?Math.min(1,loveT*6,(1.7-loveT)*4):0,lidBase=lerp(LID_OPEN,LID_SHUT,Math.max(happyK*.42,bliss*.97,shadowK));
   if(blinkT>=0){blinkT+=dt;const p=blinkT/.22;const s=p<.5?p*2:p<1?2-p*2:0;const a=lerp(lidBase,LID_SHUT,s*s*(3-2*s));for(const e of eyes)e.lid.rotation.x=a;if(p>=1)blinkT=-1;}
   else for(const e of eyes)e.lid.rotation.x=lidBase;
@@ -2411,7 +2407,6 @@ subsEl.addEventListener('click',e=>{const b=e.target.closest('.pill');if(!b)retu
 optsEl.addEventListener('click',e=>{
   const t=e.target.closest('.tile[data-key]');
   if(t){const k=t.dataset.key,id=t.dataset.id;if(state[k]!==id){state[k]=id;apply(k);save();}
-    if(k==='shadow')shadowPeekT=0;
     t.parentElement.querySelectorAll('.tile').forEach(x=>x.setAttribute('aria-pressed',x===t));refreshDeps(k);sfx.pop();squash(.8);
     const target=k==='lashes'||k==='lashColor'||k==='eye'||k==='lens'||k==='shadow'?eyes[1].g:k==='horn'?hornG:k==='earring'||k==='earTop'?ears[1].g:k==='nose'||k==='lips'?muzzleMesh:k==='headAcc'||k==='hair'||k==='mane'?hornG:headMesh;
     const wp=new THREE.Vector3();target.getWorldPosition(wp);burst(wp.add(V3(0,0,.4)),7,.9);return;}
