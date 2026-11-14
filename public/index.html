@@ -2532,8 +2532,8 @@ btnPose.addEventListener('click',()=>{audio();sfx.tab();openPoses(posePop.hidden
 posePop.addEventListener('click',e=>{const b=e.target.closest('[data-pose]');if(!b)return;setPose(b.dataset.pose);openPoses(false);});
 document.addEventListener('pointerdown',e=>{if(!posePop.hidden&&!e.target.closest('#posePop,#btnPose'))openPoses(false);},true);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!posePop.hidden){openPoses(false);btnPose.focus();}});
-// Until she opens the poses once, the button wiggles now and then with a tapping finger (only while no other hint is showing).
-setInterval(()=>{btnPose.classList.toggle('nudge',!posesUsed&&ui.step==='unicornio'&&coach.hidden&&spinEl.hidden&&posePop.hidden&&performance.now()>8000);},500);
+// Until she opens the poses once, the button wiggles now and then with a tapping finger (only while no other hint is showing, and never on tabs with their own coach: perfume, stickers).
+setInterval(()=>{btnPose.classList.toggle('nudge',!posesUsed&&ui.step==='unicornio'&&ui.cat!=='stickers'&&ui.cat!=='perfume'&&$('#hint').hidden&&coach.hidden&&spinEl.hidden&&posePop.hidden&&performance.now()>8000);},500);
 
 let viewing=null,delArmed=0,gridDelArmed=null,gridDelTimer=0;
 function renderGallery(){
