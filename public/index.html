@@ -1916,6 +1916,32 @@ document.addEventListener('dblclick',e=>e.preventDefault());
 canvas.addEventListener('touchstart',e=>{if(!pageZoomed())e.preventDefault();},{passive:false});
 document.addEventListener('touchmove',e=>{if(!pageZoomed()&&!e.target.closest('.opts,.gal-grid'))e.preventDefault();},{passive:false});
 canvas.addEventListener('contextmenu',e=>e.preventDefault());
+/* Small kids press and hold, and their finger wobbles. Browsers only turn a touch into a click when it is short and still:
+   held past the long-press time, or moved ~10 px, the click is silently dropped and the button "does nothing".
+   So for buttons we press on release ourselves: one finger, still on the same button, moved less than PRESS_SLOP.
+   preventDefault on touchend stops the browser's own click, so it never fires twice. The canvas keeps its own gestures. */
+const PRESS_SLOP=30,PRESS_SLOP_SCROLL=20,PRESS_MAX_MS=4000;
+let press=null,eatClick=null;
+const pressGone=(p,t)=>Math.hypot(t.clientX-p.x,t.clientY-p.y)>p.slop;
+document.addEventListener('touchstart',e=>{
+  eatClick=null;
+  const b=e.touches.length===1&&e.target.closest&&e.target.closest('button');
+  press=b&&!b.disabled?{b,x:e.touches[0].clientX,y:e.touches[0].clientY,t0:performance.now(),slop:b.closest('.opts,.gal-grid')?PRESS_SLOP_SCROLL:PRESS_SLOP}:null;
+},{capture:true,passive:true});
+document.addEventListener('touchmove',e=>{if(press&&(e.touches.length>1||pressGone(press,e.touches[0])))press=null;},{capture:true,passive:true});
+document.addEventListener('touchcancel',()=>{press=null;},true);
+document.addEventListener('touchend',e=>{
+  const p=press;press=null;
+  if(!p||e.touches.length||!e.cancelable||pressGone(p,e.changedTouches[0])||performance.now()-p.t0>PRESS_MAX_MS)return;
+  const t=e.changedTouches[0],under=document.elementFromPoint(t.clientX,t.clientY);
+  if(!p.b.isConnected||p.b.disabled||!under||!p.b.contains(under))return;
+  e.preventDefault();eatClick={b:p.b,until:performance.now()+800};p.b.click();
+},{capture:true,passive:false});
+document.addEventListener('click',e=>{
+  if(!eatClick||!e.isTrusted)return;
+  if(performance.now()<eatClick.until&&eatClick.b.contains(e.target)){e.stopImmediatePropagation();e.preventDefault();}
+  eatClick=null;
+},true);
 
 function hitTest(cx,cy){
   const r=canvas.getBoundingClientRect();ndc.set((cx-r.left)/r.width*2-1,-((cy-r.top)/r.height)*2+1);ray.setFromCamera(ndc,camera);
