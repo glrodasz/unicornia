@@ -471,7 +471,7 @@ const EN={
   'Melena corta':'Bob','Menta':'Mint','Morado':'Purple','Moño':'Bun','Muchas':'Lots','Natural':'Natural','Negro':'Black','Noche':'Night',
   'Normal':'Normal','Nube':'Cloud','Nácar':'Pearly','Ojo de gato':'Cat eye','Ondas':'Waves','Oro':'Gold','Pastel':'Pastel','Perla':'Pearl',
   'Perlas':'Pearls','Plata':'Silver','Pocas':'A few','Primarios':'Primary','Punk':'Punk','Puntas':'Spiky','Purpurina':'Glitter','Rayo':'Lightning',
-  'Redondas':'Round','Rizos':'Curls','Rojo':'Red','Rosa':'Pink','Rubí':'Ruby','Suelto':'Loose','Tiara':'Tiara','Trenza':'Braid','Tres aros':'Three hoops',
+  'Redondas':'Round','Rizos':'Curls','Rojo':'Red','Rosa':'Pink','Rubí':'Ruby','Suelto':'Loose','Tiara':'Tiara','Diadema':'Headband','Gorrito':'Party hat','Antenitas':'Boppers','Mariposas':'Butterflies','Estrellitas':'Star clips','Dos lazos':'Two bows','Aureola':'Halo','Trenza':'Braid','Tres aros':'Three hoops',
   'Turquesa':'Turquoise','Vainilla':'Vanilla','Verde':'Green','Violeta':'Violet','Ámbar':'Amber',
   'Sol':'Sun','Gatito':'Kitty','Pastelito':'Cupcake','Dona':'Donut','Sandía':'Watermelon','Cerezas':'Cherries','Mariquita':'Ladybug',
   'Globo':'Balloon','Corona':'Crown','Pececito':'Fishy','Planeta':'Planet','Huellita':'Paw','Alitas':'Wings','Cometa':'Comet',
@@ -632,7 +632,8 @@ const EARRING=[{id:'ninguno',name:'Sin'},{id:'aro-oro',name:'Aro oro'},{id:'aro-
 const EAR_TOP=[{id:'ninguno',name:'Sin'},{id:'aros',name:'Dos aros'},{id:'brillos',name:'Brillitos'},{id:'perlas',name:'Perlas'},{id:'estrella',name:'Estrella'},{id:'corazon',name:'Corazón'},{id:'flor',name:'Florecita'}];
 const NOSE=[{id:'ninguno',name:'Sin'},{id:'aro-oro',name:'Aro oro'},{id:'aro-plata',name:'Aro plata'},{id:'brillo',name:'Brillante'},{id:'estrella',name:'Estrella'}];
 const GLASSES=[{id:'ninguna',name:'Sin'},{id:'redondas',name:'Redondas'},{id:'corazon',name:'Corazón'},{id:'estrella',name:'Estrella'},{id:'sol',name:'De sol'},{id:'gato',name:'Ojo de gato'},{id:'arcoiris',name:'Arcoíris'},{id:'flor',name:'Flor'},{id:'cuadradas',name:'Cuadradas'}];
-const HEADACC=[{id:'ninguno',name:'Sin'},{id:'lazo',name:'Lazo'},{id:'flores',name:'Flores'},{id:'tiara',name:'Tiara'},{id:'flor',name:'Flor'}];
+const HEADACC=[{id:'ninguno',name:'Sin'},{id:'lazo',name:'Lazo'},{id:'flores',name:'Flores'},{id:'tiara',name:'Tiara'},{id:'flor',name:'Flor'},
+  {id:'diadema',name:'Diadema'},{id:'corona',name:'Corona'},{id:'gorrito',name:'Gorrito'},{id:'antenitas',name:'Antenitas'},{id:'mariposas',name:'Mariposas'},{id:'estrellitas',name:'Estrellitas'},{id:'monos',name:'Dos lazos'},{id:'aureola',name:'Aureola'},{id:'perlas',name:'Perlas'}];
 const byId=(arr,id)=>arr.find(o=>o.id===id)||arr[0];
 const NONE=new Set(['ninguna','ninguno']);
 const SIZES={s:.24,m:.38,l:.56};
@@ -1431,8 +1432,50 @@ function smoothLifts(L,w){
   const mx=L.map((_,i)=>Math.max(...L.slice(Math.max(0,i-w),i+w+1)));
   return mx.map((_,i)=>{const s=mx.slice(Math.max(0,i-w),i+w+1);return s.reduce((a,b)=>a+b,0)/s.length;});
 }
+/* A headband over the crown: P/N/F per sample (F = toward the face), lifted over the hair like the tiara.
+   offs are the sideways offsets the band covers, so a wide band clears the hair under every stripe. */
+function llOf(q){const u=V3(q.x/RX,q.y/RY,q.z/RZ).normalize();return{lon:Math.atan2(u.x,u.z)/D2R,lat:Math.asin(clamp(u.y,-1,1))/D2R};}
+function headband(tLat,L0,offs,minH,gap){
+  const n=24,lons=[],P=[],N=[],F=[];
+  for(let i=0;i<=n;i++){const lon=-L0+i*2*L0/n;lons.push(lon);P.push(surf(lon,tLat(lon)));N.push(surfN(lon,tLat(lon)));}
+  for(let i=0;i<=n;i++){const t=P[Math.min(n,i+1)].clone().sub(P[Math.max(0,i-1)]);F.push(new THREE.Vector3().crossVectors(t,N[i]).normalize());}
+  const ll=(i,o)=>llOf(P[i].clone().addScaledVector(F[i],o));
+  const raw=lons.map((_,i)=>i%2?0:Math.max(...offs.map(o=>{const{lon,lat}=ll(i,o);return hairLift(lon,lat);})));
+  for(let i=1;i<n;i+=2)raw[i]=(raw[i-1]+raw[i+1])/2;
+  const S=smoothLifts(raw,2),H=S.map((h,i)=>Math.max(minH,Math.max(h,S[n-i])+gap));
+  return{n,lons,N,F,H,pt:(i,o,dh)=>{const{lon,lat}=ll(i,o||0);return surf(lon,lat,H[i]+(dh||0));}};
+}
+function bow(mat,s,dots){
+  const g=new THREE.Group();
+  for(const sg of[-1,1]){g.add(blob(mat,V3(.17*sg*s,.02*s,0),V3(.19*s,.13*s,.08*s),new THREE.Quaternion().setFromAxisAngle(V3(0,0,1),-.32*sg)));
+    g.add(blob(mat,V3(.06*sg*s,-.12*s,.01*s),V3(.05*s,.13*s,.035*s),new THREE.Quaternion().setFromAxisAngle(V3(0,0,1),.45*sg)));
+    if(dots)[[.13,.07],[.24,.0],[.15,-.04],[.27,.08]].forEach(([x,y])=>g.add(blob(dots,V3(x*sg*s,y*s,.07*s),V3(.026*s,.026*s,.012*s))));}
+  g.add(blob(mat,V3(0,0,.03*s),V3(.07*s,.07*s,.06*s)));return g;
+}
+function butterfly(c,s){
+  const g=new THREE.Group(),wm=jellyMat(c),spot=clay('#ffffff',{roughness:.4}),body=clay('#4b3a6b',{roughness:.5});
+  for(const sg of[-1,1]){
+    const w=new THREE.Group();w.rotation.y=-.45*sg;g.add(w);
+    w.add(blob(wm,V3(.1*sg*s,.05*s,0),V3(.11*s,.085*s,.014*s),new THREE.Quaternion().setFromAxisAngle(V3(0,0,1),.5*sg)));
+    w.add(blob(wm,V3(.075*sg*s,-.06*s,0),V3(.07*s,.055*s,.014*s),new THREE.Quaternion().setFromAxisAngle(V3(0,0,1),-.55*sg)));
+    w.add(blob(spot,V3(.12*sg*s,.07*s,.012*s),V3(.025*s,.025*s,.008*s)));
+    const an=new THREE.Mesh(new THREE.TubeGeometry(new THREE.QuadraticBezierCurve3(V3(0,.07*s,.01*s),V3(.02*sg*s,.14*s,.03*s),V3(.05*sg*s,.16*s,.02*s)),8,.006*s,6,false),body);g.add(an);
+    g.add(blob(body,V3(.05*sg*s,.16*s,.02*s),V3(.014*s,.014*s,.014*s)));
+  }
+  g.add(blob(body,V3(0,0,.01*s),V3(.022*s,.09*s,.022*s)));return g;
+}
+let partyTex=null;
+function partyHatTex(){
+  if(partyTex)return partyTex;
+  const c=document.createElement('canvas');c.width=c.height=256;const x=c.getContext('2d');x.fillStyle='#ff7ab8';x.fillRect(0,0,256,256);
+  x.fillStyle='#ffd447';for(let k=-4;k<8;k++){x.beginPath();x.moveTo(k*64,256);x.lineTo(k*64+28,256);x.lineTo(k*64+28+128,0);x.lineTo(k*64+128,0);x.fill();}
+  x.fillStyle='#ffffff';for(let i=0;i<14;i++){x.beginPath();x.arc((i*73)%256,(i*41+20)%256,6,0,TAU);x.fill();}
+  partyTex=canvasTex(c);partyTex.wrapS=partyTex.wrapT=THREE.RepeatWrapping;return partyTex;
+}
+/* little per-frame motions of the head accessory (halo spin, bobbing antennae); cleared on every rebuild */
+const accAnim=[];
 function buildHeadAcc(){
-  const G=accG.head;disposeGroup(G);const id=state.headAcc;if(NONE.has(id))return;
+  const G=accG.head;disposeGroup(G);accAnim.length=0;const id=state.headAcc;if(NONE.has(id))return;
   headG.updateWorldMatrix(true,true);
   if(id==='lazo'){
     const m=byId(MANE,state.mane),col=(m.id==='rosa'||m.id==='fucsia')?'#7cc4f4':'#ff4f8b';const mat=clay(col,{roughness:.45,sheen:.9,clearcoat:.3});
@@ -1458,6 +1501,61 @@ function buildHeadAcc(){
   }else if(id==='flor'){
     const lon=-60,lat=42,h=patchLift(lon,lat,12);flower(G,surf(lon,lat,Math.max(.14,h+.08)),surfN(lon,lat).lerp(V3(0,0,1),.3).normalize(),.26,'#ff8fc8','#ffd447');
     flower(G,surf(lon-18,lat-10,Math.max(.12,patchLift(lon-18,lat-10,8)+.06)),surfN(lon-18,lat-10),.14,'#ffffff','#ff8fc8');
+  }else if(id==='diadema'){
+    const offs=RAINBOW.map((_,k)=>(k-2.5)*.064),B=headband(lon=>80-.0068*lon*lon,52,offs,.12,.05);
+    RAINBOW.forEach((c,k)=>{const pts=[];for(let i=0;i<=B.n;i++)pts.push(B.pt(i,offs[5-k]));G.add(new THREE.Mesh(tube(pts,[.035,.035],{seg:60,rad:10,flat:1,c0:.015,c1:.015}),clay(c,{roughness:.42,sheen:.9,clearcoat:.35})));});
+    const cloud=clay('#ffffff',{roughness:.55,sheen:1});
+    for(const i of[0,B.n]){const o=B.pt(i,0,.03),n=B.N[i],f=B.F[i],up=V3(0,1,0);
+      [[0,0,0,.13],[.09,.06,.02,.1],[-.09,.05,.02,.1],[0,-.08,.03,.09]].forEach(([a,b,c2,r])=>G.add(blob(cloud,o.clone().addScaledVector(f,a).addScaledVector(up,b).addScaledVector(n,c2),V3(r,r*.85,r*.8))));}
+  }else if(id==='perlas'){
+    const B=headband(lon=>76-.0058*lon*lon,60,[0],.1,.04),curve=new THREE.CatmullRomCurve3(Array.from({length:B.n+1},(_,i)=>B.pt(i,0,0)));
+    for(let k=0;k<=34;k++){const t=k/34,r=k%2?.032:.052;G.add(blob(k%2?MAT.gold:MAT.pearl,curve.getPointAt(t),V3(r,r,r)));}
+  }else if(id==='antenitas'){
+    const B=headband(lon=>76-.0058*lon*lon,60,[-.02,.02],.1,.035),pts=[];for(let i=0;i<=B.n;i++)pts.push(B.pt(i,0));
+    const pink=clay('#ff6fae',{roughness:.4,sheen:.9,clearcoat:.4});G.add(new THREE.Mesh(tube(pts,[.034,.034],{seg:60,rad:10,flat:1,c0:.02,c1:.02}),pink));
+    for(const [i,sg] of[[7,-1],[17,1]]){
+      const base=B.pt(i,0,.02),up=B.N[i].clone().multiplyScalar(.45).add(V3(.28*sg,.8,.1)).normalize(),side=new THREE.Vector3().crossVectors(up,V3(0,0,1)).normalize(),fw=new THREE.Vector3().crossVectors(side,up);
+      const L=.42,coil=[];for(let k=0;k<=90;k++){const t=k/90,a=t*TAU*6,r=.032*(1-t*.3);coil.push(base.clone().addScaledVector(up,t*L).addScaledVector(side,Math.cos(a)*r).addScaledVector(fw,Math.sin(a)*r));}
+      G.add(new THREE.Mesh(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(coil),180,.009,6,false),MAT.silver));
+      const piv=new THREE.Group();piv.position.copy(base.clone().addScaledVector(up,L));G.add(piv);
+      const h=new THREE.Mesh(extrude(heartShape(.11),.045,.02),jellyMat(sg<0?'#ff4f8b':'#b77cff'));h.position.copy(up.clone().multiplyScalar(.09));h.lookAt(h.position.clone().add(V3(0,0,1)));piv.add(h);
+      piv.add(blob(MAT.silver,V3(0,0,0),V3(.02,.02,.02)));
+      const ph=sg*1.3;accAnim.push((dt,t)=>{piv.rotation.z=Math.sin(t*3.1+ph)*.12;piv.rotation.x=Math.sin(t*2.3+ph)*.08;});
+    }
+  }else if(id==='corona'){
+    const cg=new THREE.Group();cg.position.copy(hornG.position);cg.quaternion.copy(hornG.quaternion);G.add(cg);
+    const y0=.13,ring=new THREE.Mesh(new THREE.CylinderGeometry(.225,.235,.1,48,1,true),metal('#eaa833',{roughness:.3,side:THREE.DoubleSide}));ring.position.y=y0;cg.add(ring);
+    for(const [y,r] of[[y0-.05,.236],[y0+.05,.226]]){const t=hoop(MAT.gold,r,.016);t.rotation.x=Math.PI/2;t.position.y=y;cg.add(t);}
+    const gems=['#ff4f8b','#5cd0ff','#b77cff','#5ee0a0','#ffd447','#ff8a5c'];
+    for(let k=0;k<6;k++){const a=k/6*TAU+Math.PI/6,dx=Math.sin(a),dz=Math.cos(a);
+      const c=new THREE.Mesh(new THREE.ConeGeometry(.045,.13,12),MAT.gold);c.position.set(dx*.226,y0+.05+.06,dz*.226);cg.add(c);
+      cg.add(blob(jellyMat(gems[k]),V3(dx*.226,y0+.05+.135,dz*.226),V3(.026,.026,.026)));
+      cg.add(blob(jellyMat(gems[(k+3)%6]),V3(dx*.245,y0,dz*.245),V3(.028,.028,.014),new THREE.Quaternion().setFromUnitVectors(V3(0,0,1),V3(dx,0,dz))));}
+  }else if(id==='aureola'){
+    const cg=new THREE.Group();cg.position.copy(hornG.position);cg.quaternion.copy(hornG.quaternion);G.add(cg);
+    const spin=new THREE.Group();spin.position.y=.72;cg.add(spin);
+    const cols=['#ffd447','#ff8fc8','#8fd9ff','#ffd447','#c9a7ff','#ffffff','#ffd447'];
+    const halo=hoop(gloss('#fff3b0',{emissive:new THREE.Color('#ffe27a'),emissiveIntensity:.35}),.42,.01);halo.rotation.x=Math.PI/2;spin.add(halo);
+    for(let k=0;k<7;k++){const a=k/7*TAU,m=new THREE.Mesh(extrude(starShape(.12,.054),.03,.014),k%3?jellyMat(cols[k]):MAT.gold);
+      m.position.set(Math.sin(a)*.42,Math.sin(a*2)*.03,Math.cos(a)*.42);m.rotation.y=a;spin.add(m);}
+    for(let k=0;k<14;k++){const a=(k+.5)/14*TAU;spin.add(blob(gloss('#ffffff',{emissive:new THREE.Color('#fff3b0'),emissiveIntensity:.6}),V3(Math.sin(a)*.42,Math.cos(a*3)*.02,Math.cos(a)*.42),V3(.018,.018,.018)));}
+    accAnim.push((dt,t)=>{spin.rotation.y+=dt*.5;spin.position.y=.72+Math.sin(t*1.4)*.015;});
+  }else if(id==='gorrito'){
+    const lon=36,lat=62,h=patchLift(lon,lat,10),n=surfN(lon,lat),up=n.clone().lerp(V3(0,1,0),.35).normalize();
+    const g=new THREE.Group();g.position.copy(surf(lon,lat,Math.max(.06,h+.02)));g.quaternion.copy(quatYZ(up,V3(0,0,1)));g.scale.setScalar(1.35);G.add(g);
+    const cone=new THREE.Mesh(new THREE.ConeGeometry(.19,.44,40,1,true),clay('#ffffff',{map:partyHatTex(),roughness:.5,side:THREE.DoubleSide}));cone.position.y=.22;g.add(cone);
+    const fr=clay('#ffffff',{roughness:.6,sheen:1});for(let k=0;k<16;k++){const a=k/16*TAU;g.add(blob(fr,V3(Math.sin(a)*.19,.01,Math.cos(a)*.19),V3(.045,.035,.045)));}
+    const pom=clay('#ffd447',{roughness:.65,sheen:1});[[0,0,0,.065],[.03,.02,.02,.045],[-.03,.025,-.01,.045],[0,.04,-.03,.04]].forEach(([x,y,z,r])=>g.add(blob(pom,V3(x,.46+y,z),V3(r,r,r))));
+  }else if(id==='mariposas'){
+    [[-56,40,.95,'#b77cff'],[-36,60,.75,'#5cc6ff'],[54,46,.85,'#ff7ab8']].forEach(([lon,lat,s,c])=>{const n=surfN(lon,lat),b=butterfly(c,s*2),face=n.clone().lerp(V3(0,0,1),.6).normalize();
+      b.position.copy(surf(lon,lat,Math.max(.08,patchLift(lon,lat,8)+.05)));b.quaternion.copy(quatYZ(V3(0,1,0),face));b.rotateZ(-Math.sign(lon)*.35);G.add(b);});
+  }else if(id==='estrellitas'){
+    [[-36,62,.15,MAT.gold],[-50,49,.13,jellyMat('#ff6fae')],[-61,35,.115,jellyMat('#5cc6ff')]].forEach(([lon,lat,s,mat])=>{const n=surfN(lon,lat);
+      const m=new THREE.Mesh(extrude(starShape(s,s*.46),.03,.014),mat);m.position.copy(surf(lon,lat,Math.max(.07,patchLift(lon,lat,7)+.035)));m.lookAt(m.position.clone().add(n.clone().lerp(V3(0,0,1),.55)));m.rotateZ(.25);G.add(m);});
+  }else if(id==='monos'){
+    const mat=clay('#b48cf2',{roughness:.45,sheen:.9,clearcoat:.3}),dots=clay('#ffffff',{roughness:.4});
+    for(const sg of[-1,1]){const lon=48*sg,lat=60,n=surfN(lon,lat),g=bow(mat,1,dots);
+      g.position.copy(surf(lon,lat,Math.max(.1,patchLift(lon,lat,10)+.05)));g.quaternion.copy(quatYZ(V3(0,1,0),V3(0,0,1).lerp(n,.3)));g.rotateZ(-.25*sg);G.add(g);}
   }
   shadowAll(G);
 }
@@ -2019,6 +2117,7 @@ function frame(now){
   for(const f of floaters){if(!f.m.visible)continue;f.life-=dt;if(f.life<=0){f.m.visible=false;continue;}const k=1-f.life/f.max;
     f.m.position.addScaledVector(f.v,dt);f.m.position.x+=Math.sin(k*7+f.ph)*.006;f.m.scale.setScalar(f.size*(k<.12?k/.12*1.2:k<.2?1.2-(k-.12)/.08*.2:1));f.m.material.opacity=k>.72?(1-k)/.28:1;}
   pawsTick(dt,t);poseTick(dt,t);
+  if(!reduced)for(const f of accAnim)f(dt,t);
   backdropMat.color.lerp(backdropTarget,Math.min(1,dt*3));
   if(!reduced)propItems.forEach((p,i)=>{p.o.position.y+=Math.sin(t*1.1+p.ph)*.0018;p.o.rotation.z=Math.sin(t*.8+p.ph)*.12;p.o.rotation.y=Math.sin(t*.5+p.ph)*.3;});
   for(const p of parts){if(!p.m.visible)continue;p.life-=dt*1.5;if(p.life<=0){p.m.visible=false;continue;}p.m.position.addScaledVector(p.v,dt);p.v.multiplyScalar(1-dt*2.2);p.v.y-=dt*.6;p.m.rotation.z+=p.spin*dt;p.m.material.opacity=Math.min(1,p.life*2);const s=p.m.scale.x;p.m.scale.setScalar(Math.max(.01,s*(1-dt*.6)));}
@@ -2149,6 +2248,18 @@ function headSVG(id){
   if(id==='flores')return sv(`<path d="M8 44Q32 24 56 44" stroke="#7bd389" stroke-width="3" fill="none" stroke-linecap="round"/>`+flowerS(14,38,.16,'#ff8fc8')+flowerS(32,30,.18,'#c9a7ff')+flowerS(50,38,.16,'#8fd9ff'));
   if(id==='tiara')return sv(`<path d="M8 46 12 26l9 10 11-18 11 18 9-10 4 20z" fill="#e3e7ef" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="32" cy="18" r="4" fill="#ff5d9e" stroke="${INK}" stroke-width="1.6"/><circle cx="12" cy="26" r="3" fill="#ff5d9e"/><circle cx="52" cy="26" r="3" fill="#ff5d9e"/>`+tr(HEART,32,38,.12,'#ff5d9e'));
   if(id==='flor')return sv(flowerS(30,32,.4,'#ff8fc8')+flowerS(48,46,.2,'#ffffff'));
+  const cloudS=(x,y)=>{const c=[[x-4,y+1,4.2],[x+1,y-2,5],[x+5,y+1.5,4]];return c.map(([a,b,r])=>`<circle cx="${a}" cy="${b}" r="${r}" fill="${INK}" stroke="${INK}" stroke-width="3.6"/>`).join('')+c.map(([a,b,r])=>`<circle cx="${a}" cy="${b}" r="${r}" fill="#fff"/>`).join('');};
+  const bowS=(x,y,s,c)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0-16-9c-2.5-1.5-5 0-5 2.5v14c0 2.5 2.5 4 5 2.5L0 1zM0 0l16-9c2.5-1.5 5 0 5 2.5v14c0 2.5-2.5 4-5 2.5L0 1z" fill="${c}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-13" cy="-1" r="1.8" fill="#fff"/><circle cx="-8" cy="4" r="1.5" fill="#fff"/><circle cx="13" cy="-1" r="1.8" fill="#fff"/><circle cx="8" cy="4" r="1.5" fill="#fff"/><rect x="-4" y="-5" width="8" height="10" rx="3" fill="${c}" stroke="${INK}" stroke-width="2"/></g>`;
+  const flyS=(x,y,s,c,r)=>`<g transform="translate(${x} ${y}) rotate(${r||0}) scale(${s})"><path d="M0-2C-6-14-20-16-20-6c0 6 8 8 20 6zM0-2C6-14 20-16 20-6c0 6-8 8-20 6zM0 2c-5 2-14 4-12 11 2 5 9 1 12-11zM0 2c5 2 14 4 12 11-2 5-9 1-12-11z" fill="${c}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-12" cy="-7" r="2.4" fill="#fff"/><circle cx="12" cy="-7" r="2.4" fill="#fff"/><path d="M0-10v20" stroke="${INK}" stroke-width="3.6" stroke-linecap="round"/><path d="M-1-10q-3-6-6-7M1-10q3-6 6-7" stroke="${INK}" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>`;
+  if(id==='diadema')return sv([...RAINBOW].map((c,i)=>`<path d="M${9+i*3.8} 46a${23-i*3.8} ${23-i*3.8} 0 0 1 ${46-i*7.6} 0" stroke="${c}" stroke-width="4" fill="none"/>`).join('')+cloudS(10,47)+cloudS(53,47));
+  if(id==='corona')return sv(`<path d="M12 44 8 20l12 11 12-17 12 17 12-11-4 24z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><rect x="11" y="42" width="42" height="9" rx="3" fill="#eaa833" stroke="${INK}" stroke-width="2"/><circle cx="8" cy="19" r="3.2" fill="#5cd0ff" stroke="${INK}" stroke-width="1.5"/><circle cx="32" cy="13" r="3.6" fill="#ff4f8b" stroke="${INK}" stroke-width="1.5"/><circle cx="56" cy="19" r="3.2" fill="#b77cff" stroke="${INK}" stroke-width="1.5"/><circle cx="21" cy="46.5" r="2.6" fill="#5ee0a0"/><circle cx="32" cy="46.5" r="2.6" fill="#ff4f8b"/><circle cx="43" cy="46.5" r="2.6" fill="#5cd0ff"/>`);
+  if(id==='gorrito')return sv(`<defs><clipPath id="hatClip"><path d="M33 12 47 49H17z"/></clipPath></defs><path d="M33 12 47 49H17z" fill="#ff7ab8"/><g clip-path="url(#hatClip)" fill="#ffd447"><path d="M10 40l40-16v6L10 46zM10 26l40-16v6L10 32z"/></g><circle cx="27" cy="36" r="1.6" fill="#fff"/><circle cx="37" cy="24" r="1.6" fill="#fff"/><circle cx="39" cy="42" r="1.6" fill="#fff"/><path d="M33 12 47 49H17z" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="33" cy="10" r="5.5" fill="#ffd447" stroke="${INK}" stroke-width="2"/>`+[17,23,29,35,41,47].map(x=>`<circle cx="${x}" cy="50" r="3.6" fill="#fff" stroke="${INK}" stroke-width="1.5"/>`).join(''));
+  if(id==='antenitas')return sv(`<path d="M8 56Q32 32 56 56" stroke="${INK}" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M8 56Q32 32 56 56" stroke="#ff6fae" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M22 44l-4-3 5-3-5-3 5-3-5-3 5-3-4-3M42 44l4-3-5-3 5-3-5-3 5-3-5-3 4-3" stroke="#9aa3b5" stroke-width="2" fill="none" stroke-linejoin="round"/>`+tr(HEART,16,15,.2,'#ff4f8b',`stroke="${INK}" stroke-width="9"`)+tr(HEART,48,15,.2,'#b77cff',`stroke="${INK}" stroke-width="9"`));
+  if(id==='mariposas')return sv(flyS(22,26,.8,'#b77cff',-15)+flyS(44,40,.7,'#ff7ab8',12)+flyS(46,14,.45,'#5cc6ff',20));
+  if(id==='estrellitas')return sv(tr(STAR,20,20,.22,'#ffd447',`stroke="${INK}" stroke-width="7" stroke-linejoin="round"`)+tr(STAR,36,34,.19,'#ff6fae',`stroke="${INK}" stroke-width="8" stroke-linejoin="round"`)+tr(STAR,48,50,.16,'#5cc6ff',`stroke="${INK}" stroke-width="9" stroke-linejoin="round"`));
+  if(id==='monos')return sv(bowS(17,32,.62,'#b48cf2')+bowS(47,32,.62,'#b48cf2'));
+  if(id==='aureola')return sv(`<path d="M8 36a24 9 0 0 1 48 0" fill="none" stroke="#e8b53a" stroke-width="2.4"/><path d="M27 58 32 8l5 50z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><path d="M8 36a24 9 0 0 0 48 0" fill="none" stroke="#e8b53a" stroke-width="2.4"/>`+tr(STAR,10,37,.13,'#ffd447',`stroke="${INK}" stroke-width="10" stroke-linejoin="round"`)+tr(STAR,54,37,.13,'#ff8fc8',`stroke="${INK}" stroke-width="10" stroke-linejoin="round"`)+tr(STAR,22,44,.14,'#8fd9ff',`stroke="${INK}" stroke-width="10" stroke-linejoin="round"`)+tr(STAR,43,44,.14,'#c9a7ff',`stroke="${INK}" stroke-width="10" stroke-linejoin="round"`));
+  if(id==='perlas')return sv(Array.from({length:13},(_,i)=>{const a=Math.PI*(1-i/12),x=32+Math.cos(a)*24,y=50-Math.sin(a)*24,r=i%2?2.4:4;return `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r}" fill="${i%2?'#eaa833':'#fffaf4'}" stroke="${i%2?'#b07a1c':'#c9b7ae'}" stroke-width="1.2"/>`;}).join('')+`<circle cx="30" cy="27" r="1.2" fill="#fff"/>`);
   return NONE_SVG;
 }
 function lipsSVG(o){
