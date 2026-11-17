@@ -2321,7 +2321,7 @@ function setStep(id,quiet){
   if(!STEPS.some(s=>s.id===id))id='unicornio';
   if(spray)stopSpray();if(pawTool)pawToolEnd();
   ui.step=id;const paw=id==='pezunas';uni.visible=!paw;pawsG.visible=paw;
-  if(paw&&!pawDone.recortar())ui.pcat='recortar'; // a unicorn whose hairs aren't trimmed yet always starts at sub-step 1
+  if(paw){const todo=PAW_CATS.find(c=>!pawDone[c.id]());if(todo)ui.pcat=todo.id;} // always land on the first sub-step this unicorn still needs; once all are done, keep the last one visited
   if(paw)poseReset();btnPose.hidden=paw;openPoses(false);
   tYaw=tPitch=0;hintSeen=false;coachIdle=performance.now();showCoach(null);
   stepsEl.querySelectorAll('.step').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.step===id)));
@@ -2491,7 +2491,7 @@ let resetArmed=0;
 function paintReset(){btnReset.classList.toggle('confirm',!!resetArmed);btnReset.innerHTML=ICON.reset+(resetArmed?`<span>${i18n('¿Empezar de nuevo?')}</span>`:'');btnReset.setAttribute('aria-label',i18n(resetArmed?'Toca otra vez para empezar de nuevo':'Empezar de nuevo'));}
 btnReset.addEventListener('click',()=>{
   if(!resetArmed){resetArmed=1;paintReset();setTimeout(()=>{resetArmed=0;paintReset();},3000);sfx.tab();return;}
-  resetArmed=0;state=JSON.parse(JSON.stringify(DEFAULT));applyAll();save();renderCats();renderOpts();paintReset();sfx.magic();squash(1.3);tYaw=0;tPitch=0;burst(V3(0,.4,.9),24,1.6);
+  resetArmed=0;state=JSON.parse(JSON.stringify(DEFAULT));applyAll();save();if(ui.step==='pezunas'){if(pawTool)pawToolEnd();ui.pcat='recortar';saveUI();hintSeen=false;updateHint();}renderCats();renderOpts();paintReset();sfx.magic();squash(1.3);tYaw=0;tPitch=0;burst(V3(0,.4,.9),24,1.6);
 });
 $('#btnWand').addEventListener('click',()=>{
   const r=(arr,noneP)=>{const o=arr.filter(x=>!NONE.has(x.id));return Math.random()<(noneP||0)?arr[0].id:pick(o).id;};
