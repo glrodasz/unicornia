@@ -2637,7 +2637,11 @@ $('#btnWand').addEventListener('click',()=>{
   applyAll();save();renderOpts();sfx.magic();squash(1.3);burst(V3(0,.5,.9),26,1.7);
 });
 const fsEl=document.documentElement;
-if((fsEl.requestFullscreen||fsEl.webkitRequestFullscreen)&&(document.fullscreenEnabled||document.webkitFullscreenEnabled))btnFull.hidden=false;
+/* opened from the home-screen icon: already full screen, so the button would only trigger Safari's fast-typing alert */
+const asApp=navigator.standalone===true||matchMedia('(display-mode: standalone),(display-mode: fullscreen)').matches;
+if(!asApp&&(fsEl.requestFullscreen||fsEl.webkitRequestFullscreen)&&(document.fullscreenEnabled||document.webkitFullscreenEnabled))btnFull.hidden=false;
+/* offline support for the home-screen app (sw.js); skipped on file:// and plain-http previews */
+if('serviceWorker' in navigator&&(location.protocol==='https:'||location.hostname==='localhost'))addEventListener('load',()=>{navigator.serviceWorker.register('/sw.js').catch(()=>{});});
 btnFull.addEventListener('click',()=>{try{if(document.fullscreenElement||document.webkitFullscreenElement){(document.exitFullscreen||document.webkitExitFullscreen).call(document);}else{const p=(fsEl.requestFullscreen||fsEl.webkitRequestFullscreen).call(fsEl);if(p&&p.catch)p.catch(()=>{btnFull.hidden=true;});}}catch(e){btnFull.hidden=true;}});
 
 /* ================= photos ================= */

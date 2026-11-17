@@ -2,6 +2,7 @@
 //   /    -> dist/index.html  the game pinned to English (the default), English SEO/OG tags;
 //           browsers whose first supported language is Spanish are sent to /es before it renders.
 //   /es  -> dist/es.html     the game pinned to Spanish, Spanish SEO/OG tags; never redirects.
+//   site.webmanifest (en) and site.es.webmanifest: home-screen app per language.
 // Link-preview crawlers don't run JS, so every page carries its tags in the HTML itself.
 import { cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
@@ -19,6 +20,8 @@ const COPY = {
     description: 'Unicornia es un juego para niños: viste, peina y maquilla a un unicornio de plastilina en 3D, ponle accesorios y tómale fotos. Gratis, sin anuncios.',
     ogDescription: 'Viste, peina y maquilla a un unicornio de plastilina en 3D. Un juego para niños, gratis y sin anuncios.',
     imageAlt: 'Un unicornio blanco de plastilina con melena arcoíris y cuerno dorado, junto al título Unicornia.',
+    manifest: '/site.es.webmanifest',
+    appDescription: 'Viste y maquilla a tu unicornio de plastilina.',
   },
   en: {
     path: '/',
@@ -28,6 +31,8 @@ const COPY = {
     description: 'Unicornia is a game for kids: dress up, style and do the makeup of a 3D clay unicorn, add accessories and take photos. Free, no ads.',
     ogDescription: 'Dress up, style and do the makeup of a 3D clay unicorn. A game for kids, free and with no ads.',
     imageAlt: 'A white clay unicorn with a rainbow mane and a golden horn, next to the Unicornia title.',
+    manifest: '/site.webmanifest',
+    appDescription: 'Dress up and do the makeup of your clay unicorn.',
   },
 };
 const LANGS = Object.keys(COPY);
@@ -49,6 +54,7 @@ function localize(html, lang) {
     [/<html lang="[^"]*">/, `<html lang="${lang}" data-lang="${lang}">`],
     [/<title>[^<]*<\/title>/, `<title>${esc(c.title)}</title>`],
     meta('name', 'description', c.description),
+    [/<link rel="manifest" href="[^"]*">/, `<link rel="manifest" href="${c.manifest}">`],
     [/<link rel="canonical" href="[^"]*">/, [
       `<link rel="canonical" href="${url}">`,
       ...LANGS.map((l) => `<link rel="alternate" hreflang="${l}" href="${SITE}${COPY[l].path}">`),
@@ -84,5 +90,12 @@ rmSync(OUT, { recursive: true, force: true });
 cpSync(SRC, OUT, { recursive: true });
 writeFileSync(`${OUT}/index.html`, replaceOnce(localize(game, DEFAULT_LANG), /<meta charset="utf-8">/, `<meta charset="utf-8">\n${REDIRECT}`));
 writeFileSync(`${OUT}/es.html`, localize(game, 'es'));
+// One home-screen manifest per language: the icon opens the language it was added from.
+const baseManifest = JSON.parse(readFileSync(`${SRC}/site.webmanifest`, 'utf8'));
+for (const lang of LANGS) {
+  const c = COPY[lang];
+  const manifest = { ...baseManifest, id: c.path, lang, description: c.appDescription, start_url: c.path };
+  writeFileSync(`${OUT}${c.manifest}`, JSON.stringify(manifest, null, 2) + '\n');
+}
 writeFileSync(`${OUT}/_redirects`, ['/es/ /es 301', '/en / 301', '/en/ / 301'].join('\n') + '\n');
 console.log(`build: ${OUT}/ with / (${DEFAULT_LANG}) and /es`);
