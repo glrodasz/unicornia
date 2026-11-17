@@ -2391,13 +2391,19 @@ function renderSubs(){
   subsEl.innerHTML=c.subs.length<2?'':c.subs.map(s=>`<button class="pill" role="tab" data-sub="${s.id}" aria-selected="${ui.sub[c.id]===s.id}" aria-label="${i18n(s.name)}">${SUB_ICON[s.id]||''}<span class="pill-nm">${i18n(s.name)}</span></button>`).join('');
 }
 function renderOpts(){
-  if(ui.step==='pezunas'){renderPawOpts();placeCredit();return;}
+  if(ui.step==='pezunas'){renderPawOpts();placeCredit();topOpts();return;}
   const c=catOf(ui.cat);visibleGroups=[];
   if(c.id==='stickers')renderStickers();
   else if(c.id==='perfume')renderPerfume();
   else{const s=c.subs.find(x=>x.id===ui.sub[c.id]);visibleGroups=s.groups;
-    optsEl.innerHTML=s.groups.map(groupHTML).join('');optsEl.scrollTop=0;}
-  placeCredit();
+    optsEl.innerHTML=s.groups.map(groupHTML).join('');}
+  placeCredit();topOpts();
+}
+/* New options always start at the top. On iOS a flick keeps gliding after the finger lifts and swallows a plain
+   scrollTop=0, leaving a short section scrolled past its end (an empty panel). Pausing overflow for a frame stops the glide. */
+function topOpts(){
+  optsEl.style.overflowY='hidden';optsEl.scrollTop=0;
+  requestAnimationFrame(()=>{optsEl.style.overflowY='';optsEl.scrollTop=0;});
 }
 /* Credit: pinned under the tray on tablets; on phones it rides at the end of the scrolling options. Copies the URL instead of linking so a stray tap can't open a new tab. */
 let copiedT=0;
@@ -2449,7 +2455,6 @@ function bottleSVG(sc,big){
 }
 function renderPerfume(){
   optsEl.innerHTML=`<div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n('Elige un perfume y rocía al unicornio')}</div><div class="grid">${SCENTS.map(sc=>`<button class="tile scent" data-scent="${sc.id}" aria-pressed="${ui.scent===sc.id}" aria-label="${i18n('Perfume de {name}',{name:i18n(sc.name)})}"><span class="sw" style="background:${mix(sc.c,'#ffffff',.85)}">${bottleSVG(sc)}</span><span class="nm">${i18n(sc.name)}</span></button>`).join('')}</div></div>`;
-  optsEl.scrollTop=0;
 }
 /* ---------- steps: 1 make your unicorn, 2 hooves. A later step (clothes) is one more entry in STEPS. ---------- */
 const stepsEl=$('#steps');
@@ -2547,7 +2552,7 @@ function renderPawOpts(){
   }else{
     h=`<div class="actions" id="pawActs"></div><div class="group"><div class="gtitle">${GROUP_ICON.tap}${i18n('Elige un adorno y toca una pezuña')}</div><div class="grid">${DECOS.map(d=>`<button class="tile sticker" data-pdeco="${d.id}" aria-pressed="${ui.deco===d.id}" aria-label="${i18n(d.name)}"><span class="sw">${decoSVG(d)}</span><span class="nm">${i18n(d.name)}</span></button>`).join('')}</div></div>`;
   }
-  optsEl.innerHTML=h;optsEl.scrollTop=0;refreshPawActions();refreshPawCats();
+  optsEl.innerHTML=h;refreshPawActions();refreshPawCats();
 }
 let pawClearArmed=0;const pawDecoLog=[];
 function refreshPawActions(){
