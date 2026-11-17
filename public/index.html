@@ -2321,6 +2321,7 @@ function setStep(id,quiet){
   if(!STEPS.some(s=>s.id===id))id='unicornio';
   if(spray)stopSpray();if(pawTool)pawToolEnd();
   ui.step=id;const paw=id==='pezunas';uni.visible=!paw;pawsG.visible=paw;
+  if(paw&&!pawDone.recortar())ui.pcat='recortar'; // a unicorn whose hairs aren't trimmed yet always starts at sub-step 1
   if(paw)poseReset();btnPose.hidden=paw;openPoses(false);
   tYaw=tPitch=0;hintSeen=false;coachIdle=performance.now();showCoach(null);
   stepsEl.querySelectorAll('.step').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.step===id)));
