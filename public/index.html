@@ -366,8 +366,8 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
   .more path{opacity:1}
 }
 /* ?fps=1 debug readout */
-/* ?dev version label */
-.ver{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 2px);transform:translateX(-50%);z-index:1000;padding:1px 6px;border-radius:4px;background:rgba(0,0,0,.45);color:#fff;font:600 10px/1.2 ui-monospace,SFMono-Regular,Menlo,monospace;pointer-events:none;user-select:none}
+/* version label, left of the credit */
+.ver{display:inline-block;margin-right:6px;padding:1px 6px;border-radius:4px;background:var(--chip-edge);color:var(--ink-soft);font:600 10px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;vertical-align:1px;user-select:none}
 .fps{position:absolute;left:8px;top:8px;z-index:5;max-width:calc(100% - 16px);padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.6);color:#fff;font:600 12px/1.3 ui-monospace,monospace;pointer-events:none}
 /* light mode (slow GPUs): no backdrop blur or drop-shadow filters, which repaint every frame on top of the 3D */
 .lite .gal{backdrop-filter:none;-webkit-backdrop-filter:none;background:rgba(61,39,72,.8)}
@@ -409,10 +409,9 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
     <nav class="cats" id="cats" role="tablist" aria-label="Categorías"></nav>
     <div class="subs" id="subs" role="tablist"></div>
     <div class="opts" id="opts"></div>
-    <footer class="credit" id="credit">Hecho con 🌈 por <button class="credit-copy" id="creditCopy" type="button" aria-label="Copiar guillermorodas.com">Guillermo Rodas</button></footer>
+    <footer class="credit" id="credit"><span class="ver" id="ver" hidden></span>Hecho con 🌈 por <button class="credit-copy" id="creditCopy" type="button" aria-label="Copiar guillermorodas.com">Guillermo Rodas</button></footer>
   </section>
 </div>
-<div class="ver" id="ver" hidden></div>
 <div class="copied" id="copied" role="status" aria-live="polite">Copiado al portapapeles</div>
 <div class="gal" id="gal" role="dialog" aria-modal="true" aria-label="Mis fotos" hidden>
   <div class="gal-sheet">
@@ -745,9 +744,9 @@ const canvas=$('#c'), stage=$('#stage');
 const LITE_KEY=KEY+'-ligero', LITE_DAYS=7;
 const qs=new URLSearchParams(location.search), liteParam=qs.get('lite');
 /* Game version, stamped by scripts/build.mjs from the latest release tag (git describe): "0.2.0" on a release,
-   "0.2.0-3-gabc1234" on later builds and previews, "dev" without a build. Shown only with ?dev, at the bottom centre. */
+   "0.2.0-3-gabc1234" on later builds and previews, "dev" without a build. The footer shows the release part ("v0.2.0") left of the credit; ?fps=1 shows it whole. */
 const VERSION=document.querySelector('meta[name="version"]').content;
-if(qs.has('dev')){const v=document.getElementById('ver');v.textContent='v'+VERSION;v.hidden=false;}
+if(VERSION!=='dev'){const v=document.getElementById('ver');v.textContent='v'+VERSION.split('-')[0];v.hidden=false;}
 function gpuName(){
   try{const c=document.createElement('canvas'),gl=c.getContext('webgl');if(!gl)return '';
     const d=gl.getExtension('WEBGL_debug_renderer_info'),n=String(gl.getParameter(d?d.UNMASKED_RENDERER_WEBGL:gl.RENDERER)||'');

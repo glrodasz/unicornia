@@ -95,7 +95,6 @@ Unicornia is a static site: the game runs entirely in the browser and talks to n
 | `?lite=1` | Forces light mode. |
 | `?lite=0` | Turns light mode off. |
 | `?fps=1` | Shows FPS, mode, GPU and version in a corner. |
-| `?dev` | Shows the game version at the bottom centre. |
 
 **Light mode** drops antialiasing, shadows and the extra material sheen (sheen and clearcoat), lowers pixels, polygons and particles, and caps the frame rate at 30 fps. It turns on by itself when the GPU name is on the slow list, or when the first seconds run below ~22 fps; in that case it is remembered for 7 days.
 
@@ -123,7 +122,7 @@ It needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secre
 
 ### Versions
 
-Every push to `main` runs [semantic-release](https://semantic-release.gitbook.io/) before the build: it reads the [Conventional Commits](https://www.conventionalcommits.org/) since the last tag, creates the `vX.Y.Z` tag and a [GitHub release](https://github.com/glrodasz/unicornia/releases) with notes. `feat` bumps the minor, `fix` and `perf` the patch; the game stays in 0.x for now. The build stamps the version into the page (`?dev` shows it). Rules in [`AGENTS.md`](AGENTS.md).
+Every push to `main` runs [semantic-release](https://semantic-release.gitbook.io/) before the build: it reads the [Conventional Commits](https://www.conventionalcommits.org/) since the last tag, creates the `vX.Y.Z` tag and a [GitHub release](https://github.com/glrodasz/unicornia/releases) with notes. `feat` bumps the minor, `fix` and `perf` the patch; the game stays in 0.x for now. The build stamps the version into the page; the footer shows it next to the credit. Rules in [`AGENTS.md`](AGENTS.md).
 
 To deploy by hand:
 

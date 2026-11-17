@@ -39,7 +39,7 @@ Examples:
 ## Version in the game
 
 - `scripts/build.mjs` stamps the version from `git describe --tags` into `<meta name="version">`: `0.3.0` on a release, `0.3.0-2-gabc1234` on later builds (previews, local). `GAME_VERSION=...` overrides it; without a build it reads `dev`.
-- The game reads it into `VERSION` (`public/index.html`). On screen it only shows with `?dev`, as a small label at the bottom centre, and in the `?fps=1` readout. Nothing visible to the child.
+- The game reads it into `VERSION` (`public/index.html`). The footer always shows the release part (`v0.3.0`) as a small label left of the credit; the `?fps=1` readout shows the whole version.
 
 ## Screenshots
 
