@@ -94,7 +94,7 @@ Unicornia is a static site: the game runs entirely in the browser and talks to n
 |---|---|
 | `?lite=1` | Forces light mode. |
 | `?lite=0` | Turns light mode off. |
-| `?fps=1` | Shows FPS, mode and GPU in a corner. |
+| `?fps=1` | Shows FPS, mode, GPU and version in a corner. |
 
 **Light mode** drops antialiasing, shadows and the extra material sheen (sheen and clearcoat), lowers pixels, polygons and particles, and caps the frame rate at 30 fps. It turns on by itself when the GPU name is on the slow list, or when the first seconds run below ~22 fps; in that case it is remembered for 7 days.
 
@@ -120,6 +120,10 @@ Everything lives in the browser's `localStorage`, under the `salon-unicornio-v1`
 
 It needs the `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` repository secrets; without them the workflow builds but doesn't deploy. The Pages project is created on the first deploy.
 
+### Versions
+
+Every push to `main` runs [semantic-release](https://semantic-release.gitbook.io/) before the build: it reads the [Conventional Commits](https://www.conventionalcommits.org/) since the last tag, creates the `vX.Y.Z` tag and a [GitHub release](https://github.com/glrodasz/unicornia/releases) with notes. `feat` bumps the minor, `fix` and `perf` the patch; the game stays in 0.x for now. The build stamps the version into the page; the footer shows it next to the credit. Rules in [`AGENTS.md`](AGENTS.md).
+
 To deploy by hand:
 
 ```bash
@@ -134,11 +138,13 @@ public/                   static site source
   og/                     link-preview images (es and en)
   icons/, favicon.*       app icons and manifest
   vendor/three.min.js     three.js r149, served locally
-scripts/build.mjs         builds dist/: / (English) and /es
+scripts/build.mjs         builds dist/: / (English) and /es, stamps the version
 original/
   artifact-snapshot.html  exact copy of the original Claude artifact, for reference
 docs/diagrams/            context diagram
-.github/workflows/        deploy to Cloudflare Pages
+.github/workflows/        release, deploy to Cloudflare Pages, PR title check
+.releaserc.json           semantic-release config
+AGENTS.md                 commit and versioning rules
 ```
 
 The game started as a Claude artifact; `original/artifact-snapshot.html` keeps that version as it was.
@@ -148,7 +154,8 @@ The game started as a Claude artifact; `original/artifact-snapshot.html` keeps t
 | Doc | What's in it |
 |---|---|
 | [`scripts/build.mjs`](scripts/build.mjs) | How `/` and `/es` are generated, their SEO and Open Graph tags, and the redirects. |
-| [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) | Build and deploy to production and to per-PR previews. |
+| [`AGENTS.md`](AGENTS.md) | Commit and PR title format, versioning and the version in the game. |
+| [`.github/workflows/deploy.yml`](.github/workflows/deploy.yml) | Release, build and deploy to production and to per-PR previews. |
 | [`original/artifact-snapshot.html`](original/artifact-snapshot.html) | The original artifact the game grew from. |
 
 ## Contributing
@@ -162,6 +169,8 @@ Almost all of the game's content is lists at the top of the `<script>` in `publi
    ```bash
    node scripts/build.mjs && npx serve dist
    ```
+
+PR titles follow Conventional Commits (`feat: …`, `fix: …`), because they become the commit on `main` that sets the next version; see [`AGENTS.md`](AGENTS.md).
 
 Every pull request deploys its own preview on Cloudflare Pages; PRs with visual changes include before and after screenshots.
 
