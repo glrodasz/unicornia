@@ -3,6 +3,8 @@
 //           browsers whose first supported language is Spanish are sent to /es before it renders.
 //   /es  -> dist/es.html     the game pinned to Spanish, Spanish SEO/OG tags; never redirects.
 // Link-preview crawlers don't run JS, so every page carries its tags in the HTML itself.
+// Both pages also get the game version in <meta name="version"> (see gameVersion below).
+import { execSync } from 'node:child_process';
 import { cpSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 
 const SITE = 'https://unicornia.pages.dev';
@@ -79,10 +81,27 @@ const REDIRECT = `<script>
 })();
 </script>`;
 
-const game = readFileSync(`${SRC}/index.html`, 'utf8');
+// The version comes from the latest release tag that semantic-release created (v0.2.0 -> "0.2.0").
+// Builds after that tag carry the distance and commit too ("0.2.0-4-gabc1234"); GAME_VERSION overrides it.
+function gameVersion() {
+  if (process.env.GAME_VERSION) return process.env.GAME_VERSION;
+  const git = (cmd) => execSync(cmd, { stdio: ['ignore', 'pipe', 'ignore'] }).toString().trim();
+  try {
+    return git('git describe --tags --match "v[0-9]*"').replace(/^v/, '');
+  } catch {
+    try {
+      return `0.0.0-${git('git rev-parse --short HEAD')}`;
+    } catch {
+      return '0.0.0-dev';
+    }
+  }
+}
+const VERSION = gameVersion();
+
+const game = replaceOnce(readFileSync(`${SRC}/index.html`, 'utf8'), /<meta name="version" content="[^"]*">/, `<meta name="version" content="${esc(VERSION)}">`);
 rmSync(OUT, { recursive: true, force: true });
 cpSync(SRC, OUT, { recursive: true });
 writeFileSync(`${OUT}/index.html`, replaceOnce(localize(game, DEFAULT_LANG), /<meta charset="utf-8">/, `<meta charset="utf-8">\n${REDIRECT}`));
 writeFileSync(`${OUT}/es.html`, localize(game, 'es'));
 writeFileSync(`${OUT}/_redirects`, ['/es/ /es 301', '/en / 301', '/en/ / 301'].join('\n') + '\n');
-console.log(`build: ${OUT}/ with / (${DEFAULT_LANG}) and /es`);
+console.log(`build: ${OUT}/ with / (${DEFAULT_LANG}) and /es, version ${VERSION}`);
