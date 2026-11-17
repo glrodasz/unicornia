@@ -230,6 +230,7 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .ptool svg,.coach .mv .tool svg{width:100%;height:100%;display:block}
 .ptool .bB,.coach .bB{transform-box:view-box;transform-origin:44px 44px;transition:transform .08s}
 .ptool.cut .bB{transform:rotate(-16deg)}
+.ptool.eraser{width:88px;height:88px}
 .coach .mv{left:0;top:0;width:0;height:0}
 .coach .mv>*{position:absolute}
 .coach .mv .tool{left:-72px;top:-76px;width:100px;height:100px;filter:drop-shadow(0 6px 8px rgba(61,39,72,.25))}
@@ -459,7 +460,7 @@ const EN={
   'Borrar foto':'Delete photo','Toca otra vez para borrar':'Tap again to delete',
   'Elige un sticker y toca al unicornio':'Pick a sticker and tap the unicorn','Elige un tatuaje y toca al unicornio':'Pick a tattoo and tap the unicorn',
   'Elige un perfume y rocía al unicornio':'Pick a perfume and spray the unicorn','Perfume de {name}':'{name} perfume',
-  'Deshacer':'Undo','Borrador':'Eraser','Toca un sticker para borrarlo':'Tap a sticker to erase it','Toca un tatuaje para borrarlo':'Tap a tattoo to erase it','Quitar todos':'Remove all','¿Quitar todos?':'Remove all?',
+  'Deshacer':'Undo','Borrador':'Eraser','Toca o frota un sticker para borrarlo':'Tap or rub a sticker to erase it','Toca o frota un tatuaje para borrarlo':'Tap or rub a tattoo to erase it','Quitar todos':'Remove all','¿Quitar todos?':'Remove all?',
   /* categories, tabs and group titles */
   'Maquillaje':'Makeup','Accesorios':'Accessories','Colores':'Colors','Stickers':'Stickers','Perfume':'Perfume','Perfumes':'Perfumes','Tatuajes':'Tattoos',
   'Pestañas':'Lashes','Ojos':'Eyes','Sombras':'Eyeshadow','Rubor':'Blush','Pecas':'Freckles','Labios':'Lips',
@@ -1933,14 +1934,15 @@ const TAP_SLOP=30,TAP_MAX_MS=1500;
 canvas.addEventListener('pointerdown',e=>{if(spray||pawTool)return;
   if(ui.step==='pezunas'&&!drag&&(ui.pcat==='recortar'||ui.pcat==='limar')){pawToolStart(e);return;}
   if(ui.step==='unicornio'&&ui.cat==='perfume'&&!drag&&hitTest(e.clientX,e.clientY)){startSpray(e);return;}
-  if(drag)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),moved:false};canvas.setPointerCapture(e.pointerId);audio();});
+  if(drag)return;drag={rub:ui.step==='unicornio'&&ui.cat==='stickers'&&ui.sticker==='borrador',id:e.pointerId,x:e.clientX,y:e.clientY,sx:e.clientX,sy:e.clientY,t:performance.now(),moved:false};canvas.setPointerCapture(e.pointerId);audio();});
 canvas.addEventListener('pointermove',e=>{if(spray&&e.pointerId===spray.id){spray.x=e.clientX;spray.y=e.clientY;placeSprayer();return;}
   if(pawTool&&e.pointerId===pawTool.id){pawToolMove(e);return;}
   if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;drag.x=e.clientX;drag.y=e.clientY;
+  if(drag.rub){rubMove(drag,e.clientX,e.clientY);return;}
   if(!drag.moved){if(Math.hypot(e.clientX-drag.sx,e.clientY-drag.sy)<=TAP_SLOP)return;drag.moved=true;}
   if(drag.moved){if(!spun)markSpun();tYaw=clamp(tYaw+dx*.009,-1.05,1.05);tPitch=clamp(tPitch+dy*.005,-.32,.38);lastTouch=performance.now();}});
-function endDrag(e){if(spray&&e.pointerId===spray.id){stopSpray();return;}if(pawTool&&e.pointerId===pawTool.id){pawToolEnd();return;}if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;lastTouch=performance.now();if(!d.moved&&performance.now()-d.t<TAP_MAX_MS)tap(d.sx,d.sy);}
-canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',e=>{if(drag&&e.pointerId===drag.id)drag=null;if(pawTool&&e.pointerId===pawTool.id)pawToolEnd();if(spray&&e.pointerId===spray.id)stopSpray();});
+function endDrag(e){if(spray&&e.pointerId===spray.id){stopSpray();return;}if(pawTool&&e.pointerId===pawTool.id){pawToolEnd();return;}if(!drag||e.pointerId!==drag.id)return;const d=drag;drag=null;lastTouch=performance.now();if(d.rub)ptool.hidden=true;if(!d.moved&&performance.now()-d.t<TAP_MAX_MS)tap(d.sx,d.sy);}
+canvas.addEventListener('pointerup',endDrag);canvas.addEventListener('pointercancel',e=>{if(drag&&e.pointerId===drag.id){if(drag.rub)ptool.hidden=true;drag=null;}if(pawTool&&e.pointerId===pawTool.id)pawToolEnd();if(spray&&e.pointerId===spray.id)stopSpray();});
 
 /* Perfume: press and hold (or tap repeatedly) on the unicorn to spray. It never touches the saved look. */
 const sprayer=$('#sprayer');
@@ -2075,12 +2077,24 @@ function stickerAt(sk,u,v){
   }
   return near;
 }
-function eraseAt(sk,h){
+function eraseAt(sk,h,quiet){
   const i=sk&&h.uv?stickerAt(sk,h.uv.x,1-h.uv.y):-1;
-  if(i<0){sfx.undo();return;}
+  if(i<0){if(!quiet)sfx.undo();return;}
   const st=state.stickers.splice(i,1)[0],def=STK[st.t];
   paintBy[sk]();save();burst(h.point,12,1.2,[...new Set(def.L.map(l=>l[1]))].slice(0,3).concat('#ffffff'));sfx.erase();squash(.5);coachIdle=performance.now();
   hintSeen=true;updateHint();refreshStickerActions();
+}
+/* Rubbing with the eraser: once the finger travels past TAP_SLOP the eraser follows it instead of turning the unicorn,
+   and every sticker or tattoo the stroke touches vanishes whole right away (never half-erased). The path is sampled
+   every RUB_STEP px so a quick swipe doesn't jump over a small sticker. */
+const RUB_STEP=14;
+function rubMove(d,cx,cy){
+  if(!d.moved){if(Math.hypot(cx-d.sx,cy-d.sy)<=TAP_SLOP)return;d.moved=true;d.x=d.sx;d.y=d.sy;
+    ptool.className='ptool eraser';ptool.innerHTML=ERASER_SVG;ptool.hidden=false;hintSeen=true;updateHint();showCoach(null);}
+  const dx=cx-d.x,dy=cy-d.y,n=Math.max(1,Math.ceil(Math.hypot(dx,dy)/RUB_STEP));
+  for(let k=1;k<=n;k++){const h=hitTest(d.x+dx*k/n,d.y+dy*k/n);if(h&&h.object.userData.skin)eraseAt(h.object.userData.skin,h,true);}
+  d.x=cx;d.y=cy;coachIdle=lastTouch=performance.now();
+  const[x,y]=stageXY(cx,cy);ptool.style.transform=`translate(${x-20}px,${y-58}px) rotate(${clamp(dx*1.2,-14,14)}deg)`;
 }
 function tap(cx,cy){
   if(ui.step==='pezunas'){pawTap(cx,cy);return;}
@@ -2613,7 +2627,7 @@ let hintSeen=false;
 function updateHint(){
   const h=$('#hint');if(ui.step==='pezunas'){pawHint(h);return;}const on=(ui.cat==='stickers'||ui.cat==='perfume')&&!hintSeen;h.hidden=!on;
   if(on&&ui.cat==='perfume'){$('#hintIco').innerHTML=bottleSVG(SCENT[ui.scent]);$('#hintTxt').textContent=i18n('Mantén el dedo en el unicornio');return;}
-  if(on&&ui.sticker==='borrador'){const tat=ui.sub.stickers==='tatuaje';$('#hintIco').innerHTML=ERASER_SVG;$('#hintTxt').textContent=i18n(tat?'Toca un tatuaje para borrarlo':'Toca un sticker para borrarlo');return;}
+  if(on&&ui.sticker==='borrador'){const tat=ui.sub.stickers==='tatuaje';$('#hintIco').innerHTML=ERASER_SVG;$('#hintTxt').textContent=i18n(tat?'Toca o frota un tatuaje para borrarlo':'Toca o frota un sticker para borrarlo');return;}
   if(on){const mode=ui.sub.stickers==='tatuaje'?'tatuaje':'sticker';$('#hintIco').innerHTML=stickerSVG(STK[ui.sticker],mode);$('#hintTxt').textContent=i18n(mode==='tatuaje'?'Toca el unicornio para el tatuaje':'Toca el unicornio para pegar');}
 }
 catsEl.addEventListener('click',e=>{const b=e.target.closest('.cat');if(!b||b.dataset.pcat)return;if(ui.cat!==b.dataset.cat){if(spray)stopSpray();ui.cat=b.dataset.cat;renderCats();renderSubs();renderOpts();saveUI();hintSeen=false;}updateHint();sfx.tab();});
