@@ -267,11 +267,12 @@ button:focus-visible{outline:3px solid var(--ink);outline-offset:2px;border-radi
 .ph{appearance:none;border:0;cursor:pointer;display:block;width:100%;background:#fff;padding:8px 8px 62px;border-radius:10px;box-shadow:0 4px 0 var(--chip-edge),0 8px 18px rgba(61,39,72,.12);transition:transform .15s}
 .ph img{display:block;width:100%;aspect-ratio:1;object-fit:cover;border-radius:5px;background:var(--stage)}
 .ph:active{transform:scale(.94)}
-.ph-acts{position:absolute;left:0;right:0;bottom:9px;display:flex;justify-content:center;gap:14px;pointer-events:none}
+.ph-acts{position:absolute;left:0;right:0;bottom:9px;display:flex;justify-content:center;gap:10px;pointer-events:none}
 .pa{pointer-events:auto;appearance:none;border:0;cursor:pointer;width:46px;height:46px;border-radius:50%;display:grid;place-items:center;background:var(--chip);color:var(--ink);box-shadow:0 3px 0 var(--chip-edge),inset 0 0 0 2px var(--chip-edge);transition:transform .12s}
 .pa svg{width:24px;height:24px}
 .pa:active{transform:translateY(3px)}
 .pa.go{background:#5cc98a;color:#fff;box-shadow:0 3px 0 #3a9d66}
+.pa.look{background:var(--sun);box-shadow:0 3px 0 var(--sun-edge)}
 .pa.warn{background:#ff4d6d;color:#fff;box-shadow:0 3px 0 #c42747}
 .gal-view{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:22px;padding:18px;background:var(--tray)}
 .gal-view .big{background:#fff;padding:14px 14px 48px;border-radius:12px;box-shadow:0 6px 0 var(--chip-edge),0 14px 30px rgba(61,39,72,.18);transform:rotate(-1.5deg);min-height:0;flex:0 1 auto;display:flex}
@@ -2605,7 +2606,7 @@ setInterval(()=>{btnPose.classList.toggle('nudge',!posesUsed&&ui.step==='unicorn
 
 let viewing=null,delArmed=0,gridDelArmed=null,gridDelTimer=0;
 function renderGallery(){
-  galGrid.innerHTML=photos.slice().reverse().map((p,i)=>`<div class="phc" style="--r:${[-3,2,-1.5,3,-2.5,1.5][i%6]}deg"><button class="ph" data-ph="${p.id}" aria-label="${i18n('Foto {n}',{n:photos.length-i})}"><img src="${p.img}" alt=""></button><div class="ph-acts"><button class="pa go" data-pa="share" data-id="${p.id}" aria-label="${i18n('Guardar foto en la tablet')}">${ICON.savePic}</button><button class="pa${gridDelArmed===p.id?' warn':''}" data-pa="del" data-id="${p.id}" aria-label="${i18n(gridDelArmed===p.id?'Toca otra vez para borrar':'Borrar foto')}">${gridDelArmed===p.id?ICON.check:ICON.trash}</button></div></div>`).join('');
+  galGrid.innerHTML=photos.slice().reverse().map((p,i)=>`<div class="phc" style="--r:${[-3,2,-1.5,3,-2.5,1.5][i%6]}deg"><button class="ph" data-ph="${p.id}" aria-label="${i18n('Foto {n}',{n:photos.length-i})}"><img src="${p.img}" alt=""></button><div class="ph-acts"><button class="pa go" data-pa="share" data-id="${p.id}" aria-label="${i18n('Guardar foto en la tablet')}">${ICON.savePic}</button><button class="pa look" data-pa="look" data-id="${p.id}" aria-label="${i18n('Vestir al unicornio igual')}">${ICON.dress}</button><button class="pa${gridDelArmed===p.id?' warn':''}" data-pa="del" data-id="${p.id}" aria-label="${i18n(gridDelArmed===p.id?'Toca otra vez para borrar':'Borrar foto')}">${gridDelArmed===p.id?ICON.check:ICON.trash}</button></div></div>`).join('');
 }
 function openGallery(){renderGallery();closeViewer();gal.hidden=false;$('#app').inert=true;sfx.tab();$('#galClose').focus();}
 function closeGallery(){gal.hidden=true;$('#app').inert=false;closeViewer();(btnAlbum.hidden?btnSnap:btnAlbum).focus();}
@@ -2642,10 +2643,18 @@ $('#galClose').addEventListener('click',()=>{closeGallery();sfx.tab();});
 gal.addEventListener('click',e=>{if(e.target===gal)closeGallery();});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!gal.hidden){if(viewing)closeViewer();else closeGallery();}});
 function deletePhoto(p){photos=photos.filter(x=>x!==p);savePhotos();sfx.undo();paintAlbum();renderGallery();if(!photos.length)closeGallery();}
+function dressLike(p){
+  const def=JSON.parse(JSON.stringify(DEFAULT)),L=p.look||{};
+  for(const k in CATALOG)if(CATALOG[k].some(o=>o.id===L[k]))def[k]=L[k];
+  if(Array.isArray(L.stickers))def.stickers=JSON.parse(JSON.stringify(L.stickers));
+  def.paws=sanitizePaws(L.paws);
+  state=def;applyAll();save();renderOpts();closeGallery();sfx.magic();squash(1.3);burst(V3(0,.5,.9),26,1.7);
+}
 galGrid.addEventListener('click',e=>{
   const a=e.target.closest('[data-pa]');
   if(a){const p=photos.find(x=>x.id===a.dataset.id);if(!p)return;
     if(a.dataset.pa==='share'){sfx.pop();sharePhoto(p);return;}
+    if(a.dataset.pa==='look'){dressLike(p);return;}
     clearTimeout(gridDelTimer);
     if(gridDelArmed!==p.id){gridDelArmed=p.id;renderGallery();sfx.tab();galGrid.querySelector(`[data-pa="del"][data-id="${p.id}"]`).focus();gridDelTimer=setTimeout(()=>{gridDelArmed=null;if(!gal.hidden)renderGallery();},3000);return;}
     gridDelArmed=null;deletePhoto(p);return;}
@@ -2654,13 +2663,7 @@ galView.addEventListener('click',e=>{
   const b=e.target.closest('[data-g]');if(!b||!viewing)return;const act=b.dataset.g;
   if(act==='back'){closeViewer();sfx.tab();}
   else if(act==='share'){sfx.pop();sharePhoto(viewing);}
-  else if(act==='look'){
-    const def=JSON.parse(JSON.stringify(DEFAULT)),L=viewing.look||{};
-    for(const k in CATALOG)if(CATALOG[k].some(o=>o.id===L[k]))def[k]=L[k];
-    if(Array.isArray(L.stickers))def.stickers=JSON.parse(JSON.stringify(L.stickers));
-    def.paws=sanitizePaws(L.paws);
-    state=def;applyAll();save();renderOpts();closeGallery();sfx.magic();squash(1.3);burst(V3(0,.5,.9),26,1.7);
-  }
+  else if(act==='look')dressLike(viewing);
   else if(act==='del'){
     if(!delArmed){delArmed=1;paintDel();sfx.tab();const p=viewing;setTimeout(()=>{if(viewing===p&&delArmed){delArmed=0;paintDel();}},3000);return;}
     const p=viewing;closeViewer();deletePhoto(p);
