@@ -1139,6 +1139,8 @@ headG.add(accG.nose,accG.glasses,accG.head);
 /* ---------- hair ---------- */
 const hairMats=[0,1,2,3,4,5].map(()=>clay('#ff8fb8',{roughness:.5,sheen:.85,sheenRoughness:.4}));
 function hm(i){return hairMats[i%hairMats.length];}
+/* updo parts (punk crest, buns) stand far off the head: head accessories don't arch over them, they rest on their roots (UPDO_CAP) and the updo pokes through */
+function updo(build){const k=hairG.children.length;build();for(let i=k;i<hairG.children.length;i++)hairG.children[i].userData.updo=true;}
 function addLock(pts,prof,ci,o){const m=new THREE.Mesh(tube(earSafe(pts,prof),prof,o),hm(ci));hairG.add(m);return m;}
 /* bend a lock in front of / behind each ear instead of through it */
 function earLocal(e,p){e.g.updateMatrix();return p.clone().applyMatrix4(e.g.matrix.clone().invert());}
@@ -1234,9 +1236,9 @@ const HAIRSTYLE={
     hairCap(0);
     const bun=V(0,1.27,-.44);
     for(let k=0;k<8;k++){const lon=-157.5+k*45;if(Math.abs(lon)<30)continue;addLock([surf(lon,8,.1),surf(lon,50,.13),bun.clone().add(V(Math.sin(lon*D2R)*.18,-.12,Math.cos(lon*D2R)*.18))],[.16,.12],k,{seg:40});}
-    hairG.add(blob(hm(0),bun,V(.37,.33,.37)));
-    const sc=new THREE.Mesh(new THREE.TorusGeometry(.3,.085,14,40),MAT.tieY);sc.position.copy(bun).add(V(0,-.2,.05));sc.rotation.x=Math.PI/2-.45;hairG.add(sc);
-    addLock(helix(bun.clone().add(V(0,.1,0)),bun.clone().add(V(0,.42,0)),.2,1.3,60,0),t=>.09*(1-t*.7),2,{seg:80,flat:1});
+    updo(()=>{hairG.add(blob(hm(0),bun,V(.37,.33,.37)));
+      const sc=new THREE.Mesh(new THREE.TorusGeometry(.3,.085,14,40),MAT.tieY);sc.position.copy(bun).add(V(0,-.2,.05));sc.rotation.x=Math.PI/2-.45;hairG.add(sc);
+      addLock(helix(bun.clone().add(V(0,.1,0)),bun.clone().add(V(0,.42,0)),.2,1.3,60,0),t=>.09*(1-t*.7),2,{seg:80,flat:1});});
     addLock([P(-6,86,.05),P(-24,72,.12),P(-40,58,.12)],[.12,.05],1,{seg:32});
     addLock([P(6,86,.05),P(24,72,.12),P(40,58,.12)],[.12,.05],3,{seg:32});
     for(const sg of[-1,1])addLock(helix(surf(48*sg,44,.1),surf(62*sg,-6,.16),.05,2.2,60,sg),t=>.05*(1-t*.5),sg>0?4:5,{seg:80,rad:9,flat:1});
@@ -1274,9 +1276,9 @@ const HAIRSTYLE={
     for(const sg of[-1,1]){
       const bun=surf(104*sg,77,.4),n=surfN(104*sg,77);
       for(const [lon,lat] of [[30,84],[100,40],[160,40],[176,80]])addLock([P(lon*sg,lat,.06),surf(lerp(lon,104,.5)*sg,lerp(lat,77,.5)+5,.14),bun.clone().sub(n.clone().multiplyScalar(.16))],[.15,.12],(lon/40|0)+(sg>0?0:2),{seg:36});
-      hairG.add(blob(hm(sg>0?0:3),bun,V(.29,.27,.29),new THREE.Quaternion().setFromUnitVectors(V3(0,1,0),n)));
-      addLock(helix(bun.clone().sub(n.clone().multiplyScalar(.12)),bun.clone().add(n.clone().multiplyScalar(.2)),.22,1.4,70,sg),t=>.08*(1-t*.6),sg>0?2:5,{seg:90,flat:1});
-      scrunchie(bun.clone().sub(n.clone().multiplyScalar(.2)),n,.22,MAT.tieY);
+      updo(()=>{hairG.add(blob(hm(sg>0?0:3),bun,V(.29,.27,.29),new THREE.Quaternion().setFromUnitVectors(V3(0,1,0),n)));
+        addLock(helix(bun.clone().sub(n.clone().multiplyScalar(.12)),bun.clone().add(n.clone().multiplyScalar(.2)),.22,1.4,70,sg),t=>.08*(1-t*.6),sg>0?2:5,{seg:90,flat:1});
+        scrunchie(bun.clone().sub(n.clone().multiplyScalar(.2)),n,.22,MAT.tieY);});
     }
   },
   bob(){
@@ -1295,12 +1297,12 @@ const HAIRSTYLE={
       braid([root.clone(),V(1*sg,-.42,-.14),V(1*sg,-.9,.28),V(.8*sg,-1.4,.62)],13,sg);
     }
   },
-  punk(){
+  punk(){updo(()=>{
     const spots=[[-16,74,.6],[16,74,.6],[-10,86,.78],[10,86,.78],[180,84,.82],[174,64,.74],[186,64,.74],[180,40,.62],[180,14,.5],[180,-14,.38]];
     spots.forEach(([lon,lat,len],i)=>{const base=surf(lon,lat,-.03),n=surfN(lon,lat),back=V(Math.sign(Math.sin(lon*D2R))*.35*(lat>60?1:0),0,-1);const tip=base.clone().add(n.clone().multiplyScalar(len*.82)).add(back.multiplyScalar(len*.22)).add(V(0,len*.32,0));
       const mid=base.clone().lerp(tip,.5).add(n.clone().multiplyScalar(.04));addLock([base,mid,tip],t=>.24*Math.pow(1-t,1.1)+.012,i,{seg:36,flat:.55,c0:.12,c1:.04,groove:.1});});
     for(const [lon,lat] of [[0,80],[180,88],[180,72],[180,48],[180,22],[180,-6]])hairG.add(blob(hm(0),surf(lon,lat,.02),V(.16,.1,.16),new THREE.Quaternion().setFromUnitVectors(V3(0,1,0),surfN(lon,lat))));
-  },
+  });},
 };
 function V(x,y,z){return V3(x,y,z);}
 function buildHair(){disposeGroup(hairG);liftMemo.clear();(HAIRSTYLE[state.hair]||HAIRSTYLE.suelto)();shadowAll(hairG);applyMane();}
@@ -1427,12 +1429,15 @@ function flower(G,pos,n,size,petalC,centerC){
 }
 /* head accessories rest on whatever hairstyle is on: cast inward from outside the head and sit just past the outermost lock (the tiara mirrors the higher side so it stays symmetric) */
 const hairRay=new THREE.Raycaster(),hairHits=[],liftMemo=new Map();
+/* an updo only lifts an accessory up to its base: the band rests on the crest's roots and the spikes poke through it */
+const UPDO_CAP=.16;
 function hairLift(lon,lat){
   const key=lon.toFixed(1)+','+lat.toFixed(1);if(liftMemo.has(key))return liftMemo.get(key);
   const p=surf(lon,lat),r=p.length(),dir=p.clone().divideScalar(-r);
   const o=headG.localToWorld(p.clone().multiplyScalar(2.2)),d=dir.clone().transformDirection(headG.matrixWorld);
   hairRay.set(o,d);hairHits.length=0;hairRay.intersectObject(hairG,true,hairHits);
-  const h=hairHits.length?Math.max(0,headG.worldToLocal(hairHits[0].point).length()/r-1):0;
+  const lift=x=>x?Math.max(0,headG.worldToLocal(x.point).clone().length()/r-1):0,isUpdo=x=>{for(let m=x.object;m&&m!==hairG;m=m.parent)if(m.userData.updo)return true;return false;};
+  const h=Math.max(lift(hairHits.find(x=>!isUpdo(x))),Math.min(UPDO_CAP,lift(hairHits.find(isUpdo))));
   liftMemo.set(key,h);return h;
 }
 /* highest hair over a small patch, so a flower or bow doesn't sink between two locks */
