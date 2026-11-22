@@ -1487,14 +1487,23 @@ function partyHatTex(){
   partyTex=canvasTex(c);partyTex.wrapS=partyTex.wrapT=THREE.RepeatWrapping;return partyTex;
 }
 /* one soft ribbon along a headband: a rounded flat cross-section swept over the band, v runs across its width (for printed stripes) */
-function ribbon(B,W,T,L){
-  L=L||90;const K=28,cs=[];
-  for(let k=0;k<K;k++){const a=k/K*TAU,c=Math.cos(a),s=Math.sin(a);cs.push([W/2*Math.sign(c)*Math.pow(Math.abs(c),.35),T/2*(1+Math.sign(s)*Math.pow(Math.abs(s),.35))]);}
+function ribbon(B,W,T,L,round){
+  L=L||90;round=round||.35;const K=28,cs=[];
+  for(let k=0;k<K;k++){const a=k/K*TAU,c=Math.cos(a),s=Math.sin(a);cs.push([W/2*Math.sign(c)*Math.pow(Math.abs(c),round),T/2*(1+Math.sign(s)*Math.pow(Math.abs(s),round))]);}
   const curves=cs.map(([o,dh])=>new THREE.CatmullRomCurve3(Array.from({length:B.n+1},(_,i)=>B.pt(i,o,dh))));
   const pos=[],uv=[],idx=[];
   for(let i=0;i<=L;i++)for(let k=0;k<=K;k++){const p=curves[k%K].getPoint(i/L);pos.push(p.x,p.y,p.z);uv.push(i/L,cs[k%K][0]/W+.5);}
   for(let i=0;i<L;i++)for(let k=0;k<K;k++){const a=i*(K+1)+k,b=a+K+1;idx.push(a,a+1,b,b,a+1,b+1);}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g;
+}
+let terryTex=null;
+function terryBumpTex(){
+  if(terryTex)return terryTex;
+  /* the bump shares the stripe map's UVs (whole band length × width), so the loops are drawn at that 26:1 aspect */
+  const c=document.createElement('canvas');c.width=2048;c.height=80;const x=c.getContext('2d');x.fillStyle='#808080';x.fillRect(0,0,2048,80);
+  let r=7;const rnd=()=>(r=(r*16807)%2147483647)/2147483647;
+  for(let i=0;i<7000;i++){const g=120+rnd()*135|0;x.fillStyle=`rgb(${g},${g},${g})`;x.beginPath();x.arc(rnd()*2048,rnd()*80,1.4+rnd()*1.6,0,TAU);x.fill();}
+  terryTex=new THREE.CanvasTexture(c);terryTex.wrapS=THREE.RepeatWrapping;return terryTex;
 }
 let ribbonTex=null;
 function rainbowRibbonTex(){
@@ -1534,8 +1543,9 @@ function buildHeadAcc(){
     flower(G,surf(lon-18,lat-10,Math.max(.12,patchLift(lon-18,lat-10,8)+.06)),surfN(lon-18,lat-10),.14,'#ffffff','#ff8fc8');
   }else if(id==='diadema'){
     /* a sweatband all the way round the forehead: high in front (between lashes and horn), lower at the nape, snug over the hair */
-    const W=.2,B=headband(lon=>33+7*Math.cos(lon*D2R),180,[-.08,0,.08],.004,.012,72,.1);
-    G.add(new THREE.Mesh(ribbon(B,W,.04,288),clay('#d0d0d0',{map:rainbowRibbonTex(),roughness:.7,sheen:0,clearcoat:0,envMapIntensity:.3})));
+    const W=.23,B=headband(lon=>33+7*Math.cos(lon*D2R),180,[-.09,0,.09],.004,.012,72,.1);
+    /* thick and puffy like a terry running sweatband */
+    G.add(new THREE.Mesh(ribbon(B,W,.1,288,.6),clay('#d0d0d0',{map:rainbowRibbonTex(),bumpMap:terryBumpTex(),bumpScale:.022,roughness:.95,sheen:0,clearcoat:0,envMapIntensity:.25})));
   }else if(id==='perlas'){
     const B=headband(lon=>76-.0058*lon*lon,60,[0],.1,.04),curve=new THREE.CatmullRomCurve3(Array.from({length:B.n+1},(_,i)=>B.pt(i,0,0)));
     for(let k=0;k<=34;k++){const t=k/34,r=k%2?.032:.052;G.add(blob(k%2?MAT.gold:MAT.pearl,curve.getPointAt(t),V3(r,r,r)));}
