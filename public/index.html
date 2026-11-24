@@ -1139,6 +1139,8 @@ headG.add(accG.nose,accG.glasses,accG.head);
 /* ---------- hair ---------- */
 const hairMats=[0,1,2,3,4,5].map(()=>clay('#ff8fb8',{roughness:.5,sheen:.85,sheenRoughness:.4}));
 function hm(i){return hairMats[i%hairMats.length];}
+/* updo parts (punk crest, buns) stand far off the head: head accessories don't arch over them, they rest on their roots (UPDO_CAP) and the updo pokes through */
+function updo(build){const k=hairG.children.length;build();for(let i=k;i<hairG.children.length;i++)hairG.children[i].userData.updo=true;}
 function addLock(pts,prof,ci,o){const m=new THREE.Mesh(tube(earSafe(pts,prof),prof,o),hm(ci));hairG.add(m);return m;}
 /* bend a lock in front of / behind each ear instead of through it */
 function earLocal(e,p){e.g.updateMatrix();return p.clone().applyMatrix4(e.g.matrix.clone().invert());}
@@ -1234,9 +1236,9 @@ const HAIRSTYLE={
     hairCap(0);
     const bun=V(0,1.27,-.44);
     for(let k=0;k<8;k++){const lon=-157.5+k*45;if(Math.abs(lon)<30)continue;addLock([surf(lon,8,.1),surf(lon,50,.13),bun.clone().add(V(Math.sin(lon*D2R)*.18,-.12,Math.cos(lon*D2R)*.18))],[.16,.12],k,{seg:40});}
-    hairG.add(blob(hm(0),bun,V(.37,.33,.37)));
-    const sc=new THREE.Mesh(new THREE.TorusGeometry(.3,.085,14,40),MAT.tieY);sc.position.copy(bun).add(V(0,-.2,.05));sc.rotation.x=Math.PI/2-.45;hairG.add(sc);
-    addLock(helix(bun.clone().add(V(0,.1,0)),bun.clone().add(V(0,.42,0)),.2,1.3,60,0),t=>.09*(1-t*.7),2,{seg:80,flat:1});
+    updo(()=>{hairG.add(blob(hm(0),bun,V(.37,.33,.37)));
+      const sc=new THREE.Mesh(new THREE.TorusGeometry(.3,.085,14,40),MAT.tieY);sc.position.copy(bun).add(V(0,-.2,.05));sc.rotation.x=Math.PI/2-.45;hairG.add(sc);
+      addLock(helix(bun.clone().add(V(0,.1,0)),bun.clone().add(V(0,.42,0)),.2,1.3,60,0),t=>.09*(1-t*.7),2,{seg:80,flat:1});});
     addLock([P(-6,86,.05),P(-24,72,.12),P(-40,58,.12)],[.12,.05],1,{seg:32});
     addLock([P(6,86,.05),P(24,72,.12),P(40,58,.12)],[.12,.05],3,{seg:32});
     for(const sg of[-1,1])addLock(helix(surf(48*sg,44,.1),surf(62*sg,-6,.16),.05,2.2,60,sg),t=>.05*(1-t*.5),sg>0?4:5,{seg:80,rad:9,flat:1});
@@ -1274,9 +1276,9 @@ const HAIRSTYLE={
     for(const sg of[-1,1]){
       const bun=surf(104*sg,77,.4),n=surfN(104*sg,77);
       for(const [lon,lat] of [[30,84],[100,40],[160,40],[176,80]])addLock([P(lon*sg,lat,.06),surf(lerp(lon,104,.5)*sg,lerp(lat,77,.5)+5,.14),bun.clone().sub(n.clone().multiplyScalar(.16))],[.15,.12],(lon/40|0)+(sg>0?0:2),{seg:36});
-      hairG.add(blob(hm(sg>0?0:3),bun,V(.29,.27,.29),new THREE.Quaternion().setFromUnitVectors(V3(0,1,0),n)));
-      addLock(helix(bun.clone().sub(n.clone().multiplyScalar(.12)),bun.clone().add(n.clone().multiplyScalar(.2)),.22,1.4,70,sg),t=>.08*(1-t*.6),sg>0?2:5,{seg:90,flat:1});
-      scrunchie(bun.clone().sub(n.clone().multiplyScalar(.2)),n,.22,MAT.tieY);
+      updo(()=>{hairG.add(blob(hm(sg>0?0:3),bun,V(.29,.27,.29),new THREE.Quaternion().setFromUnitVectors(V3(0,1,0),n)));
+        addLock(helix(bun.clone().sub(n.clone().multiplyScalar(.12)),bun.clone().add(n.clone().multiplyScalar(.2)),.22,1.4,70,sg),t=>.08*(1-t*.6),sg>0?2:5,{seg:90,flat:1});
+        scrunchie(bun.clone().sub(n.clone().multiplyScalar(.2)),n,.22,MAT.tieY);});
     }
   },
   bob(){
@@ -1295,12 +1297,12 @@ const HAIRSTYLE={
       braid([root.clone(),V(1*sg,-.42,-.14),V(1*sg,-.9,.28),V(.8*sg,-1.4,.62)],13,sg);
     }
   },
-  punk(){
+  punk(){updo(()=>{
     const spots=[[-16,74,.6],[16,74,.6],[-10,86,.78],[10,86,.78],[180,84,.82],[174,64,.74],[186,64,.74],[180,40,.62],[180,14,.5],[180,-14,.38]];
     spots.forEach(([lon,lat,len],i)=>{const base=surf(lon,lat,-.03),n=surfN(lon,lat),back=V(Math.sign(Math.sin(lon*D2R))*.35*(lat>60?1:0),0,-1);const tip=base.clone().add(n.clone().multiplyScalar(len*.82)).add(back.multiplyScalar(len*.22)).add(V(0,len*.32,0));
       const mid=base.clone().lerp(tip,.5).add(n.clone().multiplyScalar(.04));addLock([base,mid,tip],t=>.24*Math.pow(1-t,1.1)+.012,i,{seg:36,flat:.55,c0:.12,c1:.04,groove:.1});});
     for(const [lon,lat] of [[0,80],[180,88],[180,72],[180,48],[180,22],[180,-6]])hairG.add(blob(hm(0),surf(lon,lat,.02),V(.16,.1,.16),new THREE.Quaternion().setFromUnitVectors(V3(0,1,0),surfN(lon,lat))));
-  },
+  });},
 };
 function V(x,y,z){return V3(x,y,z);}
 function buildHair(){disposeGroup(hairG);liftMemo.clear();(HAIRSTYLE[state.hair]||HAIRSTYLE.suelto)();shadowAll(hairG);applyMane();}
@@ -1427,12 +1429,15 @@ function flower(G,pos,n,size,petalC,centerC){
 }
 /* head accessories rest on whatever hairstyle is on: cast inward from outside the head and sit just past the outermost lock (the tiara mirrors the higher side so it stays symmetric) */
 const hairRay=new THREE.Raycaster(),hairHits=[],liftMemo=new Map();
+/* an updo only lifts an accessory up to its base: the band rests on the crest's roots and the spikes poke through it */
+const UPDO_CAP=.16;
 function hairLift(lon,lat){
   const key=lon.toFixed(1)+','+lat.toFixed(1);if(liftMemo.has(key))return liftMemo.get(key);
   const p=surf(lon,lat),r=p.length(),dir=p.clone().divideScalar(-r);
   const o=headG.localToWorld(p.clone().multiplyScalar(2.2)),d=dir.clone().transformDirection(headG.matrixWorld);
   hairRay.set(o,d);hairHits.length=0;hairRay.intersectObject(hairG,true,hairHits);
-  const h=hairHits.length?Math.max(0,headG.worldToLocal(hairHits[0].point).length()/r-1):0;
+  const lift=x=>x?Math.max(0,headG.worldToLocal(x.point).clone().length()/r-1):0,isUpdo=x=>{for(let m=x.object;m&&m!==hairG;m=m.parent)if(m.userData.updo)return true;return false;};
+  const h=Math.max(lift(hairHits.find(x=>!isUpdo(x))),Math.min(UPDO_CAP,lift(hairHits.find(isUpdo))));
   liftMemo.set(key,h);return h;
 }
 /* highest hair over a small patch, so a flower or bow doesn't sink between two locks */
@@ -1444,14 +1449,14 @@ function smoothLifts(L,w){
 /* A headband over the crown: P/N/F per sample (F = toward the face), lifted over the hair like the tiara.
    offs are the sideways offsets the band covers, so a wide band clears the hair under every stripe. */
 function llOf(q){const u=V3(q.x/RX,q.y/RY,q.z/RZ).normalize();return{lon:Math.atan2(u.x,u.z)/D2R,lat:Math.asin(clamp(u.y,-1,1))/D2R};}
-function headband(tLat,L0,offs,minH,gap){
-  const n=24,lons=[],P=[],N=[],F=[];
+function headband(tLat,L0,offs,minH,gap,n,cap){
+  n=n||24;const lons=[],P=[],N=[],F=[];
   for(let i=0;i<=n;i++){const lon=-L0+i*2*L0/n;lons.push(lon);P.push(surf(lon,tLat(lon)));N.push(surfN(lon,tLat(lon)));}
   for(let i=0;i<=n;i++){const t=P[Math.min(n,i+1)].clone().sub(P[Math.max(0,i-1)]);F.push(new THREE.Vector3().crossVectors(t,N[i]).normalize());}
   const ll=(i,o)=>llOf(P[i].clone().addScaledVector(F[i],o));
   const raw=lons.map((_,i)=>i%2?0:Math.max(...offs.map(o=>{const{lon,lat}=ll(i,o);return hairLift(lon,lat);})));
   for(let i=1;i<n;i+=2)raw[i]=(raw[i-1]+raw[i+1])/2;
-  const S=smoothLifts(raw,2),H=S.map((h,i)=>Math.max(minH,Math.max(h,S[n-i])+gap));
+  const S=smoothLifts(raw,Math.max(2,Math.round(n/12))),H=S.map((h,i)=>Math.max(minH,Math.min(cap||9,Math.max(h,S[n-i]))+gap));
   return{n,lons,N,F,H,pt:(i,o,dh)=>{const{lon,lat}=ll(i,o||0);return surf(lon,lat,H[i]+(dh||0));}};
 }
 function bow(mat,s,dots){
@@ -1480,6 +1485,32 @@ function partyHatTex(){
   x.fillStyle='#ffd447';for(let k=-4;k<8;k++){x.beginPath();x.moveTo(k*64,256);x.lineTo(k*64+28,256);x.lineTo(k*64+28+128,0);x.lineTo(k*64+128,0);x.fill();}
   x.fillStyle='#ffffff';for(let i=0;i<14;i++){x.beginPath();x.arc((i*73)%256,(i*41+20)%256,6,0,TAU);x.fill();}
   partyTex=canvasTex(c);partyTex.wrapS=partyTex.wrapT=THREE.RepeatWrapping;return partyTex;
+}
+/* one soft ribbon along a headband: a rounded flat cross-section swept over the band, v runs across its width (for printed stripes) */
+function ribbon(B,W,T,L,round){
+  L=L||90;round=round||.35;const K=28,cs=[];
+  for(let k=0;k<K;k++){const a=k/K*TAU,c=Math.cos(a),s=Math.sin(a);cs.push([W/2*Math.sign(c)*Math.pow(Math.abs(c),round),T/2*(1+Math.sign(s)*Math.pow(Math.abs(s),round))]);}
+  const curves=cs.map(([o,dh])=>new THREE.CatmullRomCurve3(Array.from({length:B.n+1},(_,i)=>B.pt(i,o,dh))));
+  const pos=[],uv=[],idx=[];
+  for(let i=0;i<=L;i++)for(let k=0;k<=K;k++){const p=curves[k%K].getPoint(i/L);pos.push(p.x,p.y,p.z);uv.push(i/L,cs[k%K][0]/W+.5);}
+  for(let i=0;i<L;i++)for(let k=0;k<K;k++){const a=i*(K+1)+k,b=a+K+1;idx.push(a,a+1,b,b,a+1,b+1);}
+  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g;
+}
+let terryTex=null;
+function terryBumpTex(){
+  if(terryTex)return terryTex;
+  /* the bump shares the stripe map's UVs (whole band length × width), so the loops are drawn at that 26:1 aspect */
+  const c=document.createElement('canvas');c.width=2048;c.height=80;const x=c.getContext('2d');x.fillStyle='#808080';x.fillRect(0,0,2048,80);
+  let r=7;const rnd=()=>(r=(r*16807)%2147483647)/2147483647;
+  for(let i=0;i<7000;i++){const g=120+rnd()*135|0;x.fillStyle=`rgb(${g},${g},${g})`;x.beginPath();x.arc(rnd()*2048,rnd()*80,1.4+rnd()*1.6,0,TAU);x.fill();}
+  terryTex=new THREE.CanvasTexture(c);terryTex.wrapS=THREE.RepeatWrapping;return terryTex;
+}
+let ribbonTex=null;
+function rainbowRibbonTex(){
+  if(ribbonTex)return ribbonTex;
+  const c=document.createElement('canvas');c.width=8;c.height=256;const x=c.getContext('2d'),gr=x.createLinearGradient(0,0,0,256);
+  [...RAINBOW].reverse().forEach((col,k)=>{gr.addColorStop(Math.max(0,k/6+.012),col);gr.addColorStop(Math.min(1,(k+1)/6-.012),col);});
+  x.fillStyle=gr;x.fillRect(0,0,8,256);ribbonTex=canvasTex(c);return ribbonTex;
 }
 /* little per-frame motions of the head accessory (halo spin, bobbing antennae); cleared on every rebuild */
 const accAnim=[];
@@ -1511,11 +1542,10 @@ function buildHeadAcc(){
     const lon=-60,lat=42,h=patchLift(lon,lat,12);flower(G,surf(lon,lat,Math.max(.14,h+.08)),surfN(lon,lat).lerp(V3(0,0,1),.3).normalize(),.26,'#ff8fc8','#ffd447');
     flower(G,surf(lon-18,lat-10,Math.max(.12,patchLift(lon-18,lat-10,8)+.06)),surfN(lon-18,lat-10),.14,'#ffffff','#ff8fc8');
   }else if(id==='diadema'){
-    const offs=RAINBOW.map((_,k)=>(k-2.5)*.064),B=headband(lon=>80-.0068*lon*lon,52,offs,.12,.05);
-    RAINBOW.forEach((c,k)=>{const pts=[];for(let i=0;i<=B.n;i++)pts.push(B.pt(i,offs[5-k]));G.add(new THREE.Mesh(tube(pts,[.035,.035],{seg:60,rad:10,flat:1,c0:.015,c1:.015}),clay(c,{roughness:.42,sheen:.9,clearcoat:.35})));});
-    const cloud=clay('#ffffff',{roughness:.55,sheen:1});
-    for(const i of[0,B.n]){const o=B.pt(i,0,.03),n=B.N[i],f=B.F[i],up=V3(0,1,0);
-      [[0,0,0,.13],[.09,.06,.02,.1],[-.09,.05,.02,.1],[0,-.08,.03,.09]].forEach(([a,b,c2,r])=>G.add(blob(cloud,o.clone().addScaledVector(f,a).addScaledVector(up,b).addScaledVector(n,c2),V3(r,r*.85,r*.8))));}
+    /* a sweatband all the way round the forehead: high in front (between lashes and horn), lower at the nape, snug over the hair */
+    const W=.23,B=headband(lon=>33+7*Math.cos(lon*D2R),180,[-.09,0,.09],.004,.012,72,.1);
+    /* thick and puffy like a terry running sweatband */
+    G.add(new THREE.Mesh(ribbon(B,W,.1,288,.6),clay('#d0d0d0',{map:rainbowRibbonTex(),bumpMap:terryBumpTex(),bumpScale:.022,roughness:.95,sheen:0,clearcoat:0,envMapIntensity:.25})));
   }else if(id==='perlas'){
     const B=headband(lon=>76-.0058*lon*lon,60,[0],.1,.04),curve=new THREE.CatmullRomCurve3(Array.from({length:B.n+1},(_,i)=>B.pt(i,0,0)));
     for(let k=0;k<=34;k++){const t=k/34,r=k%2?.032:.052;G.add(blob(k%2?MAT.gold:MAT.pearl,curve.getPointAt(t),V3(r,r,r)));}
@@ -2296,10 +2326,9 @@ function headSVG(id){
   if(id==='flores')return sv(`<path d="M8 44Q32 24 56 44" stroke="#7bd389" stroke-width="3" fill="none" stroke-linecap="round"/>`+flowerS(14,38,.16,'#ff8fc8')+flowerS(32,30,.18,'#c9a7ff')+flowerS(50,38,.16,'#8fd9ff'));
   if(id==='tiara')return sv(`<path d="M8 46 12 26l9 10 11-18 11 18 9-10 4 20z" fill="#e3e7ef" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="32" cy="18" r="4" fill="#ff5d9e" stroke="${INK}" stroke-width="1.6"/><circle cx="12" cy="26" r="3" fill="#ff5d9e"/><circle cx="52" cy="26" r="3" fill="#ff5d9e"/>`+tr(HEART,32,38,.12,'#ff5d9e'));
   if(id==='flor')return sv(flowerS(30,32,.4,'#ff8fc8')+flowerS(48,46,.2,'#ffffff'));
-  const cloudS=(x,y)=>{const c=[[x-4,y+1,4.2],[x+1,y-2,5],[x+5,y+1.5,4]];return c.map(([a,b,r])=>`<circle cx="${a}" cy="${b}" r="${r}" fill="${INK}" stroke="${INK}" stroke-width="3.6"/>`).join('')+c.map(([a,b,r])=>`<circle cx="${a}" cy="${b}" r="${r}" fill="#fff"/>`).join('');};
   const bowS=(x,y,s,c)=>`<g transform="translate(${x} ${y}) scale(${s})"><path d="M0 0-16-9c-2.5-1.5-5 0-5 2.5v14c0 2.5 2.5 4 5 2.5L0 1zM0 0l16-9c2.5-1.5 5 0 5 2.5v14c0 2.5-2.5 4-5 2.5L0 1z" fill="${c}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-13" cy="-1" r="1.8" fill="#fff"/><circle cx="-8" cy="4" r="1.5" fill="#fff"/><circle cx="13" cy="-1" r="1.8" fill="#fff"/><circle cx="8" cy="4" r="1.5" fill="#fff"/><rect x="-4" y="-5" width="8" height="10" rx="3" fill="${c}" stroke="${INK}" stroke-width="2"/></g>`;
   const flyS=(x,y,s,c,r)=>`<g transform="translate(${x} ${y}) rotate(${r||0}) scale(${s})"><path d="M0-2C-6-14-20-16-20-6c0 6 8 8 20 6zM0-2C6-14 20-16 20-6c0 6-8 8-20 6zM0 2c-5 2-14 4-12 11 2 5 9 1 12-11zM0 2c5 2 14 4 12 11-2 5-9 1-12-11z" fill="${c}" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="-12" cy="-7" r="2.4" fill="#fff"/><circle cx="12" cy="-7" r="2.4" fill="#fff"/><path d="M0-10v20" stroke="${INK}" stroke-width="3.6" stroke-linecap="round"/><path d="M-1-10q-3-6-6-7M1-10q3-6 6-7" stroke="${INK}" stroke-width="1.6" fill="none" stroke-linecap="round"/></g>`;
-  if(id==='diadema')return sv([...RAINBOW].map((c,i)=>`<path d="M${9+i*3.8} 46a${23-i*3.8} ${23-i*3.8} 0 0 1 ${46-i*7.6} 0" stroke="${c}" stroke-width="4" fill="none"/>`).join('')+cloudS(10,47)+cloudS(53,47));
+  if(id==='diadema')return sv(`<path d="M8 36Q32 26 56 36" stroke="${INK}" stroke-width="27.6" fill="none"/>`+RAINBOW.map((c,i)=>`<path d="M8 ${26+i*4}Q32 ${16+i*4} 56 ${26+i*4}" stroke="${c}" stroke-width="4.3" fill="none"/>`).join(''));
   if(id==='corona')return sv(`<path d="M12 44 8 20l12 11 12-17 12 17 12-11-4 24z" fill="#f2c14e" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><rect x="11" y="42" width="42" height="9" rx="3" fill="#eaa833" stroke="${INK}" stroke-width="2"/><circle cx="8" cy="19" r="3.2" fill="#5cd0ff" stroke="${INK}" stroke-width="1.5"/><circle cx="32" cy="13" r="3.6" fill="#ff4f8b" stroke="${INK}" stroke-width="1.5"/><circle cx="56" cy="19" r="3.2" fill="#b77cff" stroke="${INK}" stroke-width="1.5"/><circle cx="21" cy="46.5" r="2.6" fill="#5ee0a0"/><circle cx="32" cy="46.5" r="2.6" fill="#ff4f8b"/><circle cx="43" cy="46.5" r="2.6" fill="#5cd0ff"/>`);
   if(id==='gorrito')return sv(`<defs><clipPath id="hatClip"><path d="M33 12 47 49H17z"/></clipPath></defs><path d="M33 12 47 49H17z" fill="#ff7ab8"/><g clip-path="url(#hatClip)" fill="#ffd447"><path d="M10 40l40-16v6L10 46zM10 26l40-16v6L10 32z"/></g><circle cx="27" cy="36" r="1.6" fill="#fff"/><circle cx="37" cy="24" r="1.6" fill="#fff"/><circle cx="39" cy="42" r="1.6" fill="#fff"/><path d="M33 12 47 49H17z" fill="none" stroke="${INK}" stroke-width="2" stroke-linejoin="round"/><circle cx="33" cy="10" r="5.5" fill="#ffd447" stroke="${INK}" stroke-width="2"/>`+[17,23,29,35,41,47].map(x=>`<circle cx="${x}" cy="50" r="3.6" fill="#fff" stroke="${INK}" stroke-width="1.5"/>`).join(''));
   if(id==='antenitas')return sv(`<path d="M8 56Q32 32 56 56" stroke="${INK}" stroke-width="8" fill="none" stroke-linecap="round"/><path d="M8 56Q32 32 56 56" stroke="#ff6fae" stroke-width="4.5" fill="none" stroke-linecap="round"/><path d="M22 44l-4-3 5-3-5-3 5-3-5-3 5-3-4-3M42 44l4-3-5-3 5-3-5-3 5-3-5-3 4-3" stroke="#9aa3b5" stroke-width="2" fill="none" stroke-linejoin="round"/>`+tr(HEART,16,15,.2,'#ff4f8b',`stroke="${INK}" stroke-width="9"`)+tr(HEART,48,15,.2,'#b77cff',`stroke="${INK}" stroke-width="9"`));
